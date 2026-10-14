@@ -1,9 +1,7 @@
-// Connexion à la base Supabase de l'écurie.
-// Laissez vide pour utiliser l'appli en mode démo (données gardées dans le navigateur).
-// Une fois votre projet Supabase créé, collez ici :
-//   - supabaseUrl : Project Settings › API › Project URL
-//   - supabaseKey : Project Settings › API › clé « anon public » (elle est faite pour être publique)
+// Connexion à la base Supabase de l'écurie (Élevage d'ALB).
+// La clé « anon » est faite pour être publique : les règles d'accès de la base protègent les données.
+// Pour revenir au mode démo, videz les deux valeurs.
 window.ECURIE_CONFIG = {
-  supabaseUrl: '',
-  supabaseKey: ''
+  supabaseUrl: 'https://grgmjtjykyvlyndldffl.supabase.co',
+  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyZ21qdGp5a3l2bHluZGxkZmZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5NzI1MTUsImV4cCI6MjEwNzU0ODUxNX0.qJN0roW6ifWUcqKCOCZ2QXWL751Ulx3elsVUhj5mHcA'
 };
