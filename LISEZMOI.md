@@ -63,6 +63,16 @@ La clé « anon » est prévue pour être publique : ce sont les règles d'accè
 - **Android (Chrome)** : bandeau « Installer », ou menu ⋮ › Installer l'application.
 - **iPhone (Safari)** : Partager › **Sur l'écran d'accueil**.
 
+## Comptabilité (onglet Compta)
+
+- **Factures préparées d'avance** : à partir du 25, les factures du mois sont créées en brouillon (pensions au prorata des arrivées et départs, cours, frais). Vous vérifiez et vous envoyez. Désactivable dans Réglages.
+- **Paiements** : dans une facture, « Enregistrer le paiement » (date et mode : virement, chèque, espèces…).
+- **Relances** : les factures en retard apparaissent dans Aujourd'hui et Factures ; « Relancer » envoie le message de relance avec la facture.
+- **Avoirs** : sur une facture envoyée, « Créer un avoir » (lignes annulées ou montant libre, avec motif). Numérotation propre AV2026-0001…
+- **Dépenses** : achats de l'écurie avec photo du justificatif, catégorie et TVA.
+- **TVA** : récapitulatif collectée / déductible / nette si vous êtes assujetti.
+- **Pour la comptable** : journaux Excel (CSV) des ventes, encaissements et dépenses, et un **pack comptable .zip** par mois, trimestre ou année (factures et avoirs en PDF, justificatifs, journaux).
+
 ## Bon à savoir
 
 - **Offre gratuite Supabase** : 500 Mo de base et 1 Go de fichiers (justificatifs), largement suffisant pour une écurie. Un projet gratuit est mis en pause après 7 jours sans activité ; avec un usage régulier cela n'arrive pas. Sinon, relancez-le d'un clic dans le tableau de bord Supabase : les données sont conservées.

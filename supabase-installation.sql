@@ -23,6 +23,8 @@ create table if not exists public.annonces (
   id text primary key, data jsonb not null default '{}'::jsonb, created_at timestamptz not null default now());
 create table if not exists public.messages (
   id text primary key, proprietaire_id text not null, data jsonb not null default '{}'::jsonb, created_at timestamptz not null default now());
+create table if not exists public.depenses (
+  id text primary key, data jsonb not null default '{}'::jsonb, updated_at timestamptz not null default now());
 create table if not exists public.profils (
   user_id uuid primary key references auth.users(id) on delete cascade,
   role text not null check (role in ('gerant','client')), proprietaire_id text);
@@ -120,11 +122,12 @@ alter table public.taches enable row level security;
 alter table public.factures enable row level security;
 alter table public.annonces enable row level security;
 alter table public.messages enable row level security;
+alter table public.depenses enable row level security;
 alter table public.profils enable row level security;
 alter table public.secrets enable row level security;  -- aucune règle : illisible depuis l'appli
 
 do $$ declare t text; begin
-  foreach t in array array['config','proprietaires','chevaux','cours','taches','factures','annonces','messages'] loop
+  foreach t in array array['config','proprietaires','chevaux','cours','taches','factures','annonces','messages','depenses'] loop
     execute format('drop policy if exists "gerant tout" on public.%I', t);
     execute format('create policy "gerant tout" on public.%I for all to authenticated using (public.est_gerant()) with check (public.est_gerant())', t);
   end loop;
@@ -170,10 +173,10 @@ revoke execute on function public.lier_compte(text), public.reserver_cours(text)
 grant execute on function public.lier_compte(text), public.reserver_cours(text), public.annuler_cours(text), public.mon_profil(), public.marquer_lus() to authenticated;
 grant execute on function public.est_gerant(), public.mon_proprio(), public.est_membre() to authenticated;
 grant usage on schema public to authenticated;
-grant select, insert, update, delete on public.config, public.proprietaires, public.chevaux, public.cours, public.taches, public.factures, public.annonces, public.messages to authenticated;
+grant select, insert, update, delete on public.config, public.proprietaires, public.chevaux, public.cours, public.taches, public.factures, public.annonces, public.messages, public.depenses to authenticated;
 grant select on public.profils to authenticated;
 revoke all on public.secrets from anon, authenticated;
-revoke all on public.config, public.proprietaires, public.chevaux, public.cours, public.taches, public.factures, public.annonces, public.messages, public.profils from anon;
+revoke all on public.config, public.proprietaires, public.chevaux, public.cours, public.taches, public.factures, public.annonces, public.messages, public.depenses, public.profils from anon;
 
 -- ---------- Votre code d'activation gérant ----------
 select v as "CODE D'ACTIVATION GÉRANT (à noter)" from public.secrets where k = 'code_gerant';

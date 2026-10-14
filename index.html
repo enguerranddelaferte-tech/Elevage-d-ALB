@@ -24,16 +24,16 @@ html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{dis
   --accent:#2F5D46; --accent-ink:#1F4232; --accent-soft:#E2ECE5; --on-accent:#FFFFFF;
   --warn-bg:#FBF1DE; --warn-fg:#6F470D; --danger:#9A3B2A; --danger-soft:#F6E3DE; --overlay:rgba(20,26,23,.45);
   --f-display:'Outfit',ui-sans-serif,system-ui,sans-serif; --f-body:'DM Sans',ui-sans-serif,system-ui,sans-serif;
-  --r:14px;
+  --r:14px;--c1:#2B7D4F;--c2:#C0781A;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#111614; --surface:#1A211E; --surface-2:#232B27; --fg:#E6ECE8; --muted:#A2ADA6; --line:#2D3732;
   --accent:#7DB894; --accent-ink:#A9D4B8; --accent-soft:#1F3128; --on-accent:#0D1511;
-  --warn-bg:#33281A; --warn-fg:#F0C27B; --danger:#F08A75; --danger-soft:#3A2420; --overlay:rgba(0,0,0,.6); color-scheme:dark}}
+  --warn-bg:#33281A; --warn-fg:#F0C27B; --danger:#F08A75; --danger-soft:#3A2420; --overlay:rgba(0,0,0,.6); --c1:#3C9A66; --c2:#CC7A1A; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#111614; --surface:#1A211E; --surface-2:#232B27; --fg:#E6ECE8; --muted:#A2ADA6; --line:#2D3732;
   --accent:#7DB894; --accent-ink:#A9D4B8; --accent-soft:#1F3128; --on-accent:#0D1511;
-  --warn-bg:#33281A; --warn-fg:#F0C27B; --danger:#F08A75; --danger-soft:#3A2420; --overlay:rgba(0,0,0,.6); color-scheme:dark}
+  --warn-bg:#33281A; --warn-fg:#F0C27B; --danger:#F08A75; --danger-soft:#3A2420; --overlay:rgba(0,0,0,.6); --c1:#3C9A66; --c2:#CC7A1A; color-scheme:dark}
 html,body{height:100%}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45}
 *{box-sizing:border-box}
@@ -164,6 +164,13 @@ nav.tabs button[aria-current="page"]{color:var(--accent);font-weight:700}
 .bub{max-width:82%;align-self:flex-start;padding:10px 12px;border-radius:16px 16px 16px 4px;background:var(--surface);border:1px solid var(--line);white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px}
 .bub.me{align-self:flex-end;border-radius:16px 16px 4px 16px;background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .bub small{display:block;font-size:11px;opacity:.8;margin-top:4px}
+.chartbox{overflow-x:auto}.chart{position:relative;display:grid;grid-template-columns:repeat(12,minmax(22px,1fr));gap:6px;align-items:end;min-width:320px;padding-left:44px;padding-top:14px}
+.chart .gl{position:absolute;left:44px;right:0;border-top:1px dashed var(--line);height:0}.chart .gl span{position:absolute;left:-44px;top:-8px;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bcol{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;z-index:1}.bcol small{font-size:11px;color:var(--muted);height:14px}
+.bpair{display:flex;align-items:flex-end;gap:2px;width:100%;justify-content:center}.bar{display:block;width:42%;max-width:14px;border-radius:4px 4px 0 0;min-height:0}
+.b1{background:var(--c1)}.b2{background:var(--c2)}.bcol:hover .bar{filter:brightness(1.1)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;margin-bottom:10px}.legend span{display:inline-flex;align-items:center;gap:6px}.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+details summary{list-style-position:inside}
 .warnline{font-size:13px;color:var(--danger);font-weight:500}
 @media (prefers-reduced-motion:no-preference){.modal{animation:up .18s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.6}}}
 </style>
@@ -196,7 +203,7 @@ var SOINS=['Vaccin grippe','Vaccin tétanos','Vaccin rhinopneumonie','Vermifuge'
 var RACES=['Selle Français','Pur-sang','Trotteur Français','Anglo-Arabe','Arabe','Demi-sang arabe','KWPN','Hanovrien','Holsteiner','Oldenbourg','Zangersheide','BWP','Lusitanien','Pure Race Espagnole (PRE)','Frison','Quarter Horse','Appaloosa','Paint Horse','Camargue','Mérens','Barbe','Irish Cob','Fjord','Haflinger','Islandais','Cheval de trait','Connemara','Welsh','New Forest','Poney Français de Selle','Shetland','Origine non constatée (ONC)'];
 var FRAIS=['Vétérinaire','Ostéopathe','Maréchal','Dentiste','Entretien / soins','Tonte','Pharmacie','Fournitures','Autre'];
 var LIEUX_DEF=['Box 1','Box 2','Box 3','Box 4','Box 5','Box 6','Box 7','Box 8','Box 9','Box 10','Box 11','Box 12','Pré n°1','Pré n°2','Pré n°3','Pré n°4','Paddock 1','Paddock 2'];
-var TITLES={accueil:'Accueil',cheval:'Mon cheval',messages:'Messages',jour:"Aujourd'hui",chevaux:'Chevaux',cours:'Planning des cours',factures:'Factures',proprios:'Propriétaires'};
+var TITLES={compta:'Comptabilité',accueil:'Accueil',cheval:'Mon cheval',messages:'Messages',jour:"Aujourd'hui",chevaux:'Chevaux',cours:'Planning des cours',factures:'Factures',proprios:'Propriétaires'};
 var canSave=true;
 
 /* ---------- dates & formats ---------- */
@@ -218,8 +225,8 @@ function monthLabel(m){var s=toD(m+'-01').toLocaleDateString('fr-FR',{month:'lon
    Mode « en ligne » : base Supabase partagée entre le gérant et les clients (config.js renseigné). */
 var CFG=window.ECURIE_CONFIG||{};
 var CLOUD=!!(CFG.supabaseUrl&&CFG.supabaseKey);
-var COLS=['proprietaires','chevaux','cours','taches','factures','annonces','messages'];
-function emptyDb(){return{v:1,exemple:false,proprietaires:[],chevaux:[],cours:[],taches:[],factures:[],annonces:[],messages:[],annulHeures:24,
+var COLS=['proprietaires','chevaux','cours','taches','factures','annonces','messages','depenses'];
+function emptyDb(){return{v:1,exemple:false,proprietaires:[],chevaux:[],cours:[],taches:[],factures:[],annonces:[],messages:[],depenses:[],annulHeures:24,
   tarifs:{complete:0,pre:0,demi:0,collectif:0,particulier:0}}}
 function seed(){
   var t=today(),now=Date.now(),o=[{id:uid(),nom:'Claire Martin',tel:'06 00 00 00 01',email:'claire@exemple.fr',licence:'',rcFin:addDays(t,120),adresse:'4 rue des Lilas\n61000 Alençon'},
@@ -330,7 +337,7 @@ async function afterLogin(s){
   authState='ok';fixTab();renderNav();render();
   await loadAll();
 }
-var loading=false;
+var loading=false,cloudLoaded=false;
 async function loadAll(){
   if(mode!=='cloud'||authState!=='ok'||loading)return;loading=true;
   var kinds=(isG()?COLS:['proprietaires','chevaux','cours','factures','annonces','messages']).concat(['config']);
@@ -347,7 +354,7 @@ async function loadAll(){
       if(k==='messages')o.proprietaireId=row.proprietaire_id;
       if(k==='chevaux'||k==='factures')o.proprietaireId=o.proprietaireId||row.proprietaire_id;
       return o})});
-  loadErr=err;db=nd;normalize();loading=false;
+  loadErr=err;db=nd;normalize();loading=false;if(!err)cloudLoaded=true;
   try{localStorage.setItem(cacheKey(),JSON.stringify({me:me,db:db}))}catch(e){}
   refresh();
 }
@@ -386,7 +393,7 @@ async function doAuth(id){
     if(id==='fnewpass'){var r3=await sb.auth.updateUser({password:document.getElementById('np-pass').value});if(r3.error)throw r3.error;authView='login';toast('Mot de passe modifié');var s2=(await sb.auth.getSession()).data.session;if(s2)await afterLogin(s2);else render();return}
   }catch(e){authMsg=frErr(e);render()}
 }
-var TABS_G=['jour','chevaux','cours','factures','proprios'],TABS_C=['accueil','cours','cheval','factures','messages'];
+var TABS_G=['jour','chevaux','cours','factures','compta','proprios'],TABS_C=['accueil','cours','cheval','factures','messages'];
 function fixTab(){var ok=isG()?TABS_G.concat(['messages']):TABS_C;if(ok.indexOf(S.tab)<0)S.tab=ok[0]}
 /* ---------- justificatifs (photos, PDF) : base IndexedDB de l'appareil ---------- */
 var IDBP=null;
@@ -407,7 +414,7 @@ function prepFile(file){
     im.onerror=function(){URL.revokeObjectURL(u);res({blob:file,nom:file.name||'fichier',type:file.type})};im.src=u});
   return Promise.resolve({blob:file,nom:file.name||'document.pdf',type:file.type||'application/pdf'});
 }
-function referencedPieces(){var r={};db.chevaux.forEach(function(c){(c.frais||[]).forEach(function(f){if(f.pieceId)r[f.pieceId]=1})});db.factures.forEach(function(f){(f.lignes||[]).forEach(function(l){if(l.pieceId)r[l.pieceId]=1})});
+function referencedPieces(){var r={};(db.depenses||[]).forEach(function(d){if(d.pieceId)r[d.pieceId]=1});db.chevaux.forEach(function(c){(c.frais||[]).forEach(function(f){if(f.pieceId)r[f.pieceId]=1})});db.factures.forEach(function(f){(f.lignes||[]).forEach(function(l){if(l.pieceId)r[l.pieceId]=1})});
   if(M&&M.draft&&Array.isArray(M.draft.frais))M.draft.frais.forEach(function(f){if(f.pieceId)r[f.pieceId]=1});return r}
 function cleanupPieces(){if(mode==='cloud')return;if(M&&M.kind==='chevaux'){setTimeout(cleanupPieces,5000);return}pieceKeys().then(function(keys){var r=referencedPieces();(keys||[]).forEach(function(k){if(!r[k])pieceDel(k)})}).catch(function(){})}
 var viewUrl=null;
@@ -424,7 +431,7 @@ function showPiece(id){
 function closeViewer(){document.getElementById('viewer').hidden=true;if(viewUrl){var u=viewUrl;setTimeout(function(){URL.revokeObjectURL(u)},60000);viewUrl=null}}
 function blobToData(b){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result)};r.onerror=function(){rej(r.error)};r.readAsDataURL(b)})}
 function addPieceTo(fr,file){
-  return prepFile(file).then(function(p){var id=mode==='cloud'?((M&&M.draft&&M.draft.proprietaireId)||'divers')+'/pc-'+uid():'pc-'+uid();return piecePut(id,p).then(function(){fr.pieceId=id;fr.pieceNom=p.nom;fr.pieceType=p.type})});
+  return prepFile(file).then(function(p){var id=mode==='cloud'?((M&&M.kind==='depenses')?'depenses':((M&&M.draft&&M.draft.proprietaireId)||'divers'))+'/pc-'+uid():'pc-'+uid();return piecePut(id,p).then(function(){fr.pieceId=id;fr.pieceNom=p.nom;fr.pieceType=p.type})});
 }
 function pieceErr(e){toast(e&&e.message==='trop lourd'?'Fichier trop lourd (15 Mo maximum).':'Impossible d\'enregistrer le justificatif sur cet appareil.')}
 
@@ -470,9 +477,10 @@ function vJour(){
   if(loadErr)h+='<div class="alert late"><div class="x">Une partie des données n\'a pas pu être chargée. Rechargez la page.</div></div>';
   var lp=localPending();
   if(lp)h+='<div class="banner"><div class="x">Des fiches saisies auparavant dans ce navigateur ne sont pas encore dans la base.</div><button class="btn sm primary" data-act="migrate">Les transférer</button><button class="btn sm" data-act="migrate-skip">Ignorer</button></div>';
+  autoPrepare();var imp=impayes();if(imp.length)h+='<div class="alert late"><div class="x"><b>'+imp.length+' facture'+(imp.length>1?'s':'')+' impayée'+(imp.length>1?'s':'')+'</b> après échéance · '+money(imp.reduce(function(s,f){return s+f.total},0))+'</div><button class="btn sm" data-act="goto-impayes">Voir</button></div>';
   var fm=factMonthTarget();
   if(fm&&db.proprietaires.length){var fl=db.factures.filter(function(f){return f.mois===fm}),ns=fl.filter(function(f){return !f.envoyeeLe}).length;
-    if(!fl.length||ns)h+='<div class="banner"><div class="x"><b>Factures de '+monthLabel(fm).toLowerCase()+'</b><br>'+(fl.length?ns+' à envoyer aux propriétaires.':'À préparer et envoyer aux propriétaires.')+'</div><button class="btn sm primary" data-act="goto-fact" data-id="'+fm+'">'+(fl.length?'Envoyer':'Préparer')+'</button></div>'}
+    if(!fl.length||ns)h+='<div class="banner"><div class="x"><b>Factures de '+monthLabel(fm).toLowerCase()+'</b><br>'+(fl.length?ns+' à vérifier et envoyer aux propriétaires.':'À préparer et envoyer aux propriétaires.')+'</div><button class="btn sm primary" data-act="goto-fact" data-id="'+fm+'">'+(fl.length?'Envoyer':'Préparer')+'</button></div>'}
   if(db.exemple)h+='<div class="banner"><div class="x">Ces fiches sont des <b>exemples</b> pour découvrir l\'appli.</div>'+
     (S.confirmClear?'<button class="btn sm danger" data-act="clear-ok">Confirmer : tout effacer</button><button class="btn sm" data-act="clear-no">Annuler</button>'
     :'<button class="btn sm" data-act="clear">Effacer les exemples</button>')+'</div>';
@@ -517,15 +525,17 @@ function vCours(){
   return h+'</section>';
 }
 function vFactures(){
-  var l=db.factures.filter(function(f){return f.mois===S.mois}),tot=0,paid=0,wait=0;
+  var l=db.factures.filter(function(f){return f.mois===S.mois}),tot=0,paid=0,wait=0;autoPrepare();
   l.forEach(function(f){tot+=f.total;f.statut==='payee'?paid++:wait++});var toSend=l.filter(function(f){return !f.envoyeeLe}).length;
   var h='<div class="field"><label for="fmois">Mois</label><input type="month" id="fmois" value="'+S.mois+'"></div>';
   h+='<div class="hero"><div class="sub" style="color:inherit;opacity:.8">'+monthLabel(S.mois)+'</div><div class="big">'+money(tot)+'</div><div class="row"><div><b>'+paid+'</b>payée'+(paid>1?'s':'')+'</div><div><b>'+wait+'</b>non payée'+(wait>1?'s':'')+'</div><div><b>'+toSend+'</b>à envoyer</div></div>'+
     '<button class="btn block" data-act="gen" style="color:var(--fg)">'+(l.length?'Mettre à jour':'Générer')+' les factures du mois</button></div>';
   h+='<section><div class="sh"><h2>Détail</h2><button class="btn sm" data-act="settings">Tarifs</button></div>';
   h+=l.length?'<div class="panel items">'+l.sort(function(a,b){var x=owner(a.proprietaireId),y=owner(b.proprietaireId);return(x?x.nom:'').localeCompare(y?y.nom:'')}).map(function(f){var o=owner(f.proprietaireId);
-    return '<button class="item" data-act="fact" data-id="'+f.id+'"><span class="avatar">'+esc(initials(o?o.nom:'?'))+'</span><span class="x"><b>'+esc(o?o.nom:'Propriétaire supprimé')+'</b><span>'+f.lignes.length+' ligne'+(f.lignes.length>1?'s':'')+'</span></span><span class="end"><b>'+money(f.total)+'</b><br>'+(f.statut==='payee'?'<span class="pill">Payée</span>':f.envoyeeLe?'<span class="pill muted">Envoyée</span>':'<span class="pill warn">À envoyer</span>')+'</span></button>'}).join('')+'</div>'
+    return '<button class="item" data-act="fact" data-id="'+f.id+'"><span class="avatar">'+esc(initials(o?o.nom:'?'))+'</span><span class="x"><b>'+esc(o?o.nom:'Propriétaire supprimé')+(isAvoir(f)?' · avoir':'')+'</b><span>'+esc(f.numero||'')+' · '+f.lignes.length+' ligne'+(f.lignes.length>1?'s':'')+'</span></span><span class="end"><b>'+money(f.total)+'</b><br>'+(f.statut==='payee'?'<span class="pill">Payée</span>':f.envoyeeLe?'<span class="pill muted">Envoyée</span>':'<span class="pill warn">À envoyer</span>')+'</span></button>'}).join('')+'</div>'
     :'<div class="panel empty">Aucune facture pour ce mois. « Générer » calcule les pensions et les cours de chaque propriétaire.</div>';
+  var imp=impayes();if(imp.length)h+='<section id="impayes"><div class="sh"><h2>Impayés</h2><span class="sub">'+money(imp.reduce(function(s,f){return s+f.total},0))+'</span></div><div class="panel items">'+imp.map(function(f){var o=owner(f.proprietaireId);return '<button class="item" data-act="fact" data-id="'+f.id+'"><span class="x"><b>'+esc(o?o.nom:'?')+'</b><span>'+esc(f.numero)+' · '+monthLabel(f.mois)+((f.relances||[]).length?' · relancée '+f.relances.length+' fois':'')+'</span></span><span class="end"><b>'+money(f.total)+'</b><br><span class="pill late">'+diff(today(),f.echeance)+' j de retard</span></span></button>'}).join('')+'</div></section>';
+  if(!['complete','pre','demi','collectif','particulier'].some(function(k){return +db.tarifs[k]>0}))h+='<div class="alert late"><div class="x">Vos tarifs sont à 0 € : renseignez-les dans <b>Réglages</b> avant de générer les factures.</div><button class="btn sm" data-act="settings">Tarifs</button></div>';
   if(!db.ecurie.nom)h+='<div class="alert"><div class="x">Renseignez le nom, l\'adresse et le SIRET de l\'écurie dans <b>Réglages</b> : ils apparaissent en en-tête des factures.</div></div>';
   return h+'<p class="sub" style="margin:0">Touchez une facture pour l\'envoyer en PDF au propriétaire. Les factures déjà envoyées ou payées ne sont pas recalculées.</p></section>';
 }
@@ -538,7 +548,7 @@ function vProprios(){
 }
 /* ---------- espace client ---------- */
 function myHorses(){return db.chevaux.filter(function(c){return c.proprietaireId===me.prop})}
-function myFactures(){return db.factures.filter(function(f){return f.proprietaireId===me.prop&&(f.envoyeeLe||f.statut==='payee')}).sort(function(a,b){return b.mois.localeCompare(a.mois)})}
+function myFactures(){return db.factures.filter(function(f){return f.proprietaireId===me.prop&&(f.envoyeeLe||f.statut==='payee')}).sort(function(a,b){return (b.mois+(b.numero||'')).localeCompare(a.mois+(a.numero||''))})}
 function unreadFor(pid){return db.messages.filter(function(m){return m.proprietaireId===pid&&!m.lu&&m.de===(isG()?'client':'gerant')}).length}
 function unreadTotal(){return isG()?db.messages.filter(function(m){return !m.lu&&m.de==='client'}).length:unreadFor(me.prop)}
 function coursStart(c){return new Date(c.date+'T'+(c.heure||'00:00')+':00')}
@@ -566,7 +576,7 @@ function cAccueil(){
   var hs=myHorses();
   if(hs.length){h+='<section><div class="sh"><h2>'+(hs.length>1?'Mes chevaux':'Mon cheval')+'</h2></div><div class="panel items">'+hs.map(function(c){
     return '<button class="item" data-act="tab" data-id="cheval"><span class="avatar">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>'+esc([c.box,PENSIONS[c.pension]].filter(Boolean).join(' · '))+'</span></span><span class="end">'+nextSoin(c)+'</span></button>'}).join('')+'</div></section>'}
-  var fa=myFactures().filter(function(f){return f.statut!=='payee'})[0];
+  var fa=myFactures().filter(function(f){return f.statut!=='payee'&&!isAvoir(f)})[0];
   if(fa)h+='<section><div class="sh"><h2>Facture à régler</h2></div><button class="item panel" data-act="fact" data-id="'+fa.id+'"><span class="x"><b>'+esc(monthLabel(fa.mois))+'</b><span>À régler avant le '+fdl(fa.echeance)+'</span></span><span class="end"><b>'+money(fa.total)+'</b></span></button></section>';
   var an=db.annonces.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))}).slice(0,5);
   h+='<section><div class="sh"><h2>Annonces de l\'écurie</h2></div>'+(an.length?an.map(annonceCard).join(''):'<div class="panel empty">Aucune annonce pour le moment.</div>')+'</section>';
@@ -618,7 +628,7 @@ function cCheval(){
 function cFactures(){
   var l=myFactures(),h=demoBanner();
   if(!l.length)return h+'<div class="panel empty">Aucune facture pour le moment. Elles apparaissent ici dès que l\'écurie les envoie.</div>';
-  return h+'<div class="panel items">'+l.map(function(f){return '<button class="item" data-act="fact" data-id="'+f.id+'"><span class="x"><b>'+esc(monthLabel(f.mois))+'</b><span>N° '+esc(f.numero||'')+(f.statut==='payee'?'':' · avant le '+fdl(f.echeance))+'</span></span><span class="end"><b>'+money(f.total)+'</b><br>'+(f.statut==='payee'?'<span class="pill">Payée</span>':'<span class="pill warn">À régler</span>')+'</span></button>'}).join('')+'</div>';
+  return h+'<div class="panel items">'+l.map(function(f){return '<button class="item" data-act="fact" data-id="'+f.id+'"><span class="x"><b>'+esc((isAvoir(f)?'Avoir · ':'')+monthLabel(f.mois))+'</b><span>N° '+esc(f.numero||'')+(f.statut==='payee'||isAvoir(f)?'':' · avant le '+fdl(f.echeance))+'</span></span><span class="end"><b>'+money(f.total)+'</b><br>'+(f.statut==='payee'?'<span class="pill">'+(isAvoir(f)?'Remboursé':'Payée')+'</span>':isAvoir(f)?'<span class="pill muted">Avoir</span>':'<span class="pill warn">À régler</span>')+'</span></button>'}).join('')+'</div>';
 }
 function thread(pid){
   var l=db.messages.filter(function(m){return m.proprietaireId===pid}).sort(function(a,b){return String(a.date).localeCompare(String(b.date))}),meSide=isG()?'gerant':'client';
@@ -677,18 +687,19 @@ function appUrl(){return location.origin+location.pathname}
 function inviteText(p){return 'Bonjour '+firstName(p.nom)+',\n\nVoici votre accès à l\'espace client de '+(db.ecurie.nom||'l\'écurie')+' : réservation des cours, suivi de votre cheval, factures et messages.\n\n1. Ouvrez '+appUrl()+'\n2. Touchez « Première connexion : créer mon compte »\n3. Saisissez votre e-mail, un mot de passe et ce code d\'activation : '+p._code+'\n\nÀ bientôt !'}
 function copyText(t,okMsg){var p=navigator.clipboard&&navigator.clipboard.writeText(t);if(p)p.then(function(){toast(okMsg)},function(){toast('Copie impossible : sélectionnez le texte affiché')});else toast('Copie impossible : sélectionnez le texte affiché')}
 
-var VIEWS_G={jour:vJour,chevaux:vChevaux,cours:vCours,factures:vFactures,proprios:vProprios,messages:vMessagesG};
+var VIEWS_G={compta:vCompta,jour:vJour,chevaux:vChevaux,cours:vCours,factures:vFactures,proprios:vProprios,messages:vMessagesG};
 var VIEWS_C={accueil:cAccueil,cours:cCours,cheval:cCheval,factures:cFactures,messages:cMessages};
 function titleFor(){if(authState!=='ok')return 'Connexion';if(!isG()){if(S.tab==='cours')return 'Réserver un cours';if(S.tab==='factures')return 'Mes factures';if(S.tab==='cheval'&&myHorses().length>1)return 'Mes chevaux'}return TITLES[S.tab]||''}
 var ICONS={sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   doc:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
   eur:'<path d="M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9"/>',people:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>',
+  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
   home:'<path d="M3 11l9-7 9 7v9H3z"/><path d="M10 20v-5h4v5"/>',chat:'<path d="M4 5h16v11H8l-4 4z"/>'};
 function renderNav(){
   var nav=document.querySelector('nav.tabs'),inn=nav.querySelector('.in'),ok=authState==='ok';
   nav.hidden=!ok;document.getElementById('hset').hidden=!ok;document.getElementById('hmsg').hidden=!(ok&&isG());
   if(!ok)return;
-  var items=isG()?[['jour',"Aujourd'hui",'sun'],['chevaux','Chevaux','doc'],['cours','Cours','cal'],['factures','Factures','eur'],['proprios','Propriétaires','people']]
+  var items=isG()?[['jour',"Aujourd'hui",'sun'],['chevaux','Chevaux','doc'],['cours','Cours','cal'],['factures','Factures','eur'],['compta','Compta','chart'],['proprios','Clients','people']]
     :[['accueil','Accueil','home'],['cours','Cours','cal'],['cheval',myHorses().length>1?'Chevaux':'Mon cheval','doc'],['factures','Factures','eur'],['messages','Messages','chat']];
   inn.innerHTML=items.map(function(x){return '<button data-act="tab" data-id="'+x[0]+'"'+(S.tab===x[0]?' aria-current="page"':'')+'><span style="position:relative;display:inline-flex"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[x[2]]+'</svg>'+(x[0]==='messages'?'<span class="nbadge" id="nav-msg-badge" hidden></span>':'')+'</span><span>'+x[1]+'</span></button>'}).join('');
   updateBadge();
@@ -734,6 +745,7 @@ function horseModal(id){
     var h=head(d.id?d.nom:'Nouveau cheval')+'<form class="form" id="fhorse">';
     h+=fld('h-nom','Nom',d.nom,'text',' required')+'<div class="grid2">'+selOther('h-race','Race',RACES,d.race,M.oRace)+sel('h-sexe','Sexe',[['Jument','Jument'],['Hongre','Hongre'],['Étalon','Étalon']],d.sexe)+fld('h-age','Âge (ans)',d.age,'number',' min="0" inputmode="numeric"')+
       selOther('h-box','Box ou pré',db.lieux,d.box,M.oBox,function(x){var o=db.chevaux.filter(function(k){return k.box===x&&k.id!==d.id}).map(function(k){return k.nom});return x+(o.length?' · '+o.join(', '):'')})+'</div>';
+    h+='<div class="grid2">'+fld('h-arr','Arrivée à l\'écurie',d.arrivee||'','date')+fld('h-dep','Départ (si prévu)',d.depart||'','date')+'</div><p class="sub" style="margin:0">La pension est facturée au prorata le mois de l\'arrivée et du départ.</p>';
     h+=sel('h-pension','Type de pension',Object.keys(PENSIONS).map(function(k){return[k,PENSIONS[k]+' · '+money(db.tarifs[k])]}),d.pension);
     h+=db.proprietaires.length?sel('h-prop','Propriétaire',db.proprietaires.map(function(p){return[p.id,p.nom]}),d.proprietaireId):'<p class="warnline">Ajoutez d\'abord un propriétaire dans l\'onglet Propriétaires.</p>';
     h+='<div class="field"><label for="h-ration">Ration</label><textarea id="h-ration">'+esc(d.ration)+'</textarea></div><div class="field"><label for="h-cons">Consignes et soins particuliers</label><textarea id="h-cons">'+esc(d.consignes)+'</textarea></div>';
@@ -764,7 +776,7 @@ function selOther(id,label,list,val,other,lab){
   return '<div class="field"><label for="'+id+'">'+label+'</label><select id="'+id+'">'+opts+'</select>'+(show?'<input id="'+id+'-autre" aria-label="'+label+' (préciser)" placeholder="Précisez" value="'+esc(known?'':val)+'">':'')+'</div>';
 }
 function readOther(id){var s=v(id);return s==='__autre'?v(id+'-autre'):s}
-function readHorse(){var d=M.draft;d.nom=v('h-nom');d.race=readOther('h-race');d.sexe=v('h-sexe');d.age=v('h-age');d.box=readOther('h-box');d.pension=v('h-pension')||d.pension;d.proprietaireId=v('h-prop')||d.proprietaireId;d.ration=v('h-ration');d.consignes=v('h-cons')}
+function readHorse(){var d=M.draft;d.arrivee=v('h-arr');d.depart=v('h-dep');d.nom=v('h-nom');d.race=readOther('h-race');d.sexe=v('h-sexe');d.age=v('h-age');d.box=readOther('h-box');d.pension=v('h-pension')||d.pension;d.proprietaireId=v('h-prop')||d.proprietaireId;d.ration=v('h-ration');d.consignes=v('h-cons')}
 
 function ownerModal(id){
   var p=id?JSON.parse(JSON.stringify(owner(id))):{id:null,nom:'',tel:'',email:'',licence:'',rcFin:''};
@@ -815,7 +827,7 @@ function factModal(id){
   M={kind:'factures',draft:f,read:function(){},render:function(){
     var o=owner(f.proprietaireId),g=isG();
     if(g)ensureNumero(f);
-    var h=head(g?'Facture · '+(o?o.nom:'?'):'Facture '+monthLabel(f.mois).toLowerCase())+'<div class="sub">'+monthLabel(f.mois)+' · N° '+esc(f.numero||'')+' · à régler avant le '+fdl(f.echeance)+'</div><table class="lines"><tbody>'+f.lignes.map(function(l){return '<tr><td>'+esc(l.label)+(l.pieceId?'<br><button class="btn sm" style="margin-top:6px" data-act="piece-voir" data-id="'+esc(l.pieceId)+'">Voir le justificatif</button>':'')+'</td><td>'+money(l.montant)+'</td></tr>'}).join('')+'<tr class="tot"><td>Total</td><td>'+money(f.total)+'</td></tr></tbody></table>';
+    var h=head(g?(isAvoir(f)?'Avoir · ':'Facture · ')+(o?o.nom:'?'):(isAvoir(f)?'Avoir ':'Facture ')+monthLabel(f.mois).toLowerCase())+'<div class="sub">'+monthLabel(f.mois)+' · N° '+esc(f.numero||'')+' · à régler avant le '+fdl(f.echeance)+'</div><table class="lines"><tbody>'+f.lignes.map(function(l){return '<tr><td>'+esc(l.label)+(l.pieceId?'<br><button class="btn sm" style="margin-top:6px" data-act="piece-voir" data-id="'+esc(l.pieceId)+'">Voir le justificatif</button>':'')+'</td><td>'+money(l.montant)+'</td></tr>'}).join('')+'<tr class="tot"><td>Total</td><td>'+money(f.total)+'</td></tr></tbody></table>';
     if(!g){var e=db.ecurie;
       h+='<div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:10px">'+(f.statut==='payee'?'<div><span class="pill">Payée</span></div>':'<div><span class="pill warn">À régler</span> avant le '+fdl(f.echeance)+'</div>'+(e.iban?'<div class="sub">Par virement : IBAN '+esc(e.iban)+(e.bic?' · BIC '+esc(e.bic):'')+'</div>':''))+
         '<button class="btn primary block" data-act="fact-pdf">Télécharger la facture (PDF)</button></div>';
@@ -829,7 +841,13 @@ function factModal(id){
     if(M.sendHelp)h+='<div class="banner" style="flex-direction:column;align-items:stretch"><div>Le PDF <b>'+esc(pdfName(f))+'</b> a été téléchargé. Ouvrez votre messagerie, joignez-le au message prérempli, puis revenez confirmer l\'envoi.</div>'+
       (em?'':'<div class="warnline">Aucune adresse e-mail pour ce propriétaire : ajoutez-la dans sa fiche.</div>')+
       '<div class="actions"><a class="btn grow" href="'+esc(mailtoFor(f))+'">Ouvrir l\'e-mail</a><button class="btn primary grow" data-act="fact-sent">C\'est envoyé</button></div></div>';
-    h+=f.statut==='payee'?'<button class="btn block" data-act="fact-st">Marquer comme non payée</button>':'<button class="btn block" data-act="fact-st">Marquer comme payée</button>';
+    if(isAvoir(f)){var orig=db.factures.find(function(x){return x.id===f.factureId});h+='<div class="banner"><div class="x">Avoir sur la facture <b>'+esc(orig?orig.numero:'')+'</b>'+(f.motif?' · '+esc(f.motif):'')+'</div>'+(orig?'<button class="btn sm" data-act="fact" data-id="'+orig.id+'">Voir la facture</button>':'')+'</div>'}
+    var avs=db.factures.filter(function(x){return x.factureId===f.id});if(avs.length)h+='<div class="sub">Avoir'+(avs.length>1?'s':'')+' : '+avs.map(function(a){return '<button class="btn sm" data-act="fact" data-id="'+a.id+'">'+esc(a.numero)+' ('+money(a.total)+')</button>'}).join(' ')+'</div>';
+    if(f.statut==='payee')h+='<div class="panel" style="padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="pill">'+(isAvoir(f)?'Remboursé':'Payée')+'</span><span class="x sub" style="flex:1">'+(f.payeLe?'le '+fdl(f.payeLe):'')+(f.modePaiement?' · '+esc(f.modePaiement):'')+'</span><button class="btn sm" data-act="fact-st">Annuler le paiement</button></div>';
+    else h+='<button class="btn block" data-act="fact-pay">'+(isAvoir(f)?'Enregistrer le remboursement':'Enregistrer le paiement')+'</button>';
+    if(!isAvoir(f)&&f.envoyeeLe&&f.statut!=='payee'&&f.echeance<today())h+='<div class="alert late" style="flex-wrap:wrap"><div class="x">En retard de '+diff(today(),f.echeance)+' j'+((f.relances||[]).length?' · relancée '+f.relances.length+' fois, dernière le '+fdate(f.relances[f.relances.length-1]):'')+'</div><button class="btn sm" data-act="fact-relance">Relancer</button></div>';
+    if(M.relHelp)h+='<div class="banner" style="flex-direction:column;align-items:stretch"><div>Le PDF a été téléchargé. Envoyez la relance par e-mail avec la facture jointe, puis confirmez.</div><div class="actions"><a class="btn grow" href="'+esc(mailtoRelance(f))+'">Ouvrir l\'e-mail</a><button class="btn primary grow" data-act="relance-ok">Relance envoyée</button></div></div>';
+    if(!isAvoir(f)&&f.envoyeeLe)h+='<button class="btn block" data-act="fact-avoir">Créer un avoir</button>';
     mb(h+(f.envoyeeLe?'<p class="sub" style="margin:0">Une facture envoyée ne peut plus être supprimée ni recalculée.</p>':delBar('Supprimer cette facture')));
   }};
   openModal();
@@ -850,6 +868,8 @@ function settingsModal(){
       ('<div id="e-tvabox" class="form"'+(tv?'':' hidden')+'><div class="grid2">'+fld('e-tvanum','N° de TVA intracommunautaire',e.tvaNum)+fld('e-tp','Taux pension (%)',e.tauxPension,'number',' min="0" step="0.1"')+fld('e-tc','Taux cours (%)',e.tauxCours,'number',' min="0" step="0.1"')+fld('e-tf','Taux frais refacturés (%)',e.tauxFrais,'number',' min="0" step="0.1"')+'</div><p class="sub" style="margin:0">Les taux applicables dépendent de votre situation : faites-les valider par votre comptable.</p></div>')+
       '<div class="grid2">'+fld('e-iban','IBAN (paiement par virement)',e.iban)+fld('e-bic','BIC',e.bic)+'</div>'+
       '<div class="field"><label for="e-mention">Mention en bas de facture (facultatif)</label><textarea id="e-mention">'+esc(e.mention)+'</textarea></div>'+
+      '<label class="checks" style="border:0"><span style="display:flex;gap:10px;align-items:center;font-weight:500;color:var(--fg)"><input type="checkbox" id="e-auto"'+(e.autoPrep!==false?' checked':'')+'>Préparer automatiquement les factures du mois en brouillon (à partir du 25)</span></label>'+
+      '<div class="field"><label for="e-rel">Message de relance</label><textarea id="e-rel" style="min-height:110px">'+esc(e.messageRelance||RELANCE_DEF)+'</textarea></div>'+
       '<div class="field"><label for="e-msg">Message d\'envoi</label><textarea id="e-msg" style="min-height:130px">'+esc(e.message)+'</textarea><span class="sub">Mots remplacés automatiquement : {prenom} {mois} {numero} {montant} {echeance} {ecurie}</span></div>'+
       '<button class="btn primary" type="submit">Enregistrer mon écurie</button></form>';
     h+='<form class="form" id="ftarifs"><span class="lbl">Tarifs mensuels et par cours (€)</span><div class="grid2">'+
@@ -868,14 +888,16 @@ function settingsModal(){
 }
 
 /* ---------- factures ---------- */
-function generate(){
-  if(readOnly){toast('Accès en lecture seule.');return}
-  var m=S.mois,n=0,kept=0,puts=[],drops=[];
+function generate(mois,silent){
+  if(readOnly){toast('Accès en lecture seule.');return 0}
+  var m=typeof mois==='string'?mois:S.mois,n=0,kept=0,puts=[],drops=[];
   db.proprietaires.forEach(function(p){
-    var ex=db.factures.find(function(f){return f.mois===m&&f.proprietaireId===p.id});
+    var ex=db.factures.find(function(f){return f.mois===m&&f.proprietaireId===p.id&&!isAvoir(f)});
     if(ex&&(ex.statut==='payee'||ex.envoyeeLe)){kept++;return}
     var lignes=[];
-    db.chevaux.filter(function(c){return c.proprietaireId===p.id}).forEach(function(c){lignes.push({label:PENSIONS[c.pension]+' — '+c.nom+' ('+monthLabel(m).toLowerCase()+')',montant:+db.tarifs[c.pension]||0,cat:'pension'})});
+    db.chevaux.filter(function(c){return c.proprietaireId===p.id}).forEach(function(c){var pr=presence(c,m);if(!pr.jours)return;var t=+db.tarifs[c.pension]||0;
+      if(pr.jours<pr.dim)lignes.push({label:PENSIONS[c.pension]+' — '+c.nom+' ('+monthLabel(m).toLowerCase()+', prorata '+pr.jours+'/'+pr.dim+' j)',montant:r2(t*pr.jours/pr.dim),cat:'pension'});
+      else lignes.push({label:PENSIONS[c.pension]+' — '+c.nom+' ('+monthLabel(m).toLowerCase()+')',montant:t,cat:'pension'})});
     db.cours.filter(function(c){return c.date.slice(0,7)===m&&c.inscrits.indexOf(p.id)>-1}).sort(byTime).forEach(function(c){lignes.push({label:(c.type==='particulier'?'Cours particulier':'Cours')+' du '+fdate(c.date)+' — '+c.titre,montant:+c.prix||0,cat:'cours'})});
     db.chevaux.filter(function(c){return c.proprietaireId===p.id}).forEach(function(c){
       var ex2=(c.soins||[]).filter(function(s){return +s.montant>0&&s.date.slice(0,7)===m}).map(function(s){return{date:s.date,label:s.type,montant:+s.montant}})
@@ -883,14 +905,15 @@ function generate(){
       ex2.sort(function(a,b){return a.date.localeCompare(b.date)}).forEach(function(x){var l={label:x.label+' — '+c.nom+', '+fdate(x.date),montant:x.montant,cat:'frais'};if(x.pieceId)l.pieceId=x.pieceId;lignes.push(l)});
     });
     if(!lignes.length){if(ex){db.factures.splice(db.factures.indexOf(ex),1);drops.push(ex.id)}return}
-    var tot=lignes.reduce(function(s,l){return s+l.montant},0),f;
+    var tot=r2(lignes.reduce(function(s,l){return s+l.montant},0)),f;
     if(ex){ex.lignes=lignes;ex.total=tot;f=ex}else{f={id:uid(),mois:m,proprietaireId:p.id,lignes:lignes,total:tot,statut:'attente'};db.factures.push(f)}
     f.dateEmission=today();f.echeance=addDays(f.dateEmission,+db.ecurie.delai||10);ensureNumero(f);
     puts.push(f);n++;
   });
   saveLocal();
   (async function(){for(var i=0;i<puts.length;i++)await put('factures',puts[i]);for(i=0;i<drops.length;i++)await drop('factures',drops[i])})();
-  render();toast(n+' facture'+(n>1?'s':'')+' calculée'+(n>1?'s':'')+(kept?' · '+kept+' déjà envoyée'+(kept>1?'s':'')+' ou payée'+(kept>1?'s':'')+', non modifiée'+(kept>1?'s':''):''));
+  if(!silent){render();toast(n+' facture'+(n>1?'s':'')+' calculée'+(n>1?'s':'')+(kept?' · '+kept+' déjà envoyée'+(kept>1?'s':'')+' ou payée'+(kept>1?'s':'')+', non modifiée'+(kept>1?'s':''):''))}
+  return n;
 }
 
 var PDFW={H:[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,761,556,0,222,556,333,1000,556,556,333,1000,667,333,1000,0,611,0,0,222,222,333,333,350,556,1000,333,1000,500,333,944,0,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500],HB:[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,761,556,0,278,556,500,1000,556,556,333,1000,667,333,1000,0,611,0,0,278,278,500,500,350,556,1000,333,1000,556,333,944,0,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556]};
@@ -931,7 +954,7 @@ PDFDoc.prototype.blob=function(){
 };
 
 /* ---------- factures : numéro, TVA, PDF, envoi ---------- */
-var ECURIE_DEF={nom:'Élevage d\'ALB',adresse:'',siret:'',tel:'',email:'',tvaRegime:'franchise',tvaNum:'',tauxPension:20,tauxCours:20,tauxFrais:20,iban:'',bic:'',delai:10,mention:'',
+var ECURIE_DEF={autoPrep:true,messageRelance:'',nom:'Élevage d\'ALB',adresse:'',siret:'',tel:'',email:'',tvaRegime:'franchise',tvaNum:'',tauxPension:20,tauxCours:20,tauxFrais:20,iban:'',bic:'',delai:10,mention:'',
   message:'Bonjour {prenom},\n\nVeuillez trouver ci-joint votre facture de {mois} (n° {numero}) d\'un montant de {montant}, à régler avant le {echeance}.\n\nMerci et à bientôt à l\'écurie,\n{ecurie}'};
 function lineCat(l){if(l.cat)return l.cat;if(/^Cours/.test(l.label))return 'cours';if(Object.keys(PENSIONS).some(function(k){return l.label.indexOf(PENSIONS[k])===0}))return 'pension';return 'frais'}
 function ensureNumero(f){
@@ -954,10 +977,10 @@ function buildPdf(f){
   d.text(15,y,e.nom||'[Nom de l\'écurie]',{size:15,bold:true,color:G});y+=6;
   d.wrap(e.adresse,85,9.5).forEach(function(l){if(l){d.text(15,y,l,{size:9.5});y+=4.4}});
   [e.siret?'SIRET : '+e.siret:'',tva&&e.tvaNum?'N° TVA : '+e.tvaNum:'',e.tel?'Tél. : '+e.tel:'',e.email||''].forEach(function(l){if(l){d.text(15,y,l,{size:9.5,color:MU});y+=4.4}});
-  d.text(195,21,'FACTURE',{size:22,bold:true,align:'right',color:G});
+  d.text(195,21,isAvoir(f)?'AVOIR':'FACTURE',{size:22,bold:true,align:'right',color:G});
   d.text(195,29,'N° '+f.numero,{size:10.5,bold:true,align:'right'});
   d.text(195,34.5,'Date : '+fdl(f.dateEmission),{size:9.5,align:'right'});
-  d.text(195,39.5,'À régler avant le : '+fdl(f.echeance),{size:9.5,align:'right'});
+  if(isAvoir(f)){var of=db.factures.find(function(x){return x.id===f.factureId});d.text(195,39.5,'Sur facture n° '+(of?of.numero:''),{size:9.5,align:'right'})}else d.text(195,39.5,'À régler avant le : '+fdl(f.echeance),{size:9.5,align:'right'});
   var cy=Math.max(y,46)+4,cl=d.wrap(o.adresse||'',76,9.5).filter(Boolean),ch=14+cl.length*4.4+(o.email?4.4:0);
   d.rect(110,cy,85,ch,[244,245,242]);
   d.text(115,cy+6,'FACTURÉ À',{size:8,bold:true,color:MU});d.text(115,cy+11.5,o.nom,{size:11,bold:true});
@@ -982,19 +1005,21 @@ function buildPdf(f){
   var s=tvaSummary(f);y+=6;if(y>240){d.addPage();y=24}
   function tot(lbl,val,b){d.text(160,y,lbl,{size:b?11:9.5,bold:b,align:'right',color:b?[28,36,32]:MU});d.text(192,y,val,{size:b?11:9.5,bold:b,align:'right'});y+=b?7:5}
   if(tva){tot('Total HT',money(s.ht));s.parts.forEach(function(p){tot('TVA '+String(p.taux).replace('.',',')+' %',money(p.tva))});tot('Total TTC',money(s.ttc))}
-  y+=1;d.rect(120,y-5,75,9,G);d.text(124,y+1,'Net à payer',{size:11,bold:true,color:[255,255,255]});d.text(192,y+1,money(s.ttc),{size:11,bold:true,align:'right',color:[255,255,255]});y+=14;
+  y+=1;d.rect(120,y-5,75,9,G);d.text(124,y+1,isAvoir(f)?'Montant de l\'avoir':'Net à payer',{size:11,bold:true,color:[255,255,255]});d.text(192,y+1,money(s.ttc),{size:11,bold:true,align:'right',color:[255,255,255]});y+=14;
   if(y>250){d.addPage();y=24}
-  d.text(15,y,'Conditions de paiement',{size:9.5,bold:true});y+=5;
-  d.text(15,y,'À régler avant le '+fdl(f.echeance)+'.',{size:9.5});y+=4.6;
+  d.text(15,y,isAvoir(f)?'Informations':'Conditions de paiement',{size:9.5,bold:true});y+=5;
+  if(isAvoir(f)){d.text(15,y,'Avoir'+(f.motif?' — motif : '+f.motif:'')+'. Montant remboursé ou déduit de votre prochaine facture.',{size:9.5});y+=4.6}
+  else if(f.statut==='payee'){d.text(15,y,'Facture réglée'+(f.payeLe?' le '+fdl(f.payeLe):'')+(f.modePaiement?' par '+f.modePaiement.toLowerCase():'')+'. Merci.',{size:9.5,bold:true});y+=4.6}
+  else{d.text(15,y,'À régler avant le '+fdl(f.echeance)+'.',{size:9.5});y+=4.6}
   if(e.iban){d.text(15,y,'Par virement : IBAN '+e.iban+(e.bic?'  ·  BIC '+e.bic:''),{size:9.5});y+=4.6}
   if(!tva){y+=2;d.text(15,y,'TVA non applicable, article 293 B du CGI.',{size:9,color:MU});y+=4.6}
   if(e.mention){y+=2;d.wrap(e.mention,180,9).forEach(function(l){if(y>280){d.addPage();y=24}d.text(15,y,l,{size:9,color:MU});y+=4.3})}
   var np=d.pages.length;
-  for(var i=0;i<np;i++){d.cur=d.pages[i];d.line(15,284,195,284);d.text(105,289,(e.nom||'')+(e.siret?' · SIRET '+e.siret:'')+'  —  Facture '+f.numero+'  —  Page '+(i+1)+'/'+np,{size:7.5,align:'center',color:MU})}
+  for(var i=0;i<np;i++){d.cur=d.pages[i];d.line(15,284,195,284);d.text(105,289,(e.nom||'')+(e.siret?' · SIRET '+e.siret:'')+'  —  '+(isAvoir(f)?'Avoir ':'Facture ')+f.numero+'  —  Page '+(i+1)+'/'+np,{size:7.5,align:'center',color:MU})}
   return d.blob();
 }
 function slug(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'')}
-function pdfName(f){var o=owner(f.proprietaireId);return 'Facture-'+f.numero+'-'+slug(o?o.nom:'')+'.pdf'}
+function pdfName(f){var o=owner(f.proprietaireId);return (isAvoir(f)?'Avoir-':'Facture-')+f.numero+'-'+slug(o?o.nom:'')+'.pdf'}
 function fillMsg(f){var o=owner(f.proprietaireId)||{nom:''},e=db.ecurie;
   return (e.message||ECURIE_DEF.message).replace(/\{prenom\}/g,(o.nom||'').split(' ')[0]).replace(/\{nom\}/g,o.nom||'').replace(/\{mois\}/g,monthLabel(f.mois).toLowerCase())
     .replace(/\{numero\}/g,f.numero).replace(/\{montant\}/g,money(f.total)).replace(/\{echeance\}/g,fdl(f.echeance)).replace(/\{ecurie\}/g,e.nom||'')}
@@ -1012,6 +1037,235 @@ function fallbackSend(f,blob,name){openBlob(blob,name,true);M.sendHelp=true;M.re
 function mailtoFor(f){var o=owner(f.proprietaireId)||{};return 'mailto:'+encodeURIComponent(o.email||'')+'?subject='+encodeURIComponent('Facture '+monthLabel(f.mois)+' — '+(db.ecurie.nom||'écurie'))+'&body='+encodeURIComponent(fillMsg(f)+'\n\n(Facture '+f.numero+' en pièce jointe)')}
 function factMonthTarget(){var t=today(),d=+t.slice(8);if(d>=25)return t.slice(0,7);if(d<=10)return addDays(t.slice(0,7)+'-01',-1).slice(0,7);return null}
 
+/* ---------- comptabilité : encaissements, avoirs, relances, dépenses, TVA, exports ---------- */
+var MODES=['Virement','Chèque','Espèces','Carte bancaire','Prélèvement'];
+var DEP_CATS=['Foin et paille','Aliments','Litière','Maréchal','Vétérinaire','Entretien et travaux','Matériel et sellerie','Carburant','Assurances','Électricité et eau','Honoraires','Autre'];
+function isAvoir(f){return f.type==='avoir'}
+function r2(n){return Math.round((+n||0)*100)/100}
+function factDate(f){return f.dateEmission||((f.mois||today().slice(0,7))+'-01')}
+function monthsOf(per){ // per = {kind:'mois'|'trimestre'|'annee', ref:'YYYY-MM'}
+  var y=+per.ref.slice(0,4),m=+per.ref.slice(5,7),a=[];
+  if(per.kind==='annee')for(var i=1;i<=12;i++)a.push(y+'-'+String(i).padStart(2,'0'));
+  else if(per.kind==='trimestre'){var q=Math.floor((m-1)/3)*3;for(i=1;i<=3;i++)a.push(y+'-'+String(q+i).padStart(2,'0'))}
+  else a.push(per.ref.slice(0,7));
+  return a;
+}
+function perLabel(per){var y=per.ref.slice(0,4),m=+per.ref.slice(5,7);
+  if(per.kind==='annee')return 'Année '+y;if(per.kind==='trimestre')return (Math.floor((m-1)/3)+1)+'e trimestre '+y;return monthLabel(per.ref)}
+function inPer(dateStr,ms){return !!dateStr&&ms.indexOf(dateStr.slice(0,7))>-1}
+function catTotals(f){var t={pension:0,cours:0,frais:0};f.lignes.forEach(function(l){t[lineCat(l)]=(t[lineCat(l)]||0)+(+l.montant||0)});return t}
+/* --- CSV lisible par Excel (séparateur ; et virgule décimale) --- */
+function csv(rows){return '﻿'+rows.map(function(r){return r.map(function(v){v=v==null?'':String(v);return /[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(';')}).join('\r\n')}
+function nfr(n){return r2(n).toFixed(2).replace('.',',')}
+function dfr(s){return s?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):''}
+function journalVentes(ms){
+  var rows=[['Numéro','Date','Type','Client','Période facturée','Pension TTC','Cours TTC','Frais refacturés TTC','Total HT','TVA','Total TTC','Statut','Payée le','Mode de paiement','Facture d\'origine']];
+  db.factures.filter(function(f){return f.numero&&inPer(factDate(f),ms)}).sort(function(a,b){return String(a.numero).localeCompare(String(b.numero))}).forEach(function(f){
+    var o=owner(f.proprietaireId),c=catTotals(f),s=tvaSummary(f),orig=f.factureId?db.factures.find(function(x){return x.id===f.factureId}):null;
+    rows.push([f.numero,dfr(factDate(f)),isAvoir(f)?'Avoir':'Facture',o?o.nom:'',monthLabel(f.mois),nfr(c.pension),nfr(c.cours),nfr(c.frais),nfr(s.ht),nfr(s.ttc-s.ht),nfr(s.ttc),
+      f.statut==='payee'?(isAvoir(f)?'Remboursé':'Payée'):(f.envoyeeLe?'Envoyée':'Brouillon'),dfr(f.payeLe),f.modePaiement||'',orig?orig.numero:''])});
+  return rows;
+}
+function journalEncaissements(ms){
+  var rows=[['Date d\'encaissement','Numéro','Client','Montant','Mode de paiement']];
+  db.factures.filter(function(f){return f.statut==='payee'&&inPer(f.payeLe||factDate(f),ms)}).sort(function(a,b){return String(a.payeLe).localeCompare(String(b.payeLe))}).forEach(function(f){
+    var o=owner(f.proprietaireId);rows.push([dfr(f.payeLe||factDate(f)),f.numero||'',o?o.nom:'',nfr(f.total),f.modePaiement||''])});
+  return rows;
+}
+function depHT(d){return r2((+d.ttc||0)/(1+(+d.tauxTva||0)/100))}
+function journalDepenses(ms){
+  var rows=[['Date','Fournisseur','Catégorie','Libellé','HT','Taux TVA','TVA','TTC','Mode de paiement','Justificatif']];
+  db.depenses.filter(function(d){return inPer(d.date,ms)}).sort(function(a,b){return a.date.localeCompare(b.date)}).forEach(function(d){var ht=depHT(d);
+    rows.push([dfr(d.date),d.fournisseur||'',d.categorie||'',d.libelle||'',nfr(ht),String(+d.tauxTva||0).replace('.',',')+' %',nfr((+d.ttc||0)-ht),nfr(d.ttc),d.mode||'',d.pieceId?pieceFile(d):''])});
+  return rows;
+}
+function tvaRecap(ms){
+  var col={},ded={};
+  db.factures.filter(function(f){return f.numero&&inPer(factDate(f),ms)}).forEach(function(f){tvaSummary(f).parts.forEach(function(p){var k=p.taux;col[k]=col[k]||{ht:0,tva:0};col[k].ht+=p.ht;col[k].tva+=p.tva})});
+  db.depenses.filter(function(d){return inPer(d.date,ms)}).forEach(function(d){var k=+d.tauxTva||0,ht=depHT(d);ded[k]=ded[k]||{ht:0,tva:0};ded[k].ht+=ht;ded[k].tva+=(+d.ttc||0)-ht});
+  var tc=Object.keys(col).reduce(function(s,k){return s+col[k].tva},0),td=Object.keys(ded).reduce(function(s,k){return s+ded[k].tva},0);
+  return{col:col,ded:ded,tc:r2(tc),td:r2(td),net:r2(tc-td)};
+}
+function tvaRows(ms){var t=tvaRecap(ms),rows=[['Sens','Taux','Base HT','TVA']];
+  Object.keys(t.col).sort().forEach(function(k){rows.push(['TVA collectée (ventes)',k+' %',nfr(t.col[k].ht),nfr(t.col[k].tva)])});
+  Object.keys(t.ded).sort().forEach(function(k){rows.push(['TVA déductible (dépenses)',k+' %',nfr(t.ded[k].ht),nfr(t.ded[k].tva)])});
+  rows.push(['TVA nette à payer','','',nfr(t.net)]);return rows}
+function pieceFile(x){var ext=((x.pieceNom||'').match(/\.[a-z0-9]+$/i)||[/pdf/.test(x.pieceType||'')?'.pdf':'.jpg'])[0];return 'justificatifs/'+slug((x.date||'')+'-'+(x.fournisseur||x.type||'piece')+'-'+String(x.pieceId).split('/').pop())+ext}
+function saveText(text,name){openBlob(new Blob([text],{type:'text/csv;charset=utf-8'}),name,true)}
+/* --- zip sans compression, pour le pack mensuel --- */
+var CRC_T=(function(){var t=[];for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u){var c=0xFFFFFFFF;for(var i=0;i<u.length;i++)c=CRC_T[(c^u[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
+function makeZip(files){
+  var enc=new TextEncoder(),parts=[],central=[],off=0;
+  files.forEach(function(f){var nm=enc.encode(f.name),d=f.data,crc=crc32(d),h=new DataView(new ArrayBuffer(30)),c=new DataView(new ArrayBuffer(46));
+    h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(12,0x21,true);h.setUint32(14,crc,true);h.setUint32(18,d.length,true);h.setUint32(22,d.length,true);h.setUint16(26,nm.length,true);
+    parts.push(new Uint8Array(h.buffer),nm,d);
+    c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(14,0x21,true);c.setUint32(16,crc,true);c.setUint32(20,d.length,true);c.setUint32(24,d.length,true);c.setUint16(28,nm.length,true);c.setUint32(42,off,true);
+    central.push(new Uint8Array(c.buffer),nm);off+=30+nm.length+d.length});
+  var cs=central.reduce(function(s,a){return s+a.length},0),e=new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
+  return new Blob(parts.concat(central,[new Uint8Array(e.buffer)]),{type:'application/zip'});
+}
+function u8(blobOrText){if(typeof blobOrText==='string')return Promise.resolve(new TextEncoder().encode(blobOrText));return blobOrText.arrayBuffer().then(function(b){return new Uint8Array(b)})}
+async function buildPack(per){
+  var ms=monthsOf(per),files=[],tag=slug(perLabel(per)),manq=0;
+  files.push({name:'journal-ventes.csv',data:await u8(csv(journalVentes(ms)))});
+  files.push({name:'journal-encaissements.csv',data:await u8(csv(journalEncaissements(ms)))});
+  files.push({name:'journal-depenses.csv',data:await u8(csv(journalDepenses(ms)))});
+  if(db.ecurie.tvaRegime==='tva')files.push({name:'recap-tva.csv',data:await u8(csv(tvaRows(ms)))});
+  var fs=db.factures.filter(function(f){return f.numero&&inPer(factDate(f),ms)});
+  for(var i=0;i<fs.length;i++)files.push({name:'factures/'+pdfName(fs[i]),data:await u8(buildPdf(fs[i]))});
+  var pj=[];db.depenses.filter(function(d){return d.pieceId&&inPer(d.date,ms)}).forEach(function(d){pj.push(d)});
+  fs.forEach(function(f){f.lignes.forEach(function(l){if(l.pieceId){var fr=null;db.chevaux.forEach(function(c){(c.frais||[]).forEach(function(x){if(x.pieceId===l.pieceId)fr=Object.assign({fournisseur:c.nom},x)})});pj.push(fr||{pieceId:l.pieceId,date:factDate(f),type:'frais'})}})});
+  var seen={};
+  for(i=0;i<pj.length;i++){var x=pj[i];if(seen[x.pieceId])continue;seen[x.pieceId]=1;var p=await pieceGet(x.pieceId).catch(function(){return null});if(p&&p.blob)files.push({name:pieceFile(x),data:await u8(p.blob)});else manq++}
+  files.push({name:'LISEZ-MOI.txt',data:await u8('Pack comptable — '+(db.ecurie.nom||'')+' — '+perLabel(per)+'\r\n\r\n'+
+    'journal-ventes.csv : une ligne par facture et avoir (montants TTC par activité, HT, TVA).\r\n'+
+    'journal-encaissements.csv : paiements reçus, avec date et mode.\r\n'+
+    'journal-depenses.csv : achats de l\'écurie, avec le nom du justificatif.\r\n'+
+    (db.ecurie.tvaRegime==='tva'?'recap-tva.csv : TVA collectée, déductible et nette.\r\n':'Régime : franchise en base de TVA (art. 293 B du CGI).\r\n')+
+    'factures/ : toutes les factures et avoirs en PDF.\r\njustificatifs/ : photos et PDF des dépenses et frais refacturés.\r\n'+(manq?'\r\nAttention : '+manq+' justificatif(s) introuvable(s) sur cet appareil.\r\n':''))});
+  return{blob:makeZip(files),name:'pack-comptable-'+tag+'.zip',count:files.length,manq:manq};
+}
+/* --- relances --- */
+function impayes(){var t=today();return db.factures.filter(function(f){return !isAvoir(f)&&f.envoyeeLe&&f.statut!=='payee'&&f.echeance&&f.echeance<t}).sort(function(a,b){return a.echeance.localeCompare(b.echeance)})}
+var RELANCE_DEF='Bonjour {prenom},\n\nSauf erreur de notre part, la facture n° {numero} de {mois} d\'un montant de {montant}, à régler avant le {echeance}, n\'a pas encore été réglée.\n\nMerci de procéder au règlement dès que possible. Si c\'est déjà fait, ne tenez pas compte de ce message.\n\nBien cordialement,\n{ecurie}';
+function fillRelance(f){var o=owner(f.proprietaireId)||{nom:''},e=db.ecurie;
+  return (e.messageRelance||RELANCE_DEF).replace(/\{prenom\}/g,(o.nom||'').split(' ')[0]).replace(/\{mois\}/g,monthLabel(f.mois).toLowerCase()).replace(/\{numero\}/g,f.numero||'')
+    .replace(/\{montant\}/g,money(f.total)).replace(/\{echeance\}/g,fdl(f.echeance)).replace(/\{ecurie\}/g,e.nom||'')}
+function sendRelance(f){
+  var blob=buildPdf(f),name=pdfName(f),msg=fillRelance(f),file=null;
+  function done(){f.relances=(f.relances||[]).concat([today()]);put('factures',f);if(M&&M.draft===f)M.render();render();toast('Relance enregistrée')}
+  try{file=new File([blob],name,{type:'application/pdf'})}catch(e){}
+  if(file&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:'Relance facture '+f.numero,text:msg}).then(done,function(err){if(err&&err.name==='AbortError')return;openBlob(blob,name,true);M.relHelp=true;M.render()});return}
+  openBlob(blob,name,true);M.relHelp=true;M.render();
+}
+function mailtoRelance(f){var o=owner(f.proprietaireId)||{};return 'mailto:'+encodeURIComponent(o.email||'')+'?subject='+encodeURIComponent('Relance — facture '+f.numero)+'&body='+encodeURIComponent(fillRelance(f))}
+/* --- paiement --- */
+function payModal(f){
+  var back=M&&M.kind==='factures'?f.id:null;
+  M={kind:'paiement',draft:f,read:function(){},render:function(){
+    mb(head(isAvoir(f)?'Remboursement de l\'avoir':'Enregistrer le paiement')+'<form class="form" id="fpay"><div class="sub">'+esc(f.numero||'')+' · '+esc((owner(f.proprietaireId)||{}).nom||'')+' · '+money(f.total)+'</div><div class="grid2">'+
+      fld('pay-date','Date du paiement',today(),'date',' required')+sel('pay-mode','Mode de paiement',MODES.map(function(m){return[m,m]}),f.modePaiement||(db.ecurie.iban?'Virement':'Chèque'))+'</div>'+
+      '<button class="btn primary block" type="submit">Enregistrer</button><button class="btn block" type="button" data-act="fact" data-id="'+f.id+'">Annuler</button></form>')}};
+  document.getElementById('modal').hidden=false;M.t=Date.now();M.render();
+}
+/* --- avoirs --- */
+function avoirModal(f){
+  M={kind:'avoir',draft:{factureId:f.id,sel:f.lignes.map(function(){return true}),motif:'',libre:''},read:function(){var d=M.draft;d.motif=v('av-motif');d.libre=v('av-libre');d.sel=f.lignes.map(function(l,i){var c=document.getElementById('av-l'+i);return c?c.checked:false})},render:function(){
+    var d=M.draft;
+    mb(head('Avoir sur '+(f.numero||''))+'<form class="form" id="favoir"><p class="sub" style="margin:0">Un avoir annule tout ou partie d\'une facture déjà envoyée. Il a son propre numéro et apparaît dans les exports.</p>'+
+      '<div class="field"><span class="lbl">Lignes à annuler</span><div class="checks">'+f.lignes.map(function(l,i){return '<label><input type="checkbox" id="av-l'+i+'"'+(d.sel[i]?' checked':'')+'><span style="flex:1">'+esc(l.label)+'</span><b>'+money(l.montant)+'</b></label>'}).join('')+'</div></div>'+
+      fld('av-libre','Ou montant libre à rembourser (€)',d.libre,'number',' min="0" step="0.01" placeholder="laisser vide pour utiliser les lignes cochées"')+
+      fld('av-motif','Motif',d.motif,'text',' required placeholder="ex. cours annulé par l\'écurie"')+(M.err?'<p class="warnline">'+esc(M.err)+'</p>':'')+
+      '<button class="btn primary block" type="submit">Créer l\'avoir</button><button class="btn block" type="button" data-act="fact" data-id="'+f.id+'">Annuler</button></form>')}};
+  document.getElementById('modal').hidden=false;M.t=Date.now();M.render();
+}
+function createAvoir(){
+  M.read();var d=M.draft,f=db.factures.find(function(x){return x.id===d.factureId});if(!f)return;
+  if(!d.motif){M.err='Indiquez le motif de l\'avoir.';M.render();return}
+  var lignes,lib=parseFloat(String(d.libre).replace(',','.'));
+  if(lib>0){if(lib>f.total){M.err='Le montant dépasse celui de la facture.';M.render();return}lignes=[{label:'Avoir — '+d.motif,montant:-r2(lib),cat:'pension'}];
+    var cats=catTotals(f),main=Object.keys(cats).sort(function(a,b){return cats[b]-cats[a]})[0];lignes[0].cat=main||'pension'}
+  else{lignes=f.lignes.filter(function(l,i){return d.sel[i]}).map(function(l){return{label:'Annulation : '+l.label,montant:-r2(l.montant),cat:lineCat(l)}});
+    if(!lignes.length){M.err='Cochez au moins une ligne ou indiquez un montant.';M.render();return}}
+  var y=today().slice(0,4);db.compteurs=db.compteurs||{};var k='AV'+y;
+  var maxi=db.factures.reduce(function(m,x){var r=/^AV(\d{4})-(\d+)$/.exec(x.numero||'');return r&&r[1]===y?Math.max(m,+r[2]):m},0);
+  db.compteurs[k]=Math.max(db.compteurs[k]||0,maxi)+1;
+  var av={id:uid(),type:'avoir',factureId:f.id,motif:d.motif,mois:f.mois,proprietaireId:f.proprietaireId,lignes:lignes,total:r2(lignes.reduce(function(s,l){return s+l.montant},0)),
+    statut:'attente',numero:'AV'+y+'-'+String(db.compteurs[k]).padStart(4,'0'),dateEmission:today(),echeance:today()};
+  db.factures.push(av);put('factures',av);putConfig();
+  toast('Avoir '+av.numero+' créé');factModal(av.id);render();
+}
+/* --- factures préparées d'avance (brouillons de fin de mois) --- */
+var autoPrepDone=false;
+function autoPrepare(){
+  if(autoPrepDone||!isG()||readOnly||authState!=='ok'||(mode==='cloud'&&!cloudLoaded)||!db.ecurie||!db.proprietaires.length)return;autoPrepDone=true;
+  var fm=factMonthTarget();if(!fm||db.ecurie.autoPrep===false)return;
+  if(db.factures.some(function(f){return f.mois===fm&&!isAvoir(f)}))return;
+  var n=generate(fm,true);if(n)setTimeout(function(){toast(n+' facture'+(n>1?'s':'')+' de '+monthLabel(fm).toLowerCase()+' préparée'+(n>1?'s':'')+' en brouillon')},600);
+}
+/* --- prorata d'une pension --- */
+function presence(c,m){
+  var dim=new Date(+m.slice(0,4),+m.slice(5,7),0).getDate(),deb=m+'-01',fin=m+'-'+String(dim).padStart(2,'0');
+  var a=c.arrivee&&c.arrivee>deb?c.arrivee:deb,b=c.depart&&c.depart<fin?c.depart:fin;
+  if(a>b)return{jours:0,dim:dim};return{jours:diff(b,a)+1,dim:dim};
+}
+/* --- vue Compta --- */
+function cPer(){return{kind:S.cKind||'mois',ref:S.cRef||today().slice(0,7)}}
+function vCompta(){
+  var per=cPer(),ms=monthsOf(per),y=per.ref.slice(0,4),tva=db.ecurie.tvaRegime==='tva',h='';
+  h+='<div class="panel" style="padding:14px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">'+
+    '<div class="field" style="flex:1 1 140px"><label for="c-kind">Période</label><select id="c-kind"><option value="mois"'+(per.kind==='mois'?' selected':'')+'>Mois</option><option value="trimestre"'+(per.kind==='trimestre'?' selected':'')+'>Trimestre</option><option value="annee"'+(per.kind==='annee'?' selected':'')+'>Année</option></select></div>'+
+    '<div class="field" style="flex:1 1 160px"><label for="c-ref">'+(per.kind==='annee'?'Année (choisir un mois)':per.kind==='trimestre'?'Un mois du trimestre':'Mois')+'</label><input type="month" id="c-ref" value="'+per.ref+'"></div>'+
+    '<div style="flex:2 1 200px;font-weight:700;align-self:center">'+esc(perLabel(per))+'</div></div>';
+  // indicateurs
+  var fac=db.factures.filter(function(f){return f.numero&&inPer(factDate(f),ms)}),ca=r2(fac.reduce(function(s,f){return s+(+f.total||0)},0));
+  var enc=r2(db.factures.filter(function(f){return f.statut==='payee'&&!isAvoir(f)&&inPer(f.payeLe||factDate(f),ms)}).reduce(function(s,f){return s+(+f.total||0)},0));
+  var dep=r2(db.depenses.filter(function(d){return inPer(d.date,ms)}).reduce(function(s,d){return s+(+d.ttc||0)},0));
+  var reste=r2(db.factures.filter(function(f){return f.envoyeeLe&&f.statut!=='payee'&&!isAvoir(f)}).reduce(function(s,f){return s+(+f.total||0)},0));
+  h+='<div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">'+
+    stat('Facturé',ca)+stat('Encaissé',enc)+stat('Dépenses',dep)+stat('Résultat',ca-dep,ca-dep<0)+stat('Reste à encaisser',reste,false,'toutes périodes')+'</div>';
+  h+='<p class="sub" style="margin:0">Montants TTC. Facturé : factures et avoirs datés dans la période. Encaissé : paiements reçus dans la période.</p>';
+  // graphique annuel
+  h+=chartSection(y);
+  // TVA
+  if(tva){var t=tvaRecap(ms);
+    h+='<section><div class="sh"><h2>TVA de la période</h2></div><div class="panel" style="padding:14px"><table class="lines"><tbody>'+
+      Object.keys(t.col).sort().map(function(k){return '<tr><td>TVA collectée '+k+' % (base '+money(t.col[k].ht)+')</td><td>'+money(t.col[k].tva)+'</td></tr>'}).join('')+
+      Object.keys(t.ded).sort().map(function(k){return '<tr><td>TVA déductible '+k+' % (base '+money(t.ded[k].ht)+')</td><td>− '+money(t.ded[k].tva)+'</td></tr>'}).join('')+
+      '<tr class="tot"><td>TVA nette '+(t.net<0?'(crédit)':'à payer')+'</td><td>'+money(t.net)+'</td></tr></tbody></table></div></section>'}
+  // exports
+  h+='<section><div class="sh"><h2>Pour la comptable</h2></div><div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:10px">'+
+    '<button class="btn primary" data-act="pack">Pack comptable complet (.zip)</button>'+
+    '<p class="sub" style="margin:0">Factures et avoirs en PDF, justificatifs, journaux des ventes, encaissements et dépenses'+(tva?', récapitulatif de TVA':'')+'.</p>'+
+    '<div class="actions"><button class="btn grow" data-act="exp" data-id="ventes">Journal des ventes</button><button class="btn grow" data-act="exp" data-id="enc">Encaissements</button><button class="btn grow" data-act="exp" data-id="dep">Dépenses</button>'+(tva?'<button class="btn grow" data-act="exp" data-id="tva">TVA</button>':'')+'</div>'+
+    '<p class="sub" style="margin:0">Fichiers Excel au format CSV (séparateur point-virgule), à ouvrir dans Excel ou à importer dans un logiciel comptable.</p></div></section>';
+  // dépenses
+  var dl=db.depenses.filter(function(d){return inPer(d.date,ms)}).sort(function(a,b){return b.date.localeCompare(a.date)});
+  h+='<section><div class="sh"><h2>Dépenses</h2><button class="btn sm primary" data-act="dep">+ Dépense</button></div>';
+  h+=dl.length?'<div class="panel items">'+dl.map(function(d){return '<button class="item" data-act="dep" data-id="'+d.id+'"><span class="x"><b>'+esc(d.fournisseur||d.categorie)+'</b><span>'+esc([fdate(d.date),d.categorie,d.libelle].filter(Boolean).join(' · '))+'</span></span><span class="end"><b>'+money(d.ttc)+'</b>'+(d.pieceId?'<br><span class="pill muted">justificatif</span>':'<br><span class="pill warn">sans justificatif</span>')+'</span></button>'}).join('')+'</div>'
+    :'<div class="panel empty">Aucune dépense sur la période. Ajoutez vos achats (foin, paille, vétérinaire…) avec la photo de la facture.</div>';
+  h+='</section>';
+  // par activité
+  var act={pension:0,cours:0,frais:0};fac.forEach(function(f){var c=catTotals(f);Object.keys(c).forEach(function(k){act[k]+=c[k]})});
+  var mx=Math.max(1,act.pension,act.cours,act.frais);
+  h+='<section><div class="sh"><h2>Chiffre d\'affaires par activité</h2></div><div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:10px">'+
+    [['pension','Pensions'],['cours','Cours'],['frais','Frais refacturés']].map(function(x){var vv=r2(act[x[0]]);return '<div><div style="display:flex;justify-content:space-between;font-size:14px"><span>'+x[1]+'</span><b style="font-variant-numeric:tabular-nums">'+money(vv)+'</b></div><div style="height:8px;border-radius:4px;background:var(--surface-2);margin-top:4px"><div style="height:8px;border-radius:4px;background:var(--c1);width:'+Math.max(0,Math.round(vv/mx*100))+'%"></div></div></div>'}).join('')+'</div></section>';
+  return h;
+}
+function stat(l,v,neg,sub){return '<div class="stat"><b style="font-size:20px'+(neg?';color:var(--danger)':'')+'">'+money(v)+'</b><span>'+l+(sub?' · '+sub:'')+'</span></div>'}
+function chartSection(y){
+  var ms=[];for(var i=1;i<=12;i++)ms.push(y+'-'+String(i).padStart(2,'0'));
+  var ca=ms.map(function(m){return r2(db.factures.filter(function(f){return f.mois===m}).reduce(function(s,f){return s+(+f.total||0)},0))}),
+      dp=ms.map(function(m){return r2(db.depenses.filter(function(d){return (d.date||'').slice(0,7)===m}).reduce(function(s,d){return s+(+d.ttc||0)},0))});
+  var mx=Math.max.apply(null,ca.concat(dp,[1])),step=niceStep(mx),top=Math.ceil(mx/step)*step||1,H=150;
+  var bars=ms.map(function(m,i){var lb=toD(m+'-01').toLocaleDateString('fr-FR',{month:'short'}).replace('.','');
+    return '<div class="bcol" title="'+esc(monthLabel(m)+' — facturé '+money(ca[i])+', dépenses '+money(dp[i]))+'"><div class="bpair" style="height:'+H+'px"><span class="bar b1" style="height:'+Math.round(ca[i]/top*H)+'px"></span><span class="bar b2" style="height:'+Math.round(dp[i]/top*H)+'px"></span></div><small>'+lb+'</small></div>'}).join('');
+  var grid='';for(var g=0;g<=top;g+=step)grid+='<div class="gl" style="bottom:'+(18+Math.round(g/top*H))+'px"><span>'+fmtK(g)+'</span></div>';
+  return '<section><div class="sh"><h2>Année '+y+' : facturé et dépenses par mois</h2></div><div class="panel" style="padding:14px">'+
+    '<div class="legend"><span><i class="sw b1"></i>Facturé (période facturée)</span><span><i class="sw b2"></i>Dépenses</span></div>'+
+    '<div class="chartbox"><div class="chart" role="img" aria-label="Facturé et dépenses par mois en '+y+'">'+grid+bars+'</div></div>'+
+    '<details style="margin-top:8px"><summary class="sub" style="cursor:pointer">Voir le tableau</summary><div style="overflow-x:auto"><table class="lines"><tbody><tr><td><b>Mois</b></td><td><b>Facturé</b></td><td><b>Dépenses</b></td></tr>'+
+    ms.map(function(m,i){return '<tr><td>'+monthLabel(m)+'</td><td>'+money(ca[i])+'</td><td>'+money(dp[i])+'</td></tr>'}).join('')+'</tbody></table></div></details></div></section>';
+}
+function niceStep(mx){var raw=mx/4,p=Math.pow(10,Math.floor(Math.log10(raw||1))),n=raw/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p}
+function fmtK(n){return n>=1000?(Math.round(n/100)/10).toString().replace('.',',')+' k€':Math.round(n)+' €'}
+/* --- fiche dépense --- */
+function depModal(id){
+  var d=id?clean(db.depenses.find(function(x){return x.id===id})):{id:null,date:today(),fournisseur:'',categorie:'Foin et paille',libelle:'',ttc:'',tauxTva:db.ecurie.tvaRegime==='tva'?20:0,mode:'Virement'};
+  M={kind:'depenses',draft:d,read:function(){var x=M.draft;x.date=v('d-date')||x.date;x.fournisseur=v('d-four');x.categorie=v('d-cat');x.libelle=v('d-lib');x.ttc=r2(parseFloat(v('d-ttc').replace(',','.'))||0);x.tauxTva=+v('d-tva')||0;x.mode=v('d-mode')},render:function(){
+    var x=M.draft;
+    mb(head(x.id?'Dépense':'Nouvelle dépense')+'<form class="form" id="fdep"><div class="grid2">'+fld('d-date','Date',x.date,'date',' required')+fld('d-four','Fournisseur',x.fournisseur,'text',' placeholder="ex. Coopérative agricole"')+
+      sel('d-cat','Catégorie',DEP_CATS.map(function(c){return[c,c]}),x.categorie)+fld('d-lib','Détail',x.libelle,'text',' placeholder="ex. 40 bottes de foin"')+
+      fld('d-ttc','Montant TTC (€)',x.ttc,'number',' required min="0" step="0.01" inputmode="decimal"')+sel('d-tva','Taux de TVA',[['0','0 % (sans TVA)'],['5.5','5,5 %'],['10','10 %'],['20','20 %']],String(x.tauxTva))+
+      sel('d-mode','Mode de paiement',MODES.map(function(m){return[m,m]}),x.mode)+'</div>'+
+      '<div class="field"><span class="lbl">Justificatif</span>'+(x.pieceId?'<div class="actions"><button type="button" class="btn sm" data-act="piece-voir" data-id="'+esc(x.pieceId)+'">Voir</button><button type="button" class="btn sm" data-act="dep-piece-x">Retirer</button></div>':
+        '<label class="btn" for="d-piece">Prendre en photo ou joindre un PDF</label><input type="file" id="d-piece" accept="image/*,application/pdf" style="position:absolute;width:1px;height:1px;opacity:0"><span class="sub" id="d-piece-nom">Aucun fichier</span>')+'</div>'+
+      (M.err?'<p class="warnline">'+esc(M.err)+'</p>':'')+'<button class="btn primary block" type="submit">Enregistrer</button>'+delBar('Supprimer cette dépense')+'</form>')}};
+  openModal();
+}
+
 /* ---------- toast ---------- */
 var tt;function toast(m){var e=document.getElementById('toast');e.textContent=m;e.hidden=false;clearTimeout(tt);tt=setTimeout(function(){e.hidden=true},2600)}
 
@@ -1026,7 +1280,7 @@ var ACT={
   'migrate-skip':function(){try{localStorage.setItem(KEY+'-migrated','1')}catch(e){}render()},
   week:function(n){S.coursDate=addDays(S.coursDate,+n);render()},
   day:function(d){S.coursDate=d;render()},
-  gen:generate,
+  gen:function(){generate(S.mois)},
   clear:function(){S.confirmClear=true;render()},'clear-no':function(){S.confirmClear=false;render()},
   'clear-ok':function(){S.confirmClear=false;replaceAll(emptyDb(),'Exemples effacés. Pensez à saisir vos tarifs dans Réglages.')},
   'soin-add':function(){M.read();var d=v('s-date');if(!d){toast('Choisissez une date.');return}var s={id:uid(),type:v('s-type'),date:d},mt=parseFloat(v('s-montant').replace(',','.'));if(mt>0)s.montant=Math.round(mt*100)/100;M.draft.soins.push(s);M.render()},
@@ -1064,7 +1318,13 @@ var ACT={
     var changed=[];if(k==='proprietaires')db.cours.forEach(function(c){if(c.inscrits.indexOf(id)>-1){c.inscrits=c.inscrits.filter(function(i){return i!==id});changed.push(c)}});
     (async function(){await drop(k,id);for(var i=0;i<changed.length;i++)await put('cours',changed[i])})();
     closeModal();render();toast('Supprimé');cleanupPieces()},
-  'fact-st':function(){var f=M.draft;f.statut=f.statut==='payee'?'attente':'payee';put('factures',f);M.render();render();toast(f.statut==='payee'?'Facture marquée payée':'Facture marquée en attente')},
+  'fact-st':function(){var f=M.draft;f.statut='attente';delete f.payeLe;delete f.modePaiement;put('factures',f);M.render();render();toast('Paiement annulé')},
+  'fact-pay':function(){payModal(M.draft)},'fact-avoir':function(){avoirModal(M.draft)},
+  'fact-relance':function(){sendRelance(M.draft)},'relance-ok':function(){var f=M.draft;M.relHelp=false;f.relances=(f.relances||[]).concat([today()]);put('factures',f);M.render();render();toast('Relance enregistrée')},
+  dep:function(id){depModal(id)},'dep-piece-x':function(){M.read();delete M.draft.pieceId;delete M.draft.pieceNom;delete M.draft.pieceType;M.render()},
+  exp:function(k){var per=cPer(),ms=monthsOf(per),tag=slug(perLabel(per)),map={ventes:[journalVentes,'journal-ventes'],enc:[journalEncaissements,'journal-encaissements'],dep:[journalDepenses,'journal-depenses'],tva:[tvaRows,'recap-tva']};saveText(csv(map[k][0](ms)),map[k][1]+'-'+tag+'.csv');toast('Fichier préparé')},
+  pack:function(){toast('Préparation du pack comptable…');buildPack(cPer()).then(function(r){openBlob(r.blob,r.name,true);toast('Pack prêt : '+r.count+' fichiers'+(r.manq?' ('+r.manq+' justificatif(s) manquant(s))':''))},function(){toast('Impossible de préparer le pack.')})},
+  'goto-impayes':function(){S.tab='factures';render();setTimeout(function(){var e=document.getElementById('impayes');if(e)e.scrollIntoView()},50)},
   copy:function(){var ta=document.getElementById('expjson');var p=navigator.clipboard&&navigator.clipboard.writeText(ta.value);
     if(p)p.then(function(){toast('Sauvegarde copiée')},function(){ta.focus();ta.select();toast('Sélectionnée : copiez avec Ctrl+C ou un appui long')});else{ta.focus();ta.select();toast('Sélectionnée : copiez avec Ctrl+C ou un appui long')}},
   import:function(){var raw=document.getElementById('impjson').value.trim();
@@ -1098,6 +1358,9 @@ document.addEventListener('input',function(e){if(e.target.id==='msg-texte'){S.ms
 document.addEventListener('change',function(e){
   if(e.target.id==='fmois'&&e.target.value){S.mois=e.target.value;render()}
   if(e.target.id==='demo-role'){ACT['demo-role'](e.target.value)}
+  if(e.target.id==='c-kind'){S.cKind=e.target.value;render()}
+  if(e.target.id==='c-ref'&&e.target.value){S.cRef=e.target.value;render()}
+  if(e.target.id==='d-piece'){var dfl=e.target.files[0],dsp=document.getElementById('d-piece-nom');if(dsp)dsp.textContent=dfl?dfl.name:'Aucun fichier'}
   if(e.target.id==='e-tva'){var bx=document.getElementById('e-tvabox');if(bx)bx.hidden=e.target.value!=='tva'}
   if(e.target.id==='f-piece'){var fl=e.target.files[0],sp=document.getElementById('f-piece-nom');if(sp)sp.textContent=fl?fl.name:'Pas de justificatif'}
   if(e.target.id==='piece-input'&&e.target.files[0]&&M&&M.pieceFor){var dr=M.draft,fr=dr.frais.find(function(x){return x.id===M.pieceFor});M.pieceFor=null;
@@ -1111,12 +1374,17 @@ document.addEventListener('submit',function(e){
   e.preventDefault();var id=e.target.id;
   if(id==='flogin'||id==='fsignup'||id==='factivate'||id==='fnewpass'){if(!sb){authMsg='Base inaccessible : vérifiez votre connexion puis rechargez la page.';render();return}doAuth(id);return}
   if(id==='fmsg'){sendMsg();return}
+  if(id==='fpay'){var pf=M.draft;pf.statut='payee';pf.payeLe=v('pay-date')||today();pf.modePaiement=v('pay-mode');put('factures',pf);toast(isAvoir(pf)?'Remboursement enregistré':'Paiement enregistré');factModal(pf.id);render();return}
+  if(id==='favoir'){createAvoir();return}
+  if(id==='fdep'){M.read();var dd=M.draft;if(!(dd.ttc>0)){M.err='Indiquez le montant TTC.';M.render();return}var fi=document.getElementById('d-piece'),file=fi&&fi.files&&fi.files[0];
+    var fin=function(){delete M.err;if(dd.id){var ix=db.depenses.findIndex(function(x){return x.id===dd.id});db.depenses[ix]=dd}else{dd.id=uid();db.depenses.push(dd)}put('depenses',dd);closeModal();render();toast('Dépense enregistrée')};
+    if(file){toast('Enregistrement du justificatif…');addPieceTo(dd,file).then(fin,function(e){pieceErr(e);fin()})}else fin();return}
   if(id==='fannonce'){var ti=v('an-titre'),tx=v('an-texte');if(!ti&&!tx){toast('Écrivez un titre ou un message.');return}var an={id:uid(),titre:ti||'Information',texte:tx,date:new Date().toISOString()};db.annonces.push(an);put('annonces',an);render();toast('Annonce publiée');return}
   if(readOnly){toast('Accès en lecture seule.');return}
   if(id==='ftask'){var l=v('newtask');if(!l)return;var tk={id:uid(),label:l,doneOn:null};db.taches.push(tk);put('taches',tk);render();var n=document.getElementById('newtask');if(n)n.focus();return}
   if(id==='fecurie'){var ec=db.ecurie;ec.nom=v('e-nom');ec.adresse=v('e-adr');ec.siret=v('e-siret');ec.tel=v('e-tel');ec.email=v('e-email');ec.delai=Math.max(0,+v('e-delai')||0);
     ec.tvaRegime=v('e-tva')||'franchise';if(ec.tvaRegime==='tva'){ec.tvaNum=v('e-tvanum');ec.tauxPension=+v('e-tp')||0;ec.tauxCours=+v('e-tc')||0;ec.tauxFrais=+v('e-tf')||0}
-    ec.iban=v('e-iban');ec.bic=v('e-bic');ec.mention=v('e-mention');ec.message=v('e-msg')||ECURIE_DEF.message;putConfig();toast('Écurie enregistrée');if(M)M.render();render();return}
+    ec.iban=v('e-iban');ec.bic=v('e-bic');ec.mention=v('e-mention');ec.message=v('e-msg')||ECURIE_DEF.message;ec.autoPrep=!!(document.getElementById('e-auto')||{}).checked;ec.messageRelance=v('e-rel');putConfig();toast('Écurie enregistrée');if(M)M.render();render();return}
   if(id==='ftarifs'){['complete','pre','demi','collectif','particulier'].forEach(function(k){db.tarifs[k]=+v('t-'+k)||0});db.annulHeures=Math.max(0,+v('t-annul')||0);var li=v('t-lieux').split('\n').map(function(x){return x.trim()}).filter(Boolean);db.lieux=li.length?li:LIEUX_DEF.slice();putConfig();toast('Réglages enregistrés');render();return}
   if(!M)return;M.read();var d=M.draft;
   if(id==='fhorse'){if(!d.nom){toast('Indiquez le nom du cheval.');return}if(!d.proprietaireId){toast('Ajoutez d\'abord un propriétaire.');return}}
@@ -1127,7 +1395,7 @@ document.addEventListener('submit',function(e){
   if(k==='cours')S.coursDate=d.date;
   put(k,d);closeModal();render();toast('Enregistré');if(k==='chevaux')cleanupPieces();
 });
-renderNav();render();
+normalize();renderNav();render();
 if(mode==='cloud'){var lib=document.createElement('script');lib.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
   lib.onload=function(){if(window.supabase&&window.supabase.createClient)startCloud();else lib.onerror()};
   lib.onerror=function(){authState='login';authMsg='Impossible de joindre la base de l\'écurie : vérifiez votre connexion puis rechargez la page.';renderNav();render()};
