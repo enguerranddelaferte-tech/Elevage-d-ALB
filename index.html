@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Élevage d'ALB</title>
+<meta name="description" content="Gestion d'une écurie de propriétaires : chevaux, soins, cours, tâches et factures.">
+<meta name="theme-color" content="#2F5D46">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Élevage d'ALB">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="./config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Outfit:wght@500;600;700&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+/* Layout : une colonne d'appli mobile (max 640px), en-tête collant, barre d'onglets fixée en bas */
+:root{
+  --bg:#F4F5F2; --surface:#FFFFFF; --surface-2:#E9ECE6; --fg:#1C2420; --muted:#56605A; --line:#DFE3DC;
+  --accent:#2F5D46; --accent-ink:#1F4232; --accent-soft:#E2ECE5; --on-accent:#FFFFFF;
+  --warn-bg:#FBF1DE; --warn-fg:#6F470D; --danger:#9A3B2A; --danger-soft:#F6E3DE; --overlay:rgba(20,26,23,.45);
+  --f-display:'Outfit',ui-sans-serif,system-ui,sans-serif; --f-body:'DM Sans',ui-sans-serif,system-ui,sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111614; --surface:#1A211E; --surface-2:#232B27; --fg:#E6ECE8; --muted:#A2ADA6; --line:#2D3732;
+  --accent:#7DB894; --accent-ink:#A9D4B8; --accent-soft:#1F3128; --on-accent:#0D1511;
+  --warn-bg:#33281A; --warn-fg:#F0C27B; --danger:#F08A75; --danger-soft:#3A2420; --overlay:rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111614; --surface:#1A211E; --surface-2:#232B27; --fg:#E6ECE8; --muted:#A2ADA6; --line:#2D3732;
+  --accent:#7DB894; --accent-ink:#A9D4B8; --accent-soft:#1F3128; --on-accent:#0D1511;
+  --warn-bg:#33281A; --warn-fg:#F0C27B; --danger:#F08A75; --danger-soft:#3A2420; --overlay:rgba(0,0,0,.6); color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45}
+*{box-sizing:border-box}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.2px}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{position:sticky;top:0;padding-top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;gap:12px;padding-block:14px}
+header.top .t{flex:1;min-width:0}
+header.top .d{font-size:13px;color:var(--muted)}
+header.top h1{font-size:24px;font-weight:700}
+main .wrap{padding-block:18px 120px;display:flex;flex-direction:column;gap:22px}
+section{display:flex;flex-direction:column;gap:10px}
+.sh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.sh h2{font-size:18px;font-weight:600}
+.sub{font-size:13px;color:var(--muted)}
+.icon-btn{width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.btn{min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.danger{background:var(--danger-soft);border-color:transparent;color:var(--danger)}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13px}
+.btn.block{width:100%}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.stat b{display:block;font-family:var(--f-display);font-size:26px;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.stat.hot{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.stat.hot span{color:var(--on-accent)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.alert{display:flex;gap:12px;align-items:center;background:var(--warn-bg);color:var(--warn-fg);border-radius:12px;padding:11px 14px;font-size:14px}
+.alert .x{flex:1;min-width:0}
+.alert b{color:var(--fg)}
+.alert.late{background:var(--danger-soft);color:var(--danger)}
+.items{display:flex;flex-direction:column}
+.item{display:flex;gap:12px;align-items:center;padding:12px 14px;min-height:52px;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left;cursor:pointer}
+.items>.item:first-child{border-top:0}
+.item .x{flex:1;min-width:0}
+.item .x b{display:block;font-size:15px}
+.item .x span{font-size:13px;color:var(--muted)}
+.item .end{text-align:right;font-size:13px;flex:none;font-variant-numeric:tabular-nums}
+.task{cursor:default}
+.task input{width:22px;height:22px;accent-color:var(--accent);flex:none}
+.task.done .x b{text-decoration:line-through;color:var(--muted)}
+.del-x{width:36px;height:36px;border:0;background:none;color:var(--muted);border-radius:18px;cursor:pointer;flex:none}
+.time{font-family:var(--f-display);font-weight:700;font-size:15px;width:52px;flex:none;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);white-space:nowrap}
+.pill.warn{background:var(--warn-bg);color:var(--warn-fg)}
+.pill.late{background:var(--danger-soft);color:var(--danger)}
+.pill.muted{background:var(--surface-2);color:var(--muted)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.chip{font-size:12px;background:var(--surface-2);padding:3px 8px;border-radius:8px}
+.avatar{width:40px;height:40px;border-radius:20px;background:var(--accent-soft);color:var(--accent-ink);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:none}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.day{min-height:58px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;position:relative}
+.day small{font-size:11px;color:var(--muted)}
+.day b{font-size:16px;font-variant-numeric:tabular-nums}
+.day.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.day.on small{color:var(--bg)}
+.day .dot{width:5px;height:5px;border-radius:3px;background:var(--accent);position:absolute;bottom:6px}
+.day.on .dot{background:var(--bg)}
+.weeknav{display:flex;align-items:center;gap:8px}
+.weeknav .sub{flex:1;text-align:center}
+.hero{background:var(--fg);color:var(--bg);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.hero .big{font-family:var(--f-display);font-size:32px;font-weight:700;font-variant-numeric:tabular-nums}
+.hero .row{display:flex;gap:22px;font-size:13px}
+.hero .row b{display:block;font-size:17px;font-variant-numeric:tabular-nums}
+.empty{padding:22px 16px;text-align:center;color:var(--muted);font-size:14px}
+.banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--accent-soft);color:var(--accent-ink);border-radius:12px;padding:12px 14px;font-size:14px}
+.banner .x{flex:1;min-width:180px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label,.lbl{font-size:13px;font-weight:700;color:var(--muted)}
+.field input,.field select,.field textarea,.search{min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:8px 12px;width:100%}
+.field textarea{min-height:70px;resize:vertical}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.form{display:flex;flex-direction:column;gap:14px}
+.checks{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px}
+.checks label{display:flex;gap:10px;align-items:center;padding:10px 12px;min-height:44px;border-top:1px solid var(--line);font-weight:500;color:var(--fg);font-size:14px}
+.checks label:first-child{border-top:0}
+.checks input{width:20px;height:20px;accent-color:var(--accent)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.actions .grow{flex:1}
+table.lines{width:100%;border-collapse:collapse;font-size:14px}
+table.lines td{padding:9px 0;border-top:1px solid var(--line)}
+table.lines td:last-child{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:12px}
+table.lines tr.tot td{font-weight:700;font-size:16px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+nav.tabs .in{max-width:640px;margin:0 auto;display:flex}
+nav.tabs button{flex:1;min-width:0;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 12px;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer}
+nav.tabs button[aria-current="page"]{color:var(--accent);font-weight:700}
+.modal-wrap{position:fixed;inset:0;z-index:20;background:var(--overlay);display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--surface);width:100%;max-width:640px;max-height:92%;overflow-y:auto;border-radius:20px 20px 0 0;padding:20px max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px}
+@media (min-width:700px){.modal-wrap{align-items:center}.modal{border-radius:20px;max-height:86%}}
+.mhead{display:flex;align-items:center;gap:10px}
+.mhead h2{flex:1;font-size:21px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;font-weight:500;max-width:calc(100% - 32px)}
+.nbadge{position:absolute;top:-6px;right:-10px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--danger);color:var(--surface);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+#hmsg{position:relative}#hmsg .nbadge{top:0;right:0}
+.msgs{display:flex;flex-direction:column;gap:8px}
+.bub{max-width:82%;align-self:flex-start;padding:10px 12px;border-radius:16px 16px 16px 4px;background:var(--surface);border:1px solid var(--line);white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px}
+.bub.me{align-self:flex-end;border-radius:16px 16px 4px 16px;background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.bub small{display:block;font-size:11px;opacity:.8;margin-top:4px}
+.warnline{font-size:13px;color:var(--danger);font-weight:500}
+@media (prefers-reduced-motion:no-preference){.modal{animation:up .18s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.6}}}
+</style>
+
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="t"><div class="d" id="hdate"></div><h1 id="htitle">Aujourd'hui</h1></div>
+  <button class="icon-btn" id="hmsg" data-act="tab" data-id="messages" aria-label="Messages des clients" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg><span class="nbadge" id="hmsg-badge" hidden></span></button>
+  <button class="icon-btn" id="hset" data-act="settings" aria-label="Réglages et compte">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+  </button>
+</div></header>
+
+<main><div class="wrap" id="view"></div></main>
+
+<nav class="tabs" aria-label="Sections"><div class="in"></div></nav>
+
+<div class="modal-wrap" id="modal" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mtitle" id="mbody"></div></div>
+<div class="modal-wrap" id="viewer" hidden style="z-index:25"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="vtitle" id="vbody"></div></div>
+<input type="file" id="piece-input" accept="image/*,application/pdf" hidden aria-hidden="true" tabindex="-1">
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(function(){
+'use strict';
+var KEY='ecurie-db-v1';
+var PENSIONS={complete:'Pension complète',pre:'Pension au pré',demi:'Demi-pension'};
+var SOINS=['Vaccin grippe','Vaccin tétanos','Vaccin rhinopneumonie','Vermifuge','Maréchal','Dentiste','Ostéopathe','Visite vétérinaire','Autre'];
+var RACES=['Selle Français','Pur-sang','Trotteur Français','Anglo-Arabe','Arabe','Demi-sang arabe','KWPN','Hanovrien','Holsteiner','Oldenbourg','Zangersheide','BWP','Lusitanien','Pure Race Espagnole (PRE)','Frison','Quarter Horse','Appaloosa','Paint Horse','Camargue','Mérens','Barbe','Irish Cob','Fjord','Haflinger','Islandais','Cheval de trait','Connemara','Welsh','New Forest','Poney Français de Selle','Shetland','Origine non constatée (ONC)'];
+var FRAIS=['Vétérinaire','Ostéopathe','Maréchal','Dentiste','Entretien / soins','Tonte','Pharmacie','Fournitures','Autre'];
+var LIEUX_DEF=['Box 1','Box 2','Box 3','Box 4','Box 5','Box 6','Box 7','Box 8','Box 9','Box 10','Box 11','Box 12','Pré n°1','Pré n°2','Pré n°3','Pré n°4','Paddock 1','Paddock 2'];
+var TITLES={accueil:'Accueil',cheval:'Mon cheval',messages:'Messages',jour:"Aujourd'hui",chevaux:'Chevaux',cours:'Planning des cours',factures:'Factures',proprios:'Propriétaires'};
+var canSave=true;
+
+/* ---------- dates & formats ---------- */
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function today(){return iso(new Date())}
+function toD(s){return new Date(s+'T12:00:00')}
+function addDays(s,n){var d=toD(s);d.setDate(d.getDate()+n);return iso(d)}
+function diff(a,b){return Math.round((toD(a)-toD(b))/86400000)}
+function fdate(s,o){return s?toD(s).toLocaleDateString('fr-FR',o||{day:'numeric',month:'short'}):''}
+var eur=new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'});
+function money(n){return eur.format(+n||0)}
+function uid(){return Math.random().toString(36).slice(2,10)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function initials(n){return String(n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(function(w){return w[0].toUpperCase()}).join('')}
+function monthLabel(m){var s=toD(m+'-01').toLocaleDateString('fr-FR',{month:'long',year:'numeric'});return s.charAt(0).toUpperCase()+s.slice(1)}
+
+/* ---------- données ----------
+   Mode « démo » : tout est gardé dans ce navigateur (aucun réglage nécessaire).
+   Mode « en ligne » : base Supabase partagée entre le gérant et les clients (config.js renseigné). */
+var CFG=window.ECURIE_CONFIG||{};
+var CLOUD=!!(CFG.supabaseUrl&&CFG.supabaseKey);
+var COLS=['proprietaires','chevaux','cours','taches','factures','annonces','messages'];
+function emptyDb(){return{v:1,exemple:false,proprietaires:[],chevaux:[],cours:[],taches:[],factures:[],annonces:[],messages:[],annulHeures:24,
+  tarifs:{complete:0,pre:0,demi:0,collectif:0,particulier:0}}}
+function seed(){
+  var t=today(),now=Date.now(),o=[{id:uid(),nom:'Claire Martin',tel:'06 00 00 00 01',email:'claire@exemple.fr',licence:'',rcFin:addDays(t,120),adresse:'4 rue des Lilas\n61000 Alençon'},
+    {id:uid(),nom:'Lucas Petit',tel:'06 00 00 00 02',email:'',licence:'',rcFin:addDays(t,18)},
+    {id:uid(),nom:'Inès Robert',tel:'06 00 00 00 03',email:'',licence:'',rcFin:addDays(t,200)}];
+  var c=[
+    {id:uid(),nom:'Tornade',race:'Selle Français',sexe:'Jument',age:'11',box:'Box 7',pension:'complete',proprietaireId:o[0].id,ration:'Matin et soir : 2 L de granulés + foin à volonté',consignes:'Couverture si moins de 5 °C la nuit',
+      soins:[{id:uid(),type:'Vaccin grippe',date:addDays(t,5)},{id:uid(),type:'Maréchal',date:addDays(t,21)}],
+      frais:[{id:uid(),type:'Ostéopathe',date:addDays(t,-6),montant:70,note:''}]},
+    {id:uid(),nom:'Bijou',race:'Connemara',sexe:'Hongre',age:'8',box:'Box 3',pension:'complete',proprietaireId:o[1].id,ration:'Matin : 1,5 L de granulés',consignes:'Soin du pied antérieur gauche à midi',
+      soins:[{id:uid(),type:'Vermifuge',date:addDays(t,-3)}]},
+    {id:uid(),nom:'Quaterback',race:'Trotteur Français',sexe:'Hongre',age:'14',box:'Pré n°2',pension:'pre',proprietaireId:o[1].id,ration:'Foin au pré',consignes:'',
+      soins:[{id:uid(),type:'Dentiste',date:addDays(t,40)}]},
+    {id:uid(),nom:'Ulysse',race:'Anglo-Arabe',sexe:'Hongre',age:'12',box:'Box 5',pension:'demi',proprietaireId:o[2].id,ration:'Matin et soir : 2 L de granulés',consignes:'',soins:[]}];
+  var cr=[
+    {id:uid(),date:t,heure:'17:00',duree:60,titre:'Obstacle · Galop 5+',type:'collectif',lieu:'Carrière',places:5,prix:25,inscrits:[o[0].id,o[1].id,o[2].id]},
+    {id:uid(),date:t,heure:'18:30',duree:45,titre:'Dressage',type:'particulier',lieu:'Manège',places:1,prix:45,inscrits:[o[0].id]},
+    {id:uid(),date:addDays(t,1),heure:'10:00',duree:60,titre:'Dressage · Galop 3–4',type:'collectif',lieu:'Manège',places:5,prix:25,inscrits:[o[2].id]},
+    {id:uid(),date:addDays(t,3),heure:'14:00',duree:60,titre:'Travail sur le plat',type:'collectif',lieu:'Carrière',places:6,prix:25,inscrits:[o[0].id,o[2].id]},
+    {id:uid(),date:addDays(t,4),heure:'18:00',duree:60,titre:'Obstacle · Galop 5+',type:'collectif',lieu:'Carrière',places:5,prix:25,inscrits:[o[1].id]}];
+  var tk=['Repas du matin','Sorties au pré','Curage des boxes','Repas du soir'].map(function(l){return{id:uid(),label:l,doneOn:null}});
+  var an=[{id:uid(),titre:'Passage du maréchal',texte:'Le maréchal passe le '+fdate(addDays(t,21),{day:'numeric',month:'long'})+'. Prévenez-moi si votre cheval doit être ferré.',date:new Date(now-864e5).toISOString()}];
+  var ms=[{id:uid(),proprietaireId:o[0].id,de:'client',texte:'Bonjour, Tornade boitait un peu hier soir en sortant du pré.',lu:true,date:new Date(now-7200e3).toISOString()},
+    {id:uid(),proprietaireId:o[0].id,de:'gerant',texte:'Bonjour Claire, je l\'ai regardée ce matin : rien de visible, je la surveille et je vous tiens au courant.',lu:false,date:new Date(now-3600e3).toISOString()}];
+  return{v:1,exemple:true,proprietaires:o,chevaux:c,cours:cr,taches:tk,factures:[],annonces:an,messages:ms,annulHeures:24,
+    tarifs:{complete:450,pre:250,demi:300,collectif:25,particulier:45}};
+}
+var db=emptyDb(),store=null,mode=CLOUD?'cloud':'local',readOnly=false,busy=false,loadErr=false;
+var sb=null,me={role:'gerant',prop:null,email:'',uid:null},authState=CLOUD?'loading':'ok',authMsg='',authView='login';
+function isG(){return me.role==='gerant'}
+function clean(o){return JSON.parse(JSON.stringify(o))}
+function allLoaded(){return authState==='ok'}
+function saveLocal(){if(mode!=='local')return;try{localStorage.setItem(KEY,JSON.stringify(db));canSave=true}catch(e){canSave=false}}
+function rowFor(kind,rec){
+  var d=clean(rec);Object.keys(d).forEach(function(k){if(k.charAt(0)==='_')delete d[k]});
+  var r={id:rec.id,data:d};
+  if(kind==='chevaux'||kind==='factures'||kind==='messages')r.proprietaire_id=rec.proprietaireId||null;
+  if(kind==='messages'||kind==='annonces'){delete d.date;if(rec.date)r.created_at=rec.date}
+  return r;
+}
+function cloudErr(e){toast(e&&e.message&&!/fetch/i.test(e.message)?'Erreur : '+e.message:'Enregistrement impossible : vérifiez la connexion.')}
+function put(kind,rec){
+  if(mode==='cloud'){var q=(kind==='messages'&&!isG())?sb.from(kind).insert(rowFor(kind,rec)):sb.from(kind).upsert(rowFor(kind,rec));
+    return q.then(function(r){if(r.error)cloudErr(r.error)},cloudErr)}
+  saveLocal();return Promise.resolve();
+}
+function drop(kind,id){if(mode==='cloud')return sb.from(kind).delete().eq('id',id).then(function(r){if(r.error)cloudErr(r.error)},cloudErr);saveLocal();return Promise.resolve()}
+function configData(){return clean({tarifs:db.tarifs,lieux:db.lieux,ecurie:db.ecurie,compteurs:db.compteurs,annulHeures:+db.annulHeures||0})}
+function putConfig(){if(mode==='cloud')return sb.from('config').upsert({id:'main',data:configData()}).then(function(r){if(r.error)cloudErr(r.error)},cloudErr);saveLocal();return Promise.resolve()}
+async function replaceAll(nd,msg){
+  if(mode!=='cloud'){db=nd;normalize();saveLocal();setTimeout(cleanupPieces,500);render();if(msg)toast(msg);return}
+  busy=true;render();
+  try{
+    for(var i=0;i<COLS.length;i++){var k=COLS[i],keep={};(nd[k]||[]).forEach(function(r){keep[r.id]=1});
+      var del=db[k].filter(function(r){return !keep[r.id]}).map(function(r){return r.id});
+      for(var j=0;j<del.length;j+=100){var r1=await sb.from(k).delete().in('id',del.slice(j,j+100));if(r1.error)throw r1.error}
+      var rows=(nd[k]||[]).map(function(x){return rowFor(k,x)});
+      for(j=0;j<rows.length;j+=200){var r2=await sb.from(k).upsert(rows.slice(j,j+200));if(r2.error)throw r2.error}}
+    ['tarifs','lieux','ecurie','compteurs','annulHeures'].forEach(function(x){if(nd[x]!==undefined)db[x]=nd[x]});normalize();
+    await putConfig();if(msg)toast(msg);
+  }catch(e){cloudErr(e)}
+  busy=false;await loadAll();
+}
+function mergeIn(){}
+function localPending(){return null}
+function refresh(){
+  var a=document.activeElement;
+  if(a&&(a.id==='msg-texte'||a.id==='an-texte'||a.id==='an-titre'||a.id==='newtask'))return;
+  if(S.tab==='chevaux'&&a&&a.id==='q'&&document.getElementById('hlist')){document.getElementById('hlist').innerHTML=hList();return}
+  render();
+}
+function startLocal(){
+  var found=false;
+  try{var raw=localStorage.getItem(KEY);if(raw){var d=JSON.parse(raw);if(d&&Array.isArray(d.chevaux)){db=d;found=true}}}catch(e){canSave=false}
+  if(!found){db=seed();saveLocal()}
+  normalize();
+  var dr='gerant';try{dr=localStorage.getItem(KEY+'-demorole')||'gerant'}catch(e){}
+  setDemoRole(dr,true);
+  render();
+  setTimeout(cleanupPieces,3000);
+}
+function setDemoRole(r,silent){
+  if(r!=='gerant'&&!owner(r))r='gerant';
+  me=r==='gerant'?{role:'gerant',prop:null,email:'',uid:null}:{role:'client',prop:r,email:'',uid:null};
+  try{localStorage.setItem(KEY+'-demorole',r)}catch(e){}
+  if(!silent)S.tab=(isG()?TABS_G:TABS_C)[0];fixTab();renderNav();if(!silent)render();
+}
+/* ---------- mode en ligne : connexion, chargement, actualisation ---------- */
+function cacheKey(){return KEY+'-cloud-'+(me.uid||'')}
+async function startCloud(){
+  sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  sb.auth.onAuthStateChange(function(ev){if(ev==='PASSWORD_RECOVERY'){authState='login';authView='newpass';render()}});
+  var s=null;try{s=(await sb.auth.getSession()).data.session}catch(e){}
+  if(authView==='newpass')return;
+  if(!s){authState='login';renderNav();render();return}
+  await afterLogin(s);
+}
+async function afterLogin(s){
+  me.email=s.user.email||'';me.uid=s.user.id;
+  var r;try{r=await sb.rpc('mon_profil')}catch(e){r={error:e}}
+  if(r.error){
+    try{var c=JSON.parse(localStorage.getItem(cacheKey())||'null');if(c&&c.me){me=c.me;db=c.db;normalize();authState='ok';loadErr=true;fixTab();renderNav();render();return}}catch(e){}
+    authState='login';authMsg='Connexion à la base impossible. Vérifiez votre réseau puis réessayez.';renderNav();render();return}
+  if(!r.data){authState='activate';renderNav();render();return}
+  me.role=r.data.role;me.prop=r.data.proprietaire_id;
+  var prevUid=null;try{prevUid=localStorage.getItem(KEY+'-lastuid')}catch(e){}if(prevUid!==me.uid){S.tab=(isG()?TABS_G:TABS_C)[0];try{localStorage.setItem(KEY+'-lastuid',me.uid)}catch(e){}}
+  try{var c2=JSON.parse(localStorage.getItem(cacheKey())||'null');if(c2&&c2.db){db=c2.db;normalize()}}catch(e){}
+  authState='ok';fixTab();renderNav();render();
+  await loadAll();
+}
+var loading=false;
+async function loadAll(){
+  if(mode!=='cloud'||authState!=='ok'||loading)return;loading=true;
+  var kinds=(isG()?COLS:['proprietaires','chevaux','cours','factures','annonces','messages']).concat(['config']);
+  var res;try{res=await Promise.all(kinds.map(function(k){var q=sb.from(k).select('*');
+    if(k==='messages')q=q.order('created_at',{ascending:false}).limit(1000);if(k==='annonces')q=q.order('created_at',{ascending:false}).limit(100);return q}))}
+  catch(e){loading=false;loadErr=true;refresh();return}
+  var nd=emptyDb(),err=false;
+  res.forEach(function(r,i){var k=kinds[i];if(r.error){err=true;nd[k]=db[k]||[];return}
+    if(k==='config'){var row=(r.data||[]).find(function(x){return x.id==='main'}),c=row&&row.data||{};
+      ['tarifs','lieux','ecurie','compteurs','annulHeures'].forEach(function(x){if(c[x]!==undefined)nd[x]=c[x]});return}
+    nd[k]=(r.data||[]).map(function(row){var o=Object.assign({},row.data||{});o.id=row.id;
+      if(k==='proprietaires'){o._code=row.invite_code||'';o._lie=!!row.user_id}
+      if(k==='messages'||k==='annonces')o.date=row.created_at;
+      if(k==='messages')o.proprietaireId=row.proprietaire_id;
+      if(k==='chevaux'||k==='factures')o.proprietaireId=o.proprietaireId||row.proprietaire_id;
+      return o})});
+  loadErr=err;db=nd;normalize();loading=false;
+  try{localStorage.setItem(cacheKey(),JSON.stringify({me:me,db:db}))}catch(e){}
+  refresh();
+}
+setInterval(function(){if(mode==='cloud'&&document.visibilityState==='visible'&&!M&&authState==='ok'&&(S.tab==='messages'||Date.now()-(window.__lastLoad||0)>60000)){window.__lastLoad=Date.now();loadAll()}},20000);
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&mode==='cloud'&&!M)loadAll()});
+function frErr(e){var m=(e&&e.message)||'';
+  if(/Invalid login/i.test(m))return 'E-mail ou mot de passe incorrect.';
+  if(/already registered|already exists/i.test(m))return 'Un compte existe déjà avec cet e-mail : connectez-vous.';
+  if(/Password should be/i.test(m))return 'Le mot de passe doit faire au moins 6 caractères.';
+  if(/Email not confirmed/i.test(m))return 'Adresse e-mail pas encore confirmée : ouvrez le lien reçu par e-mail.';
+  if(/rate limit/i.test(m))return 'Trop de tentatives : réessayez dans quelques minutes.';
+  if(/fetch|network/i.test(m))return 'Pas de connexion à la base : vérifiez votre réseau.';
+  return m||'Une erreur est survenue.'}
+function vAuth(){
+  var e=db.ecurie&&db.ecurie.nom||'',h='<div class="hero" style="gap:6px"><div class="big" style="font-size:26px">'+esc(e||'Élevage d\'ALB')+'</div><div style="opacity:.85">Gérant et clients de l\'écurie</div></div>';
+  if(authMsg)h+='<div class="alert late"><div class="x">'+esc(authMsg)+'</div></div>';
+  if(authState==='loading')return h+'<div class="panel empty">Connexion…</div>';
+  if(authState==='activate')return h+'<form class="form panel" id="factivate" style="padding:16px"><h2 style="font-size:19px">Activer votre accès</h2><p class="sub" style="margin:0">Connecté avec '+esc(me.email)+'. Saisissez le code d\'activation reçu de l\'écurie.</p>'+
+    fld('act-code','Code d\'activation','','text',' required autocomplete="off" autocapitalize="characters"')+'<button class="btn primary" type="submit">Activer</button><button class="btn" type="button" data-act="logout">Se déconnecter</button></form>';
+  if(authView==='newpass')return h+'<form class="form panel" id="fnewpass" style="padding:16px"><h2 style="font-size:19px">Nouveau mot de passe</h2>'+fld('np-pass','Nouveau mot de passe','','password',' required minlength="6" autocomplete="new-password"')+'<button class="btn primary" type="submit">Enregistrer</button></form>';
+  if(authView==='signup')return h+'<form class="form panel" id="fsignup" style="padding:16px"><h2 style="font-size:19px">Créer mon compte</h2><p class="sub" style="margin:0">Utilisez le code d\'activation donné par l\'écurie.</p>'+
+    fld('su-email','E-mail','','email',' required autocomplete="email"')+fld('su-pass','Mot de passe (6 caractères minimum)','','password',' required minlength="6" autocomplete="new-password"')+fld('su-code','Code d\'activation','','text',' required autocomplete="off" autocapitalize="characters"')+
+    '<button class="btn primary" type="submit">Créer mon compte</button><button class="btn" type="button" data-act="auth-view" data-id="login">J\'ai déjà un compte</button></form>';
+  return h+'<form class="form panel" id="flogin" style="padding:16px"><h2 style="font-size:19px">Connexion</h2>'+fld('li-email','E-mail','','email',' required autocomplete="email"')+fld('li-pass','Mot de passe','','password',' required autocomplete="current-password"')+
+    '<button class="btn primary" type="submit">Se connecter</button><button class="btn" type="button" data-act="auth-view" data-id="signup">Première connexion : créer mon compte</button><button class="btn" type="button" data-act="forgot" style="border:0;background:none;color:var(--accent);min-height:36px">Mot de passe oublié</button></form>';
+}
+async function doAuth(id){
+  authMsg='';
+  try{
+    if(id==='flogin'){var r=await sb.auth.signInWithPassword({email:v('li-email'),password:document.getElementById('li-pass').value});if(r.error)throw r.error;await afterLogin(r.data.session);return}
+    if(id==='fsignup'){var code=v('su-code');var r2=await sb.auth.signUp({email:v('su-email'),password:document.getElementById('su-pass').value});if(r2.error)throw r2.error;
+      if(!r2.data.session){authMsg='Compte créé. Confirmez votre adresse avec le lien reçu par e-mail, puis connectez-vous et saisissez votre code.';authView='login';render();return}
+      var l=await sb.rpc('lier_compte',{p_code:code});if(l.error){me.email=r2.data.user.email;me.uid=r2.data.user.id;authState='activate';authMsg=frErr(l.error);render();return}
+      await afterLogin(r2.data.session);return}
+    if(id==='factivate'){var l2=await sb.rpc('lier_compte',{p_code:v('act-code')});if(l2.error)throw l2.error;var s=(await sb.auth.getSession()).data.session;await afterLogin(s);return}
+    if(id==='fnewpass'){var r3=await sb.auth.updateUser({password:document.getElementById('np-pass').value});if(r3.error)throw r3.error;authView='login';toast('Mot de passe modifié');var s2=(await sb.auth.getSession()).data.session;if(s2)await afterLogin(s2);else render();return}
+  }catch(e){authMsg=frErr(e);render()}
+}
+var TABS_G=['jour','chevaux','cours','factures','proprios'],TABS_C=['accueil','cours','cheval','factures','messages'];
+function fixTab(){var ok=isG()?TABS_G.concat(['messages']):TABS_C;if(ok.indexOf(S.tab)<0)S.tab=ok[0]}
+/* ---------- justificatifs (photos, PDF) : base IndexedDB de l'appareil ---------- */
+var IDBP=null;
+function idb(){if(IDBP)return IDBP;IDBP=new Promise(function(res,rej){if(!window.indexedDB){rej(new Error('indisponible'));return}var r=indexedDB.open('ecurie-pieces',1);r.onupgradeneeded=function(){r.result.createObjectStore('pieces')};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}});return IDBP}
+function pieceTx(mode,fn){return idb().then(function(d){return new Promise(function(res,rej){var tx=d.transaction('pieces',mode),rq=fn(tx.objectStore('pieces'));tx.oncomplete=function(){res(rq?rq.result:undefined)};tx.onerror=function(){rej(tx.error)};tx.onabort=function(){rej(tx.error)}})})}
+function pieceNomOf(id){var n='';db.chevaux.forEach(function(c){(c.frais||[]).forEach(function(f){if(f.pieceId===id)n=f.pieceNom||''})});return n||String(id).split('/').pop()}
+function pieceGet(id){if(mode==='cloud')return sb.storage.from('pieces').download(id).then(function(r){if(r.error||!r.data)return null;return{blob:r.data,nom:pieceNomOf(id),type:r.data.type||''}});return pieceTx('readonly',function(s){return s.get(id)})}
+function piecePut(id,o){if(mode==='cloud')return sb.storage.from('pieces').upload(id,o.blob,{contentType:o.type||'application/octet-stream',upsert:true}).then(function(r){if(r.error)throw r.error});return pieceTx('readwrite',function(s){return s.put(o,id)})}
+function pieceDel(id){if(mode==='cloud')return sb.storage.from('pieces').remove([id]).then(function(){},function(){});return pieceTx('readwrite',function(s){return s.delete(id)}).catch(function(){})}
+function pieceKeys(){return pieceTx('readonly',function(s){return s.getAllKeys()})}
+function prepFile(file){
+  if(file.size>15*1024*1024)return Promise.reject(new Error('trop lourd'));
+  if(/^image\//.test(file.type)&&!/gif|svg/.test(file.type))return new Promise(function(res){
+    var u=URL.createObjectURL(file),im=new Image();
+    im.onload=function(){var s=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
+      c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
+      c.toBlob(function(b){res(b?{blob:b,nom:(file.name||'photo').replace(/\.[^.]+$/,'')+'.jpg',type:'image/jpeg'}:{blob:file,nom:file.name||'photo',type:file.type})},'image/jpeg',0.82)};
+    im.onerror=function(){URL.revokeObjectURL(u);res({blob:file,nom:file.name||'fichier',type:file.type})};im.src=u});
+  return Promise.resolve({blob:file,nom:file.name||'document.pdf',type:file.type||'application/pdf'});
+}
+function referencedPieces(){var r={};db.chevaux.forEach(function(c){(c.frais||[]).forEach(function(f){if(f.pieceId)r[f.pieceId]=1})});db.factures.forEach(function(f){(f.lignes||[]).forEach(function(l){if(l.pieceId)r[l.pieceId]=1})});
+  if(M&&M.draft&&Array.isArray(M.draft.frais))M.draft.frais.forEach(function(f){if(f.pieceId)r[f.pieceId]=1});return r}
+function cleanupPieces(){if(mode==='cloud')return;if(M&&M.kind==='chevaux'){setTimeout(cleanupPieces,5000);return}pieceKeys().then(function(keys){var r=referencedPieces();(keys||[]).forEach(function(k){if(!r[k])pieceDel(k)})}).catch(function(){})}
+var viewUrl=null;
+function showPiece(id){
+  pieceGet(id).then(function(p){
+    if(!p){toast('Justificatif introuvable sur cet appareil.');return}
+    if(viewUrl)URL.revokeObjectURL(viewUrl);viewUrl=URL.createObjectURL(p.blob);var img=/^image\//.test(p.type);
+    document.getElementById('vbody').innerHTML='<div class="mhead"><h2 id="vtitle">Justificatif</h2><button class="icon-btn" data-act="viewer-close" aria-label="Fermer">✕</button></div>'+
+      (img?'<img src="'+viewUrl+'" alt="Justificatif '+esc(p.nom)+'" style="width:100%;border-radius:12px;border:1px solid var(--line)">':'<div class="panel empty"><b style="color:var(--fg)">'+esc(p.nom)+'</b><br>Document PDF</div>')+
+      '<div class="actions"><a class="btn grow" href="'+viewUrl+'" target="_blank" rel="noopener">Ouvrir</a><button class="btn grow" data-act="piece-dl" data-id="'+esc(id)+'">Télécharger</button></div>';
+    document.getElementById('viewer').hidden=false;
+  }).catch(function(){toast('Impossible d\'ouvrir le justificatif.')});
+}
+function closeViewer(){document.getElementById('viewer').hidden=true;if(viewUrl){var u=viewUrl;setTimeout(function(){URL.revokeObjectURL(u)},60000);viewUrl=null}}
+function blobToData(b){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result)};r.onerror=function(){rej(r.error)};r.readAsDataURL(b)})}
+function addPieceTo(fr,file){
+  return prepFile(file).then(function(p){var id=mode==='cloud'?((M&&M.draft&&M.draft.proprietaireId)||'divers')+'/pc-'+uid():'pc-'+uid();return piecePut(id,p).then(function(){fr.pieceId=id;fr.pieceNom=p.nom;fr.pieceType=p.type})});
+}
+function pieceErr(e){toast(e&&e.message==='trop lourd'?'Fichier trop lourd (15 Mo maximum).':'Impossible d\'enregistrer le justificatif sur cet appareil.')}
+
+function normalize(){
+  COLS.forEach(function(k){if(!Array.isArray(db[k]))db[k]=[]});if(!db.tarifs)db.tarifs=emptyDb().tarifs;if(db.annulHeures===undefined||db.annulHeures===null)db.annulHeures=24;
+  db.cours.forEach(function(c){if(!Array.isArray(c.inscrits))c.inscrits=[]});db.factures.forEach(function(f){if(!Array.isArray(f.lignes))f.lignes=[]});
+  if(!Array.isArray(db.lieux)||!db.lieux.length)db.lieux=LIEUX_DEF.slice();
+  db.ecurie=Object.assign({},ECURIE_DEF,db.ecurie||{});if(!db.compteurs)db.compteurs={};
+  db.chevaux.forEach(function(c){if(!Array.isArray(c.soins))c.soins=[];if(!Array.isArray(c.frais))c.frais=[]});
+}
+
+
+var S={tab:'jour',coursDate:today(),mois:today().slice(0,7),q:'',confirmClear:false};
+try{var lt=localStorage.getItem(KEY+'-tab');if(lt&&TITLES[lt])S.tab=lt}catch(e){}
+var M=null,installEvt=null;
+var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent),isStandalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+try{S.iosHidden=!!localStorage.getItem(KEY+'-ioshint')}catch(e){}
+
+function owner(id){return db.proprietaires.find(function(p){return p.id===id})}
+function horse(id){return db.chevaux.find(function(c){return c.id===id})}
+function byTime(a,b){return(a.date+a.heure).localeCompare(b.date+b.heure)}
+
+/* ---------- alertes ---------- */
+function alerts(){
+  var t=today(),out=[];
+  db.chevaux.forEach(function(c){(c.soins||[]).forEach(function(s){var n=diff(s.date,t);if(n<=14)out.push({n:n,title:s.type+' — '+c.nom,horse:c.id})})});
+  db.proprietaires.forEach(function(p){if(p.rcFin){var n=diff(p.rcFin,t);if(n<=30)out.push({n:n,title:'Assurance RC — '+p.nom,owner:p.id})}});
+  return out.sort(function(a,b){return a.n-b.n});
+}
+function whenTxt(n){return n<0?'En retard de '+(-n)+' j':n===0?"Aujourd'hui":n===1?'Demain':'Dans '+n+' j'}
+function nextSoin(c){var t=today();var s=(c.soins||[]).slice().sort(function(a,b){return a.date.localeCompare(b.date)})[0];if(!s)return'';var n=diff(s.date,t);
+  return '<span class="pill '+(n<0?'late':n<=14?'warn':'muted')+'">'+esc(s.type)+' · '+(n<0?'en retard':fdate(s.date))+'</span>'}
+
+/* ---------- vues ---------- */
+function vJour(){
+  var t=today(),al=alerts(),cj=db.cours.filter(function(c){return c.date===t}).sort(byTime);
+  var done=db.taches.filter(function(k){return k.doneOn===t}).length,h='';
+  if(installEvt)h+='<div class="banner"><div class="x">Installez l\'appli sur cet appareil pour l\'ouvrir comme une application, même sans réseau.</div><button class="btn sm primary" data-act="install">Installer</button></div>';
+  else if(isIOS&&!isStandalone&&!S.iosHidden)h+='<div class="banner"><div class="x">Pour installer l\'appli sur iPhone : touchez <b>Partager</b> puis <b>Sur l\'écran d\'accueil</b>.</div><button class="btn sm" data-act="ios-hide">Compris</button></div>';
+  if(!canSave)h+='<div class="alert late"><div class="x">Ce navigateur bloque aussi l\'enregistrement : les modifications seront perdues à la fermeture.</div></div>';
+  if(mode==='local')h+='<div class="banner"><div class="x">Mode démo : testez l\'espace client avec Réglages › <b>Voir l\'appli comme…</b></div></div>';
+  if(readOnly)h+='<div class="alert"><div class="x">Accès en lecture seule : demandez au gérant de vous donner le droit de modifier.</div></div>';
+  if(loadErr)h+='<div class="alert late"><div class="x">Une partie des données n\'a pas pu être chargée. Rechargez la page.</div></div>';
+  var lp=localPending();
+  if(lp)h+='<div class="banner"><div class="x">Des fiches saisies auparavant dans ce navigateur ne sont pas encore dans la base.</div><button class="btn sm primary" data-act="migrate">Les transférer</button><button class="btn sm" data-act="migrate-skip">Ignorer</button></div>';
+  var fm=factMonthTarget();
+  if(fm&&db.proprietaires.length){var fl=db.factures.filter(function(f){return f.mois===fm}),ns=fl.filter(function(f){return !f.envoyeeLe}).length;
+    if(!fl.length||ns)h+='<div class="banner"><div class="x"><b>Factures de '+monthLabel(fm).toLowerCase()+'</b><br>'+(fl.length?ns+' à envoyer aux propriétaires.':'À préparer et envoyer aux propriétaires.')+'</div><button class="btn sm primary" data-act="goto-fact" data-id="'+fm+'">'+(fl.length?'Envoyer':'Préparer')+'</button></div>'}
+  if(db.exemple)h+='<div class="banner"><div class="x">Ces fiches sont des <b>exemples</b> pour découvrir l\'appli.</div>'+
+    (S.confirmClear?'<button class="btn sm danger" data-act="clear-ok">Confirmer : tout effacer</button><button class="btn sm" data-act="clear-no">Annuler</button>'
+    :'<button class="btn sm" data-act="clear">Effacer les exemples</button>')+'</div>';
+  h+='<div class="stats"><div class="stat"><b>'+db.chevaux.length+'</b><span>chevaux</span></div><div class="stat"><b>'+cj.length+'</b><span>cours aujourd\'hui</span></div>'+
+    '<div class="stat '+(al.length?'hot':'')+'"><b>'+al.length+'</b><span>alertes</span></div></div>';
+  h+='<section><div class="sh"><h2>À surveiller</h2><span class="sub">14 prochains jours</span></div>';
+  h+=al.length?al.map(function(a){return '<button class="alert '+(a.n<0?'late':'')+'" style="border:0;text-align:left;cursor:pointer;width:100%" data-act="'+(a.horse?'horse':'owner')+'" data-id="'+(a.horse||a.owner)+'"><div class="x"><b>'+esc(a.title)+'</b><br>'+whenTxt(a.n)+'</div></button>'}).join('')
+    :'<div class="panel empty">Aucune échéance proche.</div>';
+  h+='</section>';
+  h+='<section><div class="sh"><h2>Tâches du jour</h2><span class="sub">'+done+' / '+db.taches.length+' faites</span></div><div class="panel items">';
+  h+=db.taches.map(function(k){var d=k.doneOn===t;return '<div class="item task'+(d?' done':'')+'"><input type="checkbox" id="tk-'+k.id+'" data-act="task" data-id="'+k.id+'"'+(d?' checked':'')+'><label class="x" for="tk-'+k.id+'"><b>'+esc(k.label)+'</b></label><button class="del-x" data-act="task-del" data-id="'+k.id+'" aria-label="Supprimer la tâche '+esc(k.label)+'">✕</button></div>'}).join('');
+  h+='<form class="item" id="ftask" style="cursor:default"><input class="search" id="newtask" placeholder="Ajouter une tâche quotidienne" aria-label="Nouvelle tâche" style="flex:1;min-width:0"><button class="btn sm primary" type="submit">Ajouter</button></form></div>';
+  h+='<p class="sub" style="margin:0">Les cases se décochent automatiquement chaque matin.</p></section>';
+  h+='<section><div class="sh"><h2>Cours du jour</h2><button class="btn sm" data-act="tab" data-id="cours">Planning</button></div>';
+  h+=cj.length?'<div class="panel items">'+cj.map(coursItem).join('')+'</div>':'<div class="panel empty">Pas de cours aujourd\'hui.</div>';
+  return h+'</section>'+annoncesSection();
+}
+function coursItem(c){
+  var n=c.inscrits.length,full=n>=c.places,pill=c.type==='particulier'?'<span class="pill">Particulier</span>':full?'<span class="pill">Complet</span>':'<span class="pill warn">'+(c.places-n)+' place'+(c.places-n>1?'s':'')+'</span>';
+  return '<button class="item" data-act="cours" data-id="'+c.id+'"><span class="time">'+esc(c.heure.replace(':','h'))+'</span><span class="x"><b>'+esc(c.titre)+'</b><span>'+esc(c.lieu)+' · '+c.duree+' min · '+n+'/'+c.places+' cavalier'+(c.places>1?'s':'')+'</span>'+
+    (n?'<span class="chips">'+c.inscrits.map(function(id){var o=owner(id);return o?'<span class="chip">'+esc(o.nom)+'</span>':''}).join('')+'</span>':'')+'</span><span class="end">'+pill+'</span></button>';
+}
+function vChevaux(){
+  return '<div class="actions"><input class="search grow" id="q" type="search" placeholder="Rechercher un cheval ou un propriétaire" aria-label="Rechercher" value="'+esc(S.q)+'"><button class="btn primary" data-act="horse">+ Cheval</button></div><div id="hlist">'+hList()+'</div>';
+}
+function hList(){
+  var q=S.q.trim().toLowerCase(),l=db.chevaux.filter(function(c){var o=owner(c.proprietaireId);return !q||(c.nom+' '+(o?o.nom:'')+' '+c.race).toLowerCase().indexOf(q)>-1}).sort(function(a,b){return a.nom.localeCompare(b.nom)});
+  if(!db.chevaux.length)return '<div class="panel empty">Aucun cheval. Ajoutez le premier avec « + Cheval ».</div>';
+  if(!l.length)return '<div class="panel empty">Aucun résultat.</div>';
+  return '<div class="panel items">'+l.map(function(c){var o=owner(c.proprietaireId);return '<button class="item" data-act="horse" data-id="'+c.id+'"><span class="avatar">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>'+esc([c.box,PENSIONS[c.pension],o?o.nom:'Sans propriétaire'].filter(Boolean).join(' · '))+'</span></span><span class="end">'+nextSoin(c)+'</span></button>'}).join('')+'</div>';
+}
+function vCours(){
+  var d=toD(S.coursDate),start=addDays(S.coursDate,-((d.getDay()+6)%7)),h='';
+  var days=[];for(var i=0;i<7;i++)days.push(addDays(start,i));
+  h+='<div class="weeknav"><button class="icon-btn" data-act="week" data-id="-7" aria-label="Semaine précédente">‹</button><span class="sub">Semaine du '+fdate(start,{day:'numeric',month:'long'})+'</span><button class="icon-btn" data-act="week" data-id="7" aria-label="Semaine suivante">›</button></div>';
+  h+='<div class="days">'+days.map(function(x){var has=db.cours.some(function(c){return c.date===x});return '<button class="day'+(x===S.coursDate?' on':'')+'" data-act="day" data-id="'+x+'" aria-pressed="'+(x===S.coursDate)+'"><small>'+toD(x).toLocaleDateString('fr-FR',{weekday:'short'}).replace('.','')+'</small><b>'+toD(x).getDate()+'</b>'+(has?'<span class="dot"></span>':'')+'</button>'}).join('')+'</div>';
+  var l=db.cours.filter(function(c){return c.date===S.coursDate}).sort(byTime);
+  h+='<section><div class="sh"><h2>'+fdate(S.coursDate,{weekday:'long',day:'numeric',month:'long'})+'</h2><button class="btn sm primary" data-act="cours">+ Cours</button></div>';
+  h+=l.length?'<div class="panel items">'+l.map(coursItem).join('')+'</div>':'<div class="panel empty">Aucun cours ce jour-là.</div>';
+  var lieux={};l.forEach(function(c){(lieux[c.lieu]=lieux[c.lieu]||[]).push(c.heure.replace(':','h'))});
+  if(l.length)h+='<p class="sub" style="margin:0">Occupation : '+Object.keys(lieux).map(function(k){return esc(k)+' à '+lieux[k].join(', ')}).join(' · ')+'</p>';
+  return h+'</section>';
+}
+function vFactures(){
+  var l=db.factures.filter(function(f){return f.mois===S.mois}),tot=0,paid=0,wait=0;
+  l.forEach(function(f){tot+=f.total;f.statut==='payee'?paid++:wait++});var toSend=l.filter(function(f){return !f.envoyeeLe}).length;
+  var h='<div class="field"><label for="fmois">Mois</label><input type="month" id="fmois" value="'+S.mois+'"></div>';
+  h+='<div class="hero"><div class="sub" style="color:inherit;opacity:.8">'+monthLabel(S.mois)+'</div><div class="big">'+money(tot)+'</div><div class="row"><div><b>'+paid+'</b>payée'+(paid>1?'s':'')+'</div><div><b>'+wait+'</b>non payée'+(wait>1?'s':'')+'</div><div><b>'+toSend+'</b>à envoyer</div></div>'+
+    '<button class="btn block" data-act="gen" style="color:var(--fg)">'+(l.length?'Mettre à jour':'Générer')+' les factures du mois</button></div>';
+  h+='<section><div class="sh"><h2>Détail</h2><button class="btn sm" data-act="settings">Tarifs</button></div>';
+  h+=l.length?'<div class="panel items">'+l.sort(function(a,b){var x=owner(a.proprietaireId),y=owner(b.proprietaireId);return(x?x.nom:'').localeCompare(y?y.nom:'')}).map(function(f){var o=owner(f.proprietaireId);
+    return '<button class="item" data-act="fact" data-id="'+f.id+'"><span class="avatar">'+esc(initials(o?o.nom:'?'))+'</span><span class="x"><b>'+esc(o?o.nom:'Propriétaire supprimé')+'</b><span>'+f.lignes.length+' ligne'+(f.lignes.length>1?'s':'')+'</span></span><span class="end"><b>'+money(f.total)+'</b><br>'+(f.statut==='payee'?'<span class="pill">Payée</span>':f.envoyeeLe?'<span class="pill muted">Envoyée</span>':'<span class="pill warn">À envoyer</span>')+'</span></button>'}).join('')+'</div>'
+    :'<div class="panel empty">Aucune facture pour ce mois. « Générer » calcule les pensions et les cours de chaque propriétaire.</div>';
+  if(!db.ecurie.nom)h+='<div class="alert"><div class="x">Renseignez le nom, l\'adresse et le SIRET de l\'écurie dans <b>Réglages</b> : ils apparaissent en en-tête des factures.</div></div>';
+  return h+'<p class="sub" style="margin:0">Touchez une facture pour l\'envoyer en PDF au propriétaire. Les factures déjà envoyées ou payées ne sont pas recalculées.</p></section>';
+}
+function vProprios(){
+  var h='<div class="actions"><span class="grow sub" style="align-self:center">'+db.proprietaires.length+' propriétaire'+(db.proprietaires.length>1?'s':'')+'</span><button class="btn primary" data-act="owner">+ Propriétaire</button></div>';
+  if(!db.proprietaires.length)return h+'<div class="panel empty">Aucun propriétaire. Ajoutez le premier avec « + Propriétaire ».</div>';
+  return h+'<div class="panel items">'+db.proprietaires.slice().sort(function(a,b){return a.nom.localeCompare(b.nom)}).map(function(p){
+    var hs=db.chevaux.filter(function(c){return c.proprietaireId===p.id}).map(function(c){return c.nom}),n=p.rcFin?diff(p.rcFin,today()):999;
+    return '<button class="item" data-act="owner" data-id="'+p.id+'"><span class="avatar">'+esc(initials(p.nom))+'</span><span class="x"><b>'+esc(p.nom)+'</b><span>'+esc(hs.join(', ')||'Aucun cheval')+'</span></span><span class="end">'+(n<0?'<span class="pill late">RC expirée</span>':n<=30?'<span class="pill warn">RC bientôt</span>':esc(p.tel||''))+'</span></button>'}).join('')+'</div>';
+}
+/* ---------- espace client ---------- */
+function myHorses(){return db.chevaux.filter(function(c){return c.proprietaireId===me.prop})}
+function myFactures(){return db.factures.filter(function(f){return f.proprietaireId===me.prop&&(f.envoyeeLe||f.statut==='payee')}).sort(function(a,b){return b.mois.localeCompare(a.mois)})}
+function unreadFor(pid){return db.messages.filter(function(m){return m.proprietaireId===pid&&!m.lu&&m.de===(isG()?'client':'gerant')}).length}
+function unreadTotal(){return isG()?db.messages.filter(function(m){return !m.lu&&m.de==='client'}).length:unreadFor(me.prop)}
+function coursStart(c){return new Date(c.date+'T'+(c.heure||'00:00')+':00')}
+function firstName(n){return String(n||'').split(' ')[0]}
+function installBanners(){
+  if(installEvt)return '<div class="banner"><div class="x">Installez l\'appli sur cet appareil pour l\'ouvrir comme une application.</div><button class="btn sm primary" data-act="install">Installer</button></div>';
+  if(isIOS&&!isStandalone&&!S.iosHidden)return '<div class="banner"><div class="x">Pour installer l\'appli sur iPhone : touchez <b>Partager</b> puis <b>Sur l\'écran d\'accueil</b>.</div><button class="btn sm" data-act="ios-hide">Compris</button></div>';
+  return '';
+}
+function demoBanner(){
+  if(mode!=='local'||isG())return '';
+  var o=owner(me.prop);return '<div class="banner"><div class="x">Mode démo : vous voyez l\'appli comme <b>'+esc(o?o.nom:'un client')+'</b>.</div><button class="btn sm" data-act="demo-role" data-id="gerant">Revenir au gérant</button></div>';
+}
+function cAccueil(){
+  var o=owner(me.prop)||{nom:''},t=today(),h=demoBanner()+installBanners();
+  if(loadErr)h+='<div class="alert"><div class="x">Hors connexion : affichage des dernières données reçues.</div></div>';
+  h+='<h2 style="font-size:24px">Bonjour '+esc(firstName(o.nom))+'</h2>';
+  var un=unreadFor(me.prop);
+  if(un)h+='<div class="banner"><div class="x"><b>'+un+' nouveau'+(un>1?'x':'')+' message'+(un>1?'s':'')+'</b> de l\'écurie.</div><button class="btn sm primary" data-act="tab" data-id="messages">Lire</button></div>';
+  var nx=db.cours.filter(function(c){return c.inscrits.indexOf(me.prop)>-1&&coursStart(c)>=new Date()}).sort(byTime)[0];
+  h+='<section><div class="sh"><h2>Mon prochain cours</h2><button class="btn sm" data-act="tab" data-id="cours">Planning</button></div>';
+  h+=nx?'<div class="hero" style="gap:4px"><div class="big" style="font-size:22px">'+fdate(nx.date,{weekday:'long',day:'numeric',month:'long'})+' · '+esc(nx.heure.replace(':','h'))+'</div><div style="opacity:.85">'+esc(nx.titre)+' · '+esc(nx.lieu)+' · '+nx.duree+' min</div></div>'
+    :'<div class="panel empty">Aucun cours réservé. Ouvrez le planning pour réserver.</div>';
+  h+='</section>';
+  var hs=myHorses();
+  if(hs.length){h+='<section><div class="sh"><h2>'+(hs.length>1?'Mes chevaux':'Mon cheval')+'</h2></div><div class="panel items">'+hs.map(function(c){
+    return '<button class="item" data-act="tab" data-id="cheval"><span class="avatar">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>'+esc([c.box,PENSIONS[c.pension]].filter(Boolean).join(' · '))+'</span></span><span class="end">'+nextSoin(c)+'</span></button>'}).join('')+'</div></section>'}
+  var fa=myFactures().filter(function(f){return f.statut!=='payee'})[0];
+  if(fa)h+='<section><div class="sh"><h2>Facture à régler</h2></div><button class="item panel" data-act="fact" data-id="'+fa.id+'"><span class="x"><b>'+esc(monthLabel(fa.mois))+'</b><span>À régler avant le '+fdl(fa.echeance)+'</span></span><span class="end"><b>'+money(fa.total)+'</b></span></button></section>';
+  var an=db.annonces.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))}).slice(0,5);
+  h+='<section><div class="sh"><h2>Annonces de l\'écurie</h2></div>'+(an.length?an.map(annonceCard).join(''):'<div class="panel empty">Aucune annonce pour le moment.</div>')+'</section>';
+  return h;
+}
+function annonceCard(a,del){
+  return '<div class="panel" style="padding:14px;display:flex;gap:10px;align-items:flex-start"><div style="flex:1;min-width:0"><div class="sub">'+esc(fdateTime(a.date))+'</div><b style="display:block;margin:2px 0 4px">'+esc(a.titre)+'</b><div style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px">'+esc(a.texte)+'</div></div>'+
+    (del===true?'<button class="del-x" data-act="an-del" data-id="'+a.id+'" aria-label="Supprimer l\'annonce">✕</button>':'')+'</div>';
+}
+function fdateTime(s){if(!s)return '';var d=new Date(s);if(isNaN(d))return '';return d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' à '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
+function weekStrip(){
+  var d=toD(S.coursDate),start=addDays(S.coursDate,-((d.getDay()+6)%7)),days=[];for(var i=0;i<7;i++)days.push(addDays(start,i));
+  return '<div class="weeknav"><button class="icon-btn" data-act="week" data-id="-7" aria-label="Semaine précédente">‹</button><span class="sub">Semaine du '+fdate(start,{day:'numeric',month:'long'})+'</span><button class="icon-btn" data-act="week" data-id="7" aria-label="Semaine suivante">›</button></div>'+
+    '<div class="days">'+days.map(function(x){var has=db.cours.some(function(c){return c.date===x&&(isG()||c.inscrits.indexOf(me.prop)>-1)}),any=db.cours.some(function(c){return c.date===x});
+      return '<button class="day'+(x===S.coursDate?' on':'')+'" data-act="day" data-id="'+x+'" aria-pressed="'+(x===S.coursDate)+'"><small>'+toD(x).toLocaleDateString('fr-FR',{weekday:'short'}).replace('.','')+'</small><b>'+toD(x).getDate()+'</b>'+(any?'<span class="dot"'+(has||isG()?'':' style="opacity:.35"')+'></span>':'')+'</button>'}).join('')+'</div>';
+}
+function cCours(){
+  var h=demoBanner()+weekStrip(),l=db.cours.filter(function(c){return c.date===S.coursDate}).sort(byTime),now=new Date();
+  h+='<section><div class="sh"><h2>'+fdate(S.coursDate,{weekday:'long',day:'numeric',month:'long'})+'</h2></div>';
+  if(!l.length)h+='<div class="panel empty">Aucun cours ce jour-là.</div>';
+  else h+='<div class="panel items">'+l.map(function(c){
+    var mine=c.inscrits.indexOf(me.prop)>-1,n=c.inscrits.length,free=c.places-n,past=coursStart(c)<now,priv=c.type==='particulier'&&!mine&&n>0,act='';
+    var tard=(coursStart(c)-now)/36e5<(+db.annulHeures||0);
+    if(mine)act=(past||tard)?'<span class="pill">Inscrit</span>':(S.confirmAnnul===c.id?'<button class="btn sm danger" data-act="c-annuler" data-id="'+c.id+'">Confirmer</button>':'<button class="btn sm" data-act="c-annuler-ask" data-id="'+c.id+'">Annuler</button>');
+    else if(past)act='<span class="pill muted">Passé</span>';
+    else if(free>0)act='<button class="btn sm primary" data-act="c-reserver" data-id="'+c.id+'">Réserver</button>';
+    else act='<span class="pill muted">'+(priv?'Réservé':'Complet')+'</span>';
+    return '<div class="item" style="cursor:default"><span class="time">'+esc(c.heure.replace(':','h'))+'</span><span class="x"><b>'+esc(priv?'Cours particulier':c.titre)+'</b><span>'+esc(c.lieu)+' · '+c.duree+' min · '+(c.type==='particulier'?'particulier':(free>0?free+' place'+(free>1?'s':'')+' libre'+(free>1?'s':''):'complet'))+(mine?' · <b style="color:var(--accent)">vous êtes inscrit</b>':'')+'</span></span><span class="end">'+act+'</span></div>'}).join('')+'</div>';
+  h+='<p class="sub" style="margin:0">Annulation possible jusqu\'à '+(+db.annulHeures||0)+' h avant le cours. Après, contactez le gérant par message.</p>';
+  return h+'</section>';
+}
+function cCheval(){
+  var hs=myHorses(),h=demoBanner(),t=today();
+  if(!hs.length)return h+'<div class="panel empty">Aucun cheval enregistré à votre nom. Si c\'est une erreur, écrivez au gérant.</div>';
+  hs.forEach(function(c){
+    var soins=(c.soins||[]).filter(function(s){return s.date>=addDays(t,-30)}).sort(function(a,b){return a.date.localeCompare(b.date)}),
+      fr=(c.frais||[]).slice().sort(function(a,b){return b.date.localeCompare(a.date)}).slice(0,12);
+    h+='<section><div class="panel" style="padding:16px;display:flex;flex-direction:column;gap:10px"><div style="display:flex;gap:12px;align-items:center"><span class="avatar">'+esc(initials(c.nom))+'</span><div class="x" style="flex:1;min-width:0"><h2 style="font-size:21px">'+esc(c.nom)+'</h2><span class="sub">'+esc([c.race,c.sexe,c.age?c.age+' ans':''].filter(Boolean).join(' · '))+'</span></div></div>'+
+      '<div class="chips" style="margin:0">'+[c.box,PENSIONS[c.pension]].filter(Boolean).map(function(x){return '<span class="pill">'+esc(x)+'</span>'}).join('')+'</div>'+
+      (c.ration?'<div><span class="lbl">Ration</span><div style="white-space:pre-wrap">'+esc(c.ration)+'</div></div>':'')+(c.consignes?'<div><span class="lbl">Consignes</span><div style="white-space:pre-wrap">'+esc(c.consignes)+'</div></div>':'')+
+      '<button class="btn" data-act="ask-horse" data-id="'+c.id+'">Poser une question ou signaler un problème</button></div></section>';
+    h+='<section><div class="sh"><h2>Soins et visites</h2></div><div class="panel items">'+(soins.length?soins.map(function(s){var n=diff(s.date,t);
+      return '<div class="item" style="cursor:default"><span class="x"><b>'+esc(s.type)+'</b><span>'+fdl(s.date)+' · '+whenTxt(n)+'</span></span>'+(+s.montant>0?'<span class="end">'+money(s.montant)+'</span>':'')+'</div>'}).join(''):'<div class="empty">Aucun soin prévu.</div>')+'</div></section>';
+    h+='<section><div class="sh"><h2>Frais refacturés</h2></div><div class="panel items">'+(fr.length?fr.map(function(f){
+      return '<div class="item" style="cursor:default"><span class="x"><b>'+esc(f.type)+(f.note?' — '+esc(f.note):'')+'</b><span>'+fdl(f.date)+'</span>'+(f.pieceId?'<span class="chips"><button class="btn sm" data-act="piece-voir" data-id="'+esc(f.pieceId)+'">Voir le justificatif</button></span>':'')+'</span><span class="end"><b>'+money(f.montant)+'</b></span></div>'}).join(''):'<div class="empty">Aucun frais.</div>')+'</div></section>';
+  });
+  return h;
+}
+function cFactures(){
+  var l=myFactures(),h=demoBanner();
+  if(!l.length)return h+'<div class="panel empty">Aucune facture pour le moment. Elles apparaissent ici dès que l\'écurie les envoie.</div>';
+  return h+'<div class="panel items">'+l.map(function(f){return '<button class="item" data-act="fact" data-id="'+f.id+'"><span class="x"><b>'+esc(monthLabel(f.mois))+'</b><span>N° '+esc(f.numero||'')+(f.statut==='payee'?'':' · avant le '+fdl(f.echeance))+'</span></span><span class="end"><b>'+money(f.total)+'</b><br>'+(f.statut==='payee'?'<span class="pill">Payée</span>':'<span class="pill warn">À régler</span>')+'</span></button>'}).join('')+'</div>';
+}
+function thread(pid){
+  var l=db.messages.filter(function(m){return m.proprietaireId===pid}).sort(function(a,b){return String(a.date).localeCompare(String(b.date))}),meSide=isG()?'gerant':'client';
+  var h='<div class="msgs">'+(l.length?l.map(function(m){var mine=m.de===meSide,hz=m.chevalId?horse(m.chevalId):null;
+    return '<div class="bub'+(mine?' me':'')+'">'+(hz?'<span class="sub" style="display:block;color:inherit;opacity:.8">À propos de '+esc(hz.nom)+'</span>':'')+esc(m.texte)+'<small>'+(mine?'Vous':(isG()?firstName((owner(pid)||{}).nom):'Écurie'))+' · '+esc(fdateTime(m.date))+'</small></div>'}).join('')
+    :'<div class="panel empty">Aucun message. Écrivez le premier ci-dessous.</div>')+'</div>';
+  var hc=S.msgCheval?horse(S.msgCheval):null;
+  h+='<form class="form" id="fmsg">'+(hc?'<div class="chips" style="margin:0"><span class="chip">À propos de '+esc(hc.nom)+'</span><button type="button" class="btn sm" data-act="msg-cheval-x">Retirer</button></div>':'')+'<div class="field"><label for="msg-texte">Votre message</label><textarea id="msg-texte" style="min-height:90px">'+esc(S.msgDraft||'')+'</textarea></div><button class="btn primary" type="submit">Envoyer</button></form>';
+  return h;
+}
+function cMessages(){
+  markRead(me.prop);
+  return demoBanner()+'<p class="sub" style="margin:0">Échangez avec le gérant de l\'écurie.'+(mode==='cloud'?' Les nouveaux messages arrivent automatiquement.':'')+'</p>'+thread(me.prop);
+}
+function vMessagesG(){
+  if(S.thread&&owner(S.thread)){markRead(S.thread);var o=owner(S.thread);
+    return '<div class="actions"><button class="btn sm" data-act="thread" data-id="">‹ Tous les messages</button><span class="grow" style="align-self:center;font-weight:700">'+esc(o.nom)+'</span></div>'+thread(S.thread)}
+  var ps=db.proprietaires.map(function(p){var l=db.messages.filter(function(m){return m.proprietaireId===p.id}).sort(function(a,b){return String(b.date).localeCompare(String(a.date))});return{p:p,last:l[0],un:unreadFor(p.id)}})
+    .sort(function(a,b){return String(b.last?b.last.date:'').localeCompare(String(a.last?a.last.date:''))||a.p.nom.localeCompare(b.p.nom)});
+  if(!ps.length)return '<div class="panel empty">Aucun client enregistré.</div>';
+  return '<div class="panel items">'+ps.map(function(x){return '<button class="item" data-act="thread" data-id="'+x.p.id+'"><span class="avatar">'+esc(initials(x.p.nom))+'</span><span class="x"><b>'+esc(x.p.nom)+'</b><span>'+(x.last?esc((x.last.de==='gerant'?'Vous : ':'')+x.last.texte.slice(0,70)):'Aucun message')+'</span></span><span class="end">'+(x.un?'<span class="pill warn">'+x.un+' nouveau'+(x.un>1?'x':'')+'</span>':(x.last?'<span class="sub">'+esc(fdateTime(x.last.date))+'</span>':''))+'</span></button>'}).join('')+'</div>';
+}
+function markRead(pid){
+  var side=isG()?'client':'gerant',l=db.messages.filter(function(m){return m.proprietaireId===pid&&m.de===side&&!m.lu});
+  if(!l.length)return;l.forEach(function(m){m.lu=true});
+  if(mode==='cloud'){if(isG())sb.from('messages').upsert(l.map(function(m){return rowFor('messages',m)})).then(function(){},function(){});else sb.rpc('marquer_lus').then(function(){},function(){})}
+  else saveLocal();
+  setTimeout(updateBadge,0);
+}
+function sendMsg(){
+  var tx=v('msg-texte');if(!tx){toast('Écrivez votre message.');return}
+  var pid=isG()?S.thread:me.prop;if(!pid)return;
+  var m={id:uid(),proprietaireId:pid,de:isG()?'gerant':'client',texte:tx,lu:false,date:new Date().toISOString()};if(S.msgCheval){m.chevalId=S.msgCheval}
+  db.messages.push(m);S.msgDraft='';S.msgCheval=null;put('messages',m);render();window.scrollTo(0,document.body.scrollHeight);toast('Message envoyé');
+}
+function annoncesSection(){
+  var an=db.annonces.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))});
+  return '<section><div class="sh"><h2>Annonces aux clients</h2><span class="sub">visibles dans leur espace</span></div>'+an.slice(0,5).map(function(a){return annonceCard(a,true)}).join('')+
+    '<form class="form panel" id="fannonce" style="padding:14px">'+fld('an-titre','Titre','','text',' placeholder="ex. Manège fermé samedi"')+'<div class="field"><label for="an-texte">Message</label><textarea id="an-texte"></textarea></div><button class="btn primary" type="submit">Publier l\'annonce</button></form></section>';
+}
+function reserver(id){
+  var c=db.cours.find(function(x){return x.id===id});if(!c)return;
+  if(mode==='cloud'){sb.rpc('reserver_cours',{p_id:id}).then(function(r){if(r.error){toast(r.error.message);return}Object.assign(c,r.data,{id:id});render();toast('Cours réservé')},function(){toast('Pas de connexion : réessayez.')});return}
+  if(coursStart(c)<new Date()){toast('Ce cours est déjà passé.');return}
+  if(c.inscrits.length>=c.places){toast('Ce cours est complet.');return}
+  c.inscrits.push(me.prop);saveLocal();render();toast('Cours réservé');
+}
+function annuler(id){
+  var c=db.cours.find(function(x){return x.id===id});S.confirmAnnul=null;if(!c)return;
+  if(mode==='cloud'){sb.rpc('annuler_cours',{p_id:id}).then(function(r){if(r.error){toast(r.error.message);render();return}Object.assign(c,r.data,{id:id});render();toast('Réservation annulée')},function(){toast('Pas de connexion : réessayez.')});return}
+  if((coursStart(c)-new Date())/36e5<(+db.annulHeures||0)){toast('Annulation impossible moins de '+db.annulHeures+' h avant le cours : contactez le gérant.');render();return}
+  c.inscrits=c.inscrits.filter(function(x){return x!==me.prop});saveLocal();render();toast('Réservation annulée');
+}
+function genCode(){var a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';var r=new Uint32Array(8);(window.crypto||{}).getRandomValues?crypto.getRandomValues(r):r.forEach(function(_,i){r[i]=Math.random()*1e9});for(var i=0;i<8;i++)s+=a[r[i]%a.length];return s.slice(0,4)+'-'+s.slice(4)}
+function appUrl(){return location.origin+location.pathname}
+function inviteText(p){return 'Bonjour '+firstName(p.nom)+',\n\nVoici votre accès à l\'espace client de '+(db.ecurie.nom||'l\'écurie')+' : réservation des cours, suivi de votre cheval, factures et messages.\n\n1. Ouvrez '+appUrl()+'\n2. Touchez « Première connexion : créer mon compte »\n3. Saisissez votre e-mail, un mot de passe et ce code d\'activation : '+p._code+'\n\nÀ bientôt !'}
+function copyText(t,okMsg){var p=navigator.clipboard&&navigator.clipboard.writeText(t);if(p)p.then(function(){toast(okMsg)},function(){toast('Copie impossible : sélectionnez le texte affiché')});else toast('Copie impossible : sélectionnez le texte affiché')}
+
+var VIEWS_G={jour:vJour,chevaux:vChevaux,cours:vCours,factures:vFactures,proprios:vProprios,messages:vMessagesG};
+var VIEWS_C={accueil:cAccueil,cours:cCours,cheval:cCheval,factures:cFactures,messages:cMessages};
+function titleFor(){if(authState!=='ok')return 'Connexion';if(!isG()){if(S.tab==='cours')return 'Réserver un cours';if(S.tab==='factures')return 'Mes factures';if(S.tab==='cheval'&&myHorses().length>1)return 'Mes chevaux'}return TITLES[S.tab]||''}
+var ICONS={sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  doc:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  eur:'<path d="M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9"/>',people:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>',
+  home:'<path d="M3 11l9-7 9 7v9H3z"/><path d="M10 20v-5h4v5"/>',chat:'<path d="M4 5h16v11H8l-4 4z"/>'};
+function renderNav(){
+  var nav=document.querySelector('nav.tabs'),inn=nav.querySelector('.in'),ok=authState==='ok';
+  nav.hidden=!ok;document.getElementById('hset').hidden=!ok;document.getElementById('hmsg').hidden=!(ok&&isG());
+  if(!ok)return;
+  var items=isG()?[['jour',"Aujourd'hui",'sun'],['chevaux','Chevaux','doc'],['cours','Cours','cal'],['factures','Factures','eur'],['proprios','Propriétaires','people']]
+    :[['accueil','Accueil','home'],['cours','Cours','cal'],['cheval',myHorses().length>1?'Chevaux':'Mon cheval','doc'],['factures','Factures','eur'],['messages','Messages','chat']];
+  inn.innerHTML=items.map(function(x){return '<button data-act="tab" data-id="'+x[0]+'"'+(S.tab===x[0]?' aria-current="page"':'')+'><span style="position:relative;display:inline-flex"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[x[2]]+'</svg>'+(x[0]==='messages'?'<span class="nbadge" id="nav-msg-badge" hidden></span>':'')+'</span><span>'+x[1]+'</span></button>'}).join('');
+  updateBadge();
+}
+function updateBadge(){var u=authState==='ok'?unreadTotal():0;['hmsg-badge','nav-msg-badge'].forEach(function(i){var b=document.getElementById(i);if(b){b.textContent=u;b.hidden=!u}})}
+function render(){
+  var vw=document.getElementById('view');
+  if(authState!=='ok')vw.innerHTML=vAuth();
+  else vw.innerHTML=(busy?'<div class="banner"><div class="x">Enregistrement en cours dans la base…</div></div>':'')+((isG()?VIEWS_G:VIEWS_C)[S.tab]||(isG()?vJour:cAccueil))();
+  document.getElementById('htitle').textContent=titleFor();
+  var dt=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('hdate').textContent=dt.charAt(0).toUpperCase()+dt.slice(1);
+  renderNav();
+}
+
+/* ---------- fenêtres ---------- */
+var FINE=window.matchMedia&&matchMedia('(pointer:fine)').matches;
+function openModal(){var w=document.getElementById('modal');w.hidden=false;M.t=Date.now();M.render();document.getElementById('mbody').scrollTop=0;
+  var f=document.querySelector('#mbody input,#mbody select,#mbody textarea');if(f&&FINE&&M.focus!==false)f.focus();else{var b=document.getElementById('mbody');b.setAttribute('tabindex','-1');b.focus({preventScroll:true})}
+  try{if(!(history.state&&history.state.fiche))history.pushState({fiche:1},'')}catch(e){}}
+var ownBack=false;
+function closeModal(fromBack){document.getElementById('modal').hidden=true;M=null;if(fromBack!==true){try{if(history.state&&history.state.fiche){ownBack=true;history.back()}}catch(e){}}}
+window.addEventListener('popstate',function(){
+  if(ownBack){ownBack=false;if(M){try{history.pushState({fiche:1},'')}catch(e){}}return}
+  if(!document.getElementById('viewer').hidden){closeViewer();if(M){try{history.pushState({fiche:1},'')}catch(e){}}return}
+  if(M)closeModal(true)});
+function head(t){return '<div class="mhead"><h2 id="mtitle">'+esc(t)+'</h2><button class="icon-btn" data-act="close" aria-label="Fermer">✕</button></div>'}
+function fld(id,label,val,type,extra){return '<div class="field"><label for="'+id+'">'+label+'</label><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val)+'"'+(extra||'')+'></div>'}
+function sel(id,label,opts,val){return '<div class="field"><label for="'+id+'">'+label+'</label><select id="'+id+'">'+opts.map(function(o){return '<option value="'+esc(o[0])+'"'+(o[0]===val?' selected':'')+'>'+esc(o[1])+'</option>'}).join('')+'</select></div>'}
+function delBar(label){
+  if(!M.draft.id)return '';
+  return M.confirmDel?'<div class="actions"><button type="button" class="btn danger grow" data-act="del-ok">Confirmer la suppression</button><button type="button" class="btn" data-act="del-no">Annuler</button></div>'
+    :'<button type="button" class="btn danger" data-act="del">'+label+'</button>';
+}
+function v(id){var e=document.getElementById(id);return e?e.value.trim():''}
+function mb(h){document.getElementById('mbody').innerHTML=h}
+
+function horseModal(id){
+  var c=id?JSON.parse(JSON.stringify(horse(id))):{id:null,nom:'',race:'',sexe:'Hongre',age:'',box:'',pension:'complete',proprietaireId:(db.proprietaires[0]||{}).id||'',ration:'',consignes:'',soins:[],frais:[]};
+  if(!Array.isArray(c.frais))c.frais=[];if(!Array.isArray(c.soins))c.soins=[];
+  M={kind:'chevaux',draft:c,read:readHorse,render:function(){
+    var d=M.draft,t=today();
+    var h=head(d.id?d.nom:'Nouveau cheval')+'<form class="form" id="fhorse">';
+    h+=fld('h-nom','Nom',d.nom,'text',' required')+'<div class="grid2">'+selOther('h-race','Race',RACES,d.race,M.oRace)+sel('h-sexe','Sexe',[['Jument','Jument'],['Hongre','Hongre'],['Étalon','Étalon']],d.sexe)+fld('h-age','Âge (ans)',d.age,'number',' min="0" inputmode="numeric"')+
+      selOther('h-box','Box ou pré',db.lieux,d.box,M.oBox,function(x){var o=db.chevaux.filter(function(k){return k.box===x&&k.id!==d.id}).map(function(k){return k.nom});return x+(o.length?' · '+o.join(', '):'')})+'</div>';
+    h+=sel('h-pension','Type de pension',Object.keys(PENSIONS).map(function(k){return[k,PENSIONS[k]+' · '+money(db.tarifs[k])]}),d.pension);
+    h+=db.proprietaires.length?sel('h-prop','Propriétaire',db.proprietaires.map(function(p){return[p.id,p.nom]}),d.proprietaireId):'<p class="warnline">Ajoutez d\'abord un propriétaire dans l\'onglet Propriétaires.</p>';
+    h+='<div class="field"><label for="h-ration">Ration</label><textarea id="h-ration">'+esc(d.ration)+'</textarea></div><div class="field"><label for="h-cons">Consignes et soins particuliers</label><textarea id="h-cons">'+esc(d.consignes)+'</textarea></div>';
+    h+='<div class="field"><span class="lbl">Soins et visites prévus</span><div class="panel items">'+(d.soins.length?d.soins.slice().sort(function(a,b){return a.date.localeCompare(b.date)}).map(function(s){var n=diff(s.date,t);
+      return '<div class="item" style="cursor:default"><span class="x"><b>'+esc(s.type)+'</b><span>'+fdate(s.date,{day:'numeric',month:'long',year:'numeric'})+' · '+whenTxt(n)+'</span></span>'+(+s.montant>0?'<span class="end"><b>'+money(s.montant)+'</b></span>':'')+'<button type="button" class="del-x" data-act="soin-del" data-id="'+s.id+'" aria-label="Supprimer '+esc(s.type)+'">✕</button></div>'}).join(''):'<div class="empty">Aucune échéance enregistrée.</div>')+
+      '<div class="item" style="cursor:default;flex-wrap:wrap"><select class="search" id="s-type" aria-label="Type de soin" style="flex:1 1 130px;min-width:0">'+SOINS.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select><input class="search" type="date" id="s-date" aria-label="Date du soin" value="'+addDays(t,30)+'" style="flex:1 1 130px;min-width:0"><input class="search" type="number" id="s-montant" min="0" step="0.01" inputmode="decimal" placeholder="Montant € (facultatif)" aria-label="Montant à facturer" style="flex:1 1 150px;min-width:0"><button type="button" class="btn sm" data-act="soin-add">Ajouter</button></div></div>'+
+      '<p class="sub" style="margin:0">Un montant indiqué ici est ajouté à la facture du mois de la visite.</p></div>';
+    var fr=d.frais.slice().sort(function(a,b){return b.date.localeCompare(a.date)}),mt=d.frais.filter(function(f){return f.date.slice(0,7)===t.slice(0,7)}).reduce(function(s,f){return s+(+f.montant||0)},0);
+    h+='<div class="field"><div class="sh"><span class="lbl">Frais à refacturer</span><span class="sub">Ce mois : '+money(mt)+'</span></div><div class="panel items">'+(fr.length?fr.map(function(f){
+      return '<div class="item" style="cursor:default"><span class="x"><b>'+esc(f.type)+(f.note?' — '+esc(f.note):'')+'</b><span>'+fdate(f.date,{day:'numeric',month:'long',year:'numeric'})+'</span><span class="chips">'+
+        (f.pieceId?'<button type="button" class="btn sm" data-act="piece-voir" data-id="'+f.pieceId+'">'+(/^image\//.test(f.pieceType||'')?'Voir la photo':'Voir le PDF')+'</button><button type="button" class="btn sm" data-act="piece-retirer" data-id="'+f.id+'">Retirer</button>'
+          :'<button type="button" class="btn sm" data-act="piece-joindre" data-id="'+f.id+'">Joindre un justificatif</button>')+
+        '</span></span><span class="end"><b>'+money(f.montant)+'</b></span><button type="button" class="del-x" data-act="frais-del" data-id="'+f.id+'" aria-label="Supprimer ce frais">✕</button></div>'}).join('')
+      :'<div class="empty">Aucun frais. Ajoutez une visite du vétérinaire, de l\'ostéopathe, un entretien…</div>')+
+      '<div class="item" style="cursor:default;flex-wrap:wrap"><select class="search" id="f-type" aria-label="Type de frais" style="flex:1 1 130px;min-width:0">'+FRAIS.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select><input class="search" type="date" id="f-date" aria-label="Date" value="'+t+'" style="flex:1 1 130px;min-width:0">'+
+      '<input class="search" type="number" id="f-montant" min="0" step="0.01" inputmode="decimal" placeholder="Montant €" aria-label="Montant" style="flex:1 1 110px;min-width:0"><input class="search" id="f-note" placeholder="Détail (facultatif)" aria-label="Détail" style="flex:2 1 160px;min-width:0">'+
+      '<label class="btn sm" for="f-piece" style="flex:1 1 150px">Joindre photo ou PDF</label><input type="file" id="f-piece" accept="image/*,application/pdf" style="position:absolute;width:1px;height:1px;opacity:0" aria-label="Justificatif"><span class="sub" id="f-piece-nom" style="flex:2 1 120px;min-width:0;overflow-wrap:anywhere">Pas de justificatif</span>'+
+      '<button type="button" class="btn sm primary" data-act="frais-add">Ajouter</button></div></div>'+
+      '<p class="sub" style="margin:0">Ces frais sont ajoutés automatiquement à la facture du propriétaire pour le mois concerné.</p></div>';
+    h+='<button class="btn primary block" type="submit">Enregistrer</button>'+delBar('Supprimer ce cheval')+'</form>';
+    mb(h);
+  }};
+  openModal();
+}
+function selOther(id,label,list,val,other,lab){
+  var known=!val||list.indexOf(val)>-1,show=!!other||!known;
+  var opts='<option value="">— Choisir —</option>'+list.map(function(x){return '<option value="'+esc(x)+'"'+(x===val&&!show?' selected':'')+'>'+esc(lab?lab(x):x)+'</option>'}).join('')+'<option value="__autre"'+(show?' selected':'')+'>Autre…</option>';
+  return '<div class="field"><label for="'+id+'">'+label+'</label><select id="'+id+'">'+opts+'</select>'+(show?'<input id="'+id+'-autre" aria-label="'+label+' (préciser)" placeholder="Précisez" value="'+esc(known?'':val)+'">':'')+'</div>';
+}
+function readOther(id){var s=v(id);return s==='__autre'?v(id+'-autre'):s}
+function readHorse(){var d=M.draft;d.nom=v('h-nom');d.race=readOther('h-race');d.sexe=v('h-sexe');d.age=v('h-age');d.box=readOther('h-box');d.pension=v('h-pension')||d.pension;d.proprietaireId=v('h-prop')||d.proprietaireId;d.ration=v('h-ration');d.consignes=v('h-cons')}
+
+function ownerModal(id){
+  var p=id?JSON.parse(JSON.stringify(owner(id))):{id:null,nom:'',tel:'',email:'',licence:'',rcFin:''};
+  M={kind:'proprietaires',draft:p,read:readOwner,render:function(){
+    var d=M.draft,hs=d.id?db.chevaux.filter(function(c){return c.proprietaireId===d.id}):[];
+    var h=head(d.id?d.nom:'Nouveau propriétaire')+'<form class="form" id="fowner">'+fld('o-nom','Nom et prénom',d.nom,'text',' required')+
+      '<div class="grid2">'+fld('o-tel','Téléphone',d.tel,'tel')+fld('o-email','E-mail (envoi des factures)',d.email,'email')+fld('o-lic','N° licence FFE',d.licence)+fld('o-rc','Fin d\'assurance RC',d.rcFin,'date')+'</div>'+
+      '<div class="field"><label for="o-adr">Adresse (pour les factures)</label><textarea id="o-adr">'+esc(d.adresse||'')+'</textarea></div>';
+    if(d.id)h+='<div class="field"><span class="lbl">Chevaux</span><div class="chips" style="margin:0">'+(hs.length?hs.map(function(c){return '<span class="chip">'+esc(c.nom)+'</span>'}).join(''):'<span class="sub">Aucun cheval</span>')+'</div></div>';
+    h+=accessSection(d);
+    if(M.err)h+='<p class="warnline">'+esc(M.err)+'</p>';
+    mb(h+'<button class="btn primary block" type="submit">Enregistrer</button>'+delBar('Supprimer ce propriétaire')+'</form>');
+  }};
+  openModal();
+}
+function accessSection(d){
+  var t='<div class="field"><span class="lbl">Espace client</span>';
+  if(!d.id)return t+'<p class="sub" style="margin:0">Enregistrez d\'abord la fiche pour pouvoir inviter ce client.</p></div>';
+  if(mode!=='cloud')return t+'<p class="sub" style="margin:0">En mode démo, il n\'y a pas de comptes : visualisez son espace directement.</p><button type="button" class="btn" data-act="demo-role" data-id="'+d.id+'">Voir l\'appli comme '+esc(firstName(d.nom))+'</button></div>';
+  if(d._lie)return t+'<div><span class="pill">Compte client activé</span></div></div>';
+  if(!d._code)return t+'<p class="sub" style="margin:0">Créez un code d\'activation, puis envoyez l\'invitation au client.</p><button type="button" class="btn" data-act="owner-code">Créer un code d\'accès</button></div>';
+  return t+'<div style="font-family:ui-monospace,monospace;font-size:22px;font-weight:700;letter-spacing:2px">'+esc(d._code)+'</div>'+
+    '<textarea readonly class="search" id="inv-text" aria-label="Texte de l\'invitation" style="min-height:150px;font-size:13px">'+esc(inviteText(d))+'</textarea>'+
+    '<div class="actions"><button type="button" class="btn primary grow" data-act="owner-share">Envoyer l\'invitation</button><button type="button" class="btn grow" data-act="owner-copy">Copier</button></div>'+
+    '<button type="button" class="btn sm" data-act="owner-code">Changer le code</button></div>';
+}
+function readOwner(){var d=M.draft;d.nom=v('o-nom');d.tel=v('o-tel');d.email=v('o-email');d.licence=v('o-lic');d.rcFin=v('o-rc');d.adresse=v('o-adr')}
+
+function coursModal(id){
+  var c=id?JSON.parse(JSON.stringify(db.cours.find(function(x){return x.id===id}))):{id:null,date:S.coursDate,heure:'17:00',duree:60,titre:'',type:'collectif',lieu:'Carrière',places:5,prix:db.tarifs.collectif,inscrits:[]};
+  M={kind:'cours',draft:c,read:readCours,render:function(){
+    var d=M.draft;
+    var h=head(d.id?d.titre:'Nouveau cours')+'<form class="form" id="fcours">'+fld('c-titre','Intitulé',d.titre,'text',' required placeholder="ex. Obstacle · Galop 5+"')+
+      '<div class="grid2">'+fld('c-date','Date',d.date,'date',' required')+fld('c-heure','Heure',d.heure,'time',' required')+
+      sel('c-type','Type',[['collectif','Collectif'],['particulier','Particulier']],d.type)+sel('c-lieu','Lieu',[['Carrière','Carrière'],['Manège','Manège'],['Extérieur','Extérieur']],d.lieu)+
+      fld('c-duree','Durée (min)',d.duree,'number',' min="15" step="5"')+fld('c-places','Places',d.places,'number',' min="1"')+fld('c-prix','Prix par cavalier (€)',d.prix,'number',' min="0" step="0.5"')+'</div>';
+    h+='<div class="field"><span class="lbl">Cavaliers inscrits</span>'+(db.proprietaires.length?'<div class="checks">'+db.proprietaires.map(function(p){return '<label><input type="checkbox" name="ins" value="'+p.id+'"'+(d.inscrits.indexOf(p.id)>-1?' checked':'')+'>'+esc(p.nom)+'</label>'}).join('')+'</div>':'<span class="sub">Aucun propriétaire enregistré.</span>')+'</div>';
+    if(M.err)h+='<p class="warnline">'+esc(M.err)+'</p>';
+    mb(h+'<button class="btn primary block" type="submit">Enregistrer</button>'+delBar('Supprimer ce cours')+'</form>');
+  }};
+  openModal();
+}
+function readCours(){var d=M.draft;d.titre=v('c-titre');d.date=v('c-date')||d.date;d.heure=v('c-heure')||d.heure;d.type=v('c-type');d.lieu=v('c-lieu');d.duree=+v('c-duree')||60;d.places=Math.max(1,+v('c-places')||1);d.prix=+v('c-prix')||0;
+  d.inscrits=[].slice.call(document.querySelectorAll('#fcours input[name="ins"]:checked')).map(function(i){return i.value})}
+
+function factModal(id){
+  var f=db.factures.find(function(x){return x.id===id});if(!f)return;
+  M={kind:'factures',draft:f,read:function(){},render:function(){
+    var o=owner(f.proprietaireId),g=isG();
+    if(g)ensureNumero(f);
+    var h=head(g?'Facture · '+(o?o.nom:'?'):'Facture '+monthLabel(f.mois).toLowerCase())+'<div class="sub">'+monthLabel(f.mois)+' · N° '+esc(f.numero||'')+' · à régler avant le '+fdl(f.echeance)+'</div><table class="lines"><tbody>'+f.lignes.map(function(l){return '<tr><td>'+esc(l.label)+(l.pieceId?'<br><button class="btn sm" style="margin-top:6px" data-act="piece-voir" data-id="'+esc(l.pieceId)+'">Voir le justificatif</button>':'')+'</td><td>'+money(l.montant)+'</td></tr>'}).join('')+'<tr class="tot"><td>Total</td><td>'+money(f.total)+'</td></tr></tbody></table>';
+    if(!g){var e=db.ecurie;
+      h+='<div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:10px">'+(f.statut==='payee'?'<div><span class="pill">Payée</span></div>':'<div><span class="pill warn">À régler</span> avant le '+fdl(f.echeance)+'</div>'+(e.iban?'<div class="sub">Par virement : IBAN '+esc(e.iban)+(e.bic?' · BIC '+esc(e.bic):'')+'</div>':''))+
+        '<button class="btn primary block" data-act="fact-pdf">Télécharger la facture (PDF)</button></div>';
+      mb(h);return}
+    var em=o&&o.email;
+    h+='<div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:10px">'+
+      (f.envoyeeLe?'<div class="sub"><span class="pill">Envoyée le '+fdate(f.envoyeeLe,{day:'numeric',month:'long'})+'</span>'+(mode==='cloud'?' · visible dans l\'espace client':'')+'</div>':'<div class="sub">Pas encore envoyée'+(em?' · '+esc(em):'')+'</div>')+
+      '<button class="btn primary block" data-act="fact-send">'+(f.envoyeeLe?'Renvoyer la facture':'Envoyer au propriétaire')+'</button>'+
+      (f.envoyeeLe?'':'<button class="btn block" data-act="fact-publier">Publier dans l\'espace client sans envoyer</button>')+
+      '<button class="btn block" data-act="fact-pdf">Voir la facture (PDF)</button></div>';
+    if(M.sendHelp)h+='<div class="banner" style="flex-direction:column;align-items:stretch"><div>Le PDF <b>'+esc(pdfName(f))+'</b> a été téléchargé. Ouvrez votre messagerie, joignez-le au message prérempli, puis revenez confirmer l\'envoi.</div>'+
+      (em?'':'<div class="warnline">Aucune adresse e-mail pour ce propriétaire : ajoutez-la dans sa fiche.</div>')+
+      '<div class="actions"><a class="btn grow" href="'+esc(mailtoFor(f))+'">Ouvrir l\'e-mail</a><button class="btn primary grow" data-act="fact-sent">C\'est envoyé</button></div></div>';
+    h+=f.statut==='payee'?'<button class="btn block" data-act="fact-st">Marquer comme non payée</button>':'<button class="btn block" data-act="fact-st">Marquer comme payée</button>';
+    mb(h+(f.envoyeeLe?'<p class="sub" style="margin:0">Une facture envoyée ne peut plus être supprimée ni recalculée.</p>':delBar('Supprimer cette facture')));
+  }};
+  openModal();
+}
+
+function demoSwitch(){return '<div class="field panel" style="padding:14px"><label for="demo-role">Voir l\'appli comme (démo)</label><select id="demo-role"><option value="gerant"'+(isG()?' selected':'')+'>Gérant</option>'+db.proprietaires.map(function(p){return '<option value="'+p.id+'"'+(me.prop===p.id?' selected':'')+'>Client : '+esc(p.nom)+'</option>'}).join('')+'</select><span class="sub">Une fois en ligne, chaque client se connecte avec son propre compte.</span></div>'}
+function accountBox(){return '<div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:8px"><span class="lbl">Compte</span><div>'+esc(me.email||'')+(isG()?' · gérant':'')+'</div><button class="btn" data-act="logout">Se déconnecter</button></div>'}
+function settingsModal(){
+  if(!isG()){M={kind:'settings',draft:{},read:function(){},focus:false,render:function(){var o=owner(me.prop)||{};
+    var h=head('Mon compte')+(mode==='local'?demoSwitch():'')+'<div class="panel" style="padding:14px"><b>'+esc(o.nom||'')+'</b><div class="sub" style="white-space:pre-wrap">'+esc([o.email,o.tel,o.adresse].filter(Boolean).join('\n'))+'</div></div>'+
+      '<p class="sub" style="margin:0">Pour modifier vos coordonnées, écrivez au gérant dans Messages.</p>'+(mode==='cloud'?accountBox():'');mb(h)}};openModal();return}
+  M={kind:'settings',draft:{},read:function(){},focus:false,render:function(){
+    var t=db.tarifs;
+    var e=db.ecurie,tv=e.tvaRegime==='tva';
+    var h=head('Réglages')+(mode==='local'?demoSwitch():'')+(mode==='cloud'?accountBox():'')+'<form class="form" id="fecurie"><span class="lbl">Mon écurie (en-tête des factures)</span>'+fld('e-nom','Nom de l\'écurie',e.nom)+
+      '<div class="field"><label for="e-adr">Adresse</label><textarea id="e-adr">'+esc(e.adresse)+'</textarea></div><div class="grid2">'+fld('e-siret','SIRET',e.siret)+fld('e-tel','Téléphone',e.tel,'tel')+fld('e-email','E-mail',e.email,'email')+fld('e-delai','Délai de paiement (jours)',e.delai,'number',' min="0"')+'</div>'+
+      sel('e-tva','TVA',[['franchise','Non assujetti (franchise en base, art. 293 B)'],['tva','Assujetti à la TVA (prix saisis TTC)']],e.tvaRegime)+
+      ('<div id="e-tvabox" class="form"'+(tv?'':' hidden')+'><div class="grid2">'+fld('e-tvanum','N° de TVA intracommunautaire',e.tvaNum)+fld('e-tp','Taux pension (%)',e.tauxPension,'number',' min="0" step="0.1"')+fld('e-tc','Taux cours (%)',e.tauxCours,'number',' min="0" step="0.1"')+fld('e-tf','Taux frais refacturés (%)',e.tauxFrais,'number',' min="0" step="0.1"')+'</div><p class="sub" style="margin:0">Les taux applicables dépendent de votre situation : faites-les valider par votre comptable.</p></div>')+
+      '<div class="grid2">'+fld('e-iban','IBAN (paiement par virement)',e.iban)+fld('e-bic','BIC',e.bic)+'</div>'+
+      '<div class="field"><label for="e-mention">Mention en bas de facture (facultatif)</label><textarea id="e-mention">'+esc(e.mention)+'</textarea></div>'+
+      '<div class="field"><label for="e-msg">Message d\'envoi</label><textarea id="e-msg" style="min-height:130px">'+esc(e.message)+'</textarea><span class="sub">Mots remplacés automatiquement : {prenom} {mois} {numero} {montant} {echeance} {ecurie}</span></div>'+
+      '<button class="btn primary" type="submit">Enregistrer mon écurie</button></form>';
+    h+='<form class="form" id="ftarifs"><span class="lbl">Tarifs mensuels et par cours (€)</span><div class="grid2">'+
+      fld('t-complete','Pension complète',t.complete,'number',' min="0" step="1"')+fld('t-pre','Pension au pré',t.pre,'number',' min="0" step="1"')+fld('t-demi','Demi-pension',t.demi,'number',' min="0" step="1"')+
+      fld('t-collectif','Cours collectif',t.collectif,'number',' min="0" step="0.5"')+fld('t-particulier','Cours particulier',t.particulier,'number',' min="0" step="0.5"')+fld('t-annul','Annulation client jusqu\'à (heures avant)',db.annulHeures,'number',' min="0" step="1"')+'</div>'+
+      '<div class="field"><label for="t-lieux">Boxes, prés et paddocks (un par ligne)</label><textarea id="t-lieux" style="min-height:120px">'+esc((db.lieux||[]).join('\n'))+'</textarea></div><button class="btn primary" type="submit">Enregistrer les réglages</button></form>';
+    h+='<div class="form"><span class="lbl">Sauvegarde</span><p class="sub" style="margin:0">'+(mode==='cloud'?'Les données sont enregistrées en ligne et partagées avec vos clients selon leurs droits. Une copie de sécurité téléchargée de temps en temps reste une bonne précaution.':'Les données sont gardées sur cet appareil uniquement. Téléchargez une sauvegarde régulièrement (une fois par semaine, par exemple) et rangez-la dans vos fichiers ou envoyez-la-vous par e-mail : elle permet de tout restaurer si le téléphone est perdu ou changé. Les photos et PDF des justificatifs ne sont inclus que dans la sauvegarde téléchargée, pas dans la copie.')+'</p>'+
+      '<textarea class="search" id="expjson" readonly aria-label="Sauvegarde au format texte" style="min-height:90px;font-size:12px;font-family:ui-monospace,monospace">'+esc(JSON.stringify(db))+'</textarea><div class="actions"><button class="btn primary grow" data-act="download">Télécharger la sauvegarde</button><button class="btn grow" data-act="copy">Copier la sauvegarde</button></div></div>';
+    h+='<div class="form"><span class="lbl">Restaurer</span><input type="file" id="impfile" accept=".json,.txt,application/json" aria-label="Choisir un fichier de sauvegarde"><textarea class="search" id="impjson" placeholder="…ou collez ici une sauvegarde" aria-label="Sauvegarde à restaurer" style="min-height:70px;font-size:12px"></textarea>'+
+      (M.err?'<p class="warnline">'+esc(M.err)+'</p>':'')+'<button class="btn" data-act="import">Restaurer cette sauvegarde</button></div>';
+    h+='<div class="form"><span class="lbl">Réinitialiser</span>'+(M.confirmReset?'<div class="actions"><button class="btn danger grow" data-act="reset-ok">Confirmer : tout effacer</button><button class="btn" data-act="reset-no">Annuler</button></div>'
+      :'<div class="actions"><button class="btn danger" data-act="reset">Effacer toutes les données</button></div>')+'</div>';
+    mb(h);
+  }};
+  openModal();
+}
+
+/* ---------- factures ---------- */
+function generate(){
+  if(readOnly){toast('Accès en lecture seule.');return}
+  var m=S.mois,n=0,kept=0,puts=[],drops=[];
+  db.proprietaires.forEach(function(p){
+    var ex=db.factures.find(function(f){return f.mois===m&&f.proprietaireId===p.id});
+    if(ex&&(ex.statut==='payee'||ex.envoyeeLe)){kept++;return}
+    var lignes=[];
+    db.chevaux.filter(function(c){return c.proprietaireId===p.id}).forEach(function(c){lignes.push({label:PENSIONS[c.pension]+' — '+c.nom+' ('+monthLabel(m).toLowerCase()+')',montant:+db.tarifs[c.pension]||0,cat:'pension'})});
+    db.cours.filter(function(c){return c.date.slice(0,7)===m&&c.inscrits.indexOf(p.id)>-1}).sort(byTime).forEach(function(c){lignes.push({label:(c.type==='particulier'?'Cours particulier':'Cours')+' du '+fdate(c.date)+' — '+c.titre,montant:+c.prix||0,cat:'cours'})});
+    db.chevaux.filter(function(c){return c.proprietaireId===p.id}).forEach(function(c){
+      var ex2=(c.soins||[]).filter(function(s){return +s.montant>0&&s.date.slice(0,7)===m}).map(function(s){return{date:s.date,label:s.type,montant:+s.montant}})
+        .concat((c.frais||[]).filter(function(f){return f.date.slice(0,7)===m}).map(function(f){return{date:f.date,label:f.type+(f.note?' ('+f.note+')':''),montant:+f.montant||0,pieceId:f.pieceId||null}}));
+      ex2.sort(function(a,b){return a.date.localeCompare(b.date)}).forEach(function(x){var l={label:x.label+' — '+c.nom+', '+fdate(x.date),montant:x.montant,cat:'frais'};if(x.pieceId)l.pieceId=x.pieceId;lignes.push(l)});
+    });
+    if(!lignes.length){if(ex){db.factures.splice(db.factures.indexOf(ex),1);drops.push(ex.id)}return}
+    var tot=lignes.reduce(function(s,l){return s+l.montant},0),f;
+    if(ex){ex.lignes=lignes;ex.total=tot;f=ex}else{f={id:uid(),mois:m,proprietaireId:p.id,lignes:lignes,total:tot,statut:'attente'};db.factures.push(f)}
+    f.dateEmission=today();f.echeance=addDays(f.dateEmission,+db.ecurie.delai||10);ensureNumero(f);
+    puts.push(f);n++;
+  });
+  saveLocal();
+  (async function(){for(var i=0;i<puts.length;i++)await put('factures',puts[i]);for(i=0;i<drops.length;i++)await drop('factures',drops[i])})();
+  render();toast(n+' facture'+(n>1?'s':'')+' calculée'+(n>1?'s':'')+(kept?' · '+kept+' déjà envoyée'+(kept>1?'s':'')+' ou payée'+(kept>1?'s':'')+', non modifiée'+(kept>1?'s':''):''));
+}
+
+var PDFW={H:[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,761,556,0,222,556,333,1000,556,556,333,1000,667,333,1000,0,611,0,0,222,222,333,333,350,556,1000,333,1000,500,333,944,0,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500],HB:[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,761,556,0,278,556,500,1000,556,556,333,1000,667,333,1000,0,611,0,0,278,278,500,500,350,556,1000,333,1000,556,333,944,0,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556]};
+/* ---------- générateur PDF intégré (A4, polices standard Helvetica) ---------- */
+var WIN={0x20AC:0x80,0x201A:0x82,0x192:0x83,0x201E:0x84,0x2026:0x85,0x2020:0x86,0x2021:0x87,0x2C6:0x88,0x2030:0x89,0x160:0x8A,0x2039:0x8B,0x152:0x8C,0x17D:0x8E,
+  0x2018:0x91,0x2019:0x92,0x201C:0x93,0x201D:0x94,0x2022:0x95,0x2013:0x96,0x2014:0x97,0x2DC:0x98,0x2122:0x99,0x161:0x9A,0x203A:0x9B,0x153:0x9C,0x17E:0x9E,0x178:0x9F,
+  0x202F:0x20,0x00A0:0x20,0x2009:0x20};
+function winAnsi(s){var o='';s=String(s==null?'':s);for(var i=0;i<s.length;i++){var c=s.charCodeAt(i);if(WIN[c]!==undefined)c=WIN[c];else if(c>255||(c>=0x80&&c<0xA0))c=63;o+=String.fromCharCode(c)}return o}
+var PT=72/25.4,PH=841.89,PWID=595.28;
+function PDFDoc(){this.pages=[];this.addPage()}
+PDFDoc.prototype.addPage=function(){this.cur=[];this.pages.push(this.cur)};
+PDFDoc.prototype.w=function(s,size,bold){var t=winAnsi(s),tab=bold?PDFW.HB:PDFW.H,n=0;for(var i=0;i<t.length;i++){var c=t.charCodeAt(i);n+=(c>=32?tab[c-32]:0)||556}return n/1000*size/PT};
+PDFDoc.prototype.col=function(c){c=c||[28,36,32];return (c[0]/255).toFixed(3)+' '+(c[1]/255).toFixed(3)+' '+(c[2]/255).toFixed(3)};
+PDFDoc.prototype.text=function(x,y,s,o){o=o||{};var size=o.size||10,w=this.w(s,size,o.bold);if(o.align==='right')x-=w;else if(o.align==='center')x-=w/2;
+  var t=winAnsi(s).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');
+  this.cur.push('BT /'+(o.bold?'F2':'F1')+' '+size+' Tf '+this.col(o.color)+' rg '+(x*PT).toFixed(2)+' '+(PH-y*PT).toFixed(2)+' Td ('+t+') Tj ET')};
+PDFDoc.prototype.line=function(x1,y1,x2,y2,w,c){this.cur.push((w||0.3)+' w '+this.col(c||[214,220,212])+' RG '+(x1*PT).toFixed(2)+' '+(PH-y1*PT).toFixed(2)+' m '+(x2*PT).toFixed(2)+' '+(PH-y2*PT).toFixed(2)+' l S')};
+PDFDoc.prototype.rect=function(x,y,w,h,c){this.cur.push(this.col(c)+' rg '+(x*PT).toFixed(2)+' '+(PH-(y+h)*PT).toFixed(2)+' '+(w*PT).toFixed(2)+' '+(h*PT).toFixed(2)+' re f')};
+PDFDoc.prototype.wrap=function(s,maxW,size,bold){var out=[];String(s||'').split('\n').forEach(function(par){var words=par.split(/\s+/),line='';
+  words.forEach(function(wd){var t=line?line+' '+wd:wd;if(this.w(t,size,bold)>maxW&&line){out.push(line);line=wd}else line=t},this);out.push(line)},this);return out};
+PDFDoc.prototype.blob=function(){
+  var objs=[],n=this.pages.length;
+  objs[1]='<< /Type /Catalog /Pages 2 0 R >>';
+  var kids=[];for(var i=0;i<n;i++)kids.push((5+i*2)+' 0 R');
+  objs[2]='<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+n+' >>';
+  objs[3]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
+  objs[4]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
+  for(i=0;i<n;i++){var c=this.pages[i].join('\n');
+    objs[5+i*2]='<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+PWID+' '+PH+'] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents '+(6+i*2)+' 0 R >>';
+    objs[6+i*2]='<< /Length '+c.length+' >>\nstream\n'+c+'\nendstream'}
+  var out='%PDF-1.4\n%\xE2\xE3\xCF\xD3\n',off=[];
+  for(i=1;i<objs.length;i++){off[i]=out.length;out+=i+' 0 obj\n'+objs[i]+'\nendobj\n'}
+  var x=out.length;out+='xref\n0 '+objs.length+'\n0000000000 65535 f \n';
+  for(i=1;i<objs.length;i++)out+=String(off[i]).padStart(10,'0')+' 00000 n \n';
+  out+='trailer\n<< /Size '+objs.length+' /Root 1 0 R >>\nstartxref\n'+x+'\n%%EOF';
+  var b=new Uint8Array(out.length);for(i=0;i<out.length;i++)b[i]=out.charCodeAt(i)&255;
+  return new Blob([b],{type:'application/pdf'});
+};
+
+/* ---------- factures : numéro, TVA, PDF, envoi ---------- */
+var ECURIE_DEF={nom:'Élevage d\'ALB',adresse:'',siret:'',tel:'',email:'',tvaRegime:'franchise',tvaNum:'',tauxPension:20,tauxCours:20,tauxFrais:20,iban:'',bic:'',delai:10,mention:'',
+  message:'Bonjour {prenom},\n\nVeuillez trouver ci-joint votre facture de {mois} (n° {numero}) d\'un montant de {montant}, à régler avant le {echeance}.\n\nMerci et à bientôt à l\'écurie,\n{ecurie}'};
+function lineCat(l){if(l.cat)return l.cat;if(/^Cours/.test(l.label))return 'cours';if(Object.keys(PENSIONS).some(function(k){return l.label.indexOf(PENSIONS[k])===0}))return 'pension';return 'frais'}
+function ensureNumero(f){
+  if(f.numero)return;var y=(f.dateEmission||today()).slice(0,4);db.compteurs=db.compteurs||{};
+  var maxi=db.factures.reduce(function(m,x){var r=/^F(\d{4})-(\d+)$/.exec(x.numero||'');return r&&r[1]===y?Math.max(m,+r[2]):m},0);
+  db.compteurs[y]=Math.max(db.compteurs[y]||0,maxi)+1;
+  f.numero='F'+y+'-'+String(db.compteurs[y]).padStart(4,'0');if(!f.dateEmission)f.dateEmission=today();if(!f.echeance)f.echeance=addDays(f.dateEmission,+db.ecurie.delai||10);
+  clearTimeout(ensureNumero.t);ensureNumero.t=setTimeout(putConfig,300);
+}
+function tvaSummary(f){
+  var e=db.ecurie,rates={pension:+e.tauxPension||0,cours:+e.tauxCours||0,frais:+e.tauxFrais||0},by={},ht=0,ttc=0;
+  f.lignes.forEach(function(l){var r=e.tvaRegime==='tva'?rates[lineCat(l)]:0,m=+l.montant||0;by[r]=(by[r]||0)+m;ttc+=m});
+  var parts=Object.keys(by).map(function(r){var t=by[r],h=Math.round(t/(1+r/100)*100)/100;ht+=h;return{taux:+r,ttc:t,ht:h,tva:Math.round((t-h)*100)/100}}).sort(function(a,b){return a.taux-b.taux});
+  return{parts:parts,ht:Math.round(ht*100)/100,ttc:Math.round(ttc*100)/100};
+}
+function fdl(s){return fdate(s,{day:'numeric',month:'long',year:'numeric'})}
+function buildPdf(f){
+  var e=db.ecurie,o=owner(f.proprietaireId)||{nom:'Propriétaire'},d=new PDFDoc(),G=[47,93,70],MU=[86,96,90],SOFT=[226,236,229],tva=e.tvaRegime==='tva';
+  var y=20;
+  d.text(15,y,e.nom||'[Nom de l\'écurie]',{size:15,bold:true,color:G});y+=6;
+  d.wrap(e.adresse,85,9.5).forEach(function(l){if(l){d.text(15,y,l,{size:9.5});y+=4.4}});
+  [e.siret?'SIRET : '+e.siret:'',tva&&e.tvaNum?'N° TVA : '+e.tvaNum:'',e.tel?'Tél. : '+e.tel:'',e.email||''].forEach(function(l){if(l){d.text(15,y,l,{size:9.5,color:MU});y+=4.4}});
+  d.text(195,21,'FACTURE',{size:22,bold:true,align:'right',color:G});
+  d.text(195,29,'N° '+f.numero,{size:10.5,bold:true,align:'right'});
+  d.text(195,34.5,'Date : '+fdl(f.dateEmission),{size:9.5,align:'right'});
+  d.text(195,39.5,'À régler avant le : '+fdl(f.echeance),{size:9.5,align:'right'});
+  var cy=Math.max(y,46)+4,cl=d.wrap(o.adresse||'',76,9.5).filter(Boolean),ch=14+cl.length*4.4+(o.email?4.4:0);
+  d.rect(110,cy,85,ch,[244,245,242]);
+  d.text(115,cy+6,'FACTURÉ À',{size:8,bold:true,color:MU});d.text(115,cy+11.5,o.nom,{size:11,bold:true});
+  var yy=cy+16.5;cl.forEach(function(l){d.text(115,yy,l,{size:9.5});yy+=4.4});if(o.email){d.text(115,yy,o.email,{size:9.5,color:MU})}
+  y=Math.max(y,cy+ch)+10;
+  d.text(15,y,'Période : '+monthLabel(f.mois),{size:11,bold:true});y+=6;
+  var descW=tva?110:150;
+  function headRow(){d.rect(15,y,180,8,SOFT);d.text(18,y+5.4,'Désignation',{size:9,bold:true,color:[31,66,50]});
+    if(tva){d.text(150,y+5.4,'TVA',{size:9,bold:true,align:'right',color:[31,66,50]});d.text(172,y+5.4,'HT',{size:9,bold:true,align:'right',color:[31,66,50]})}
+    d.text(192,y+5.4,tva?'TTC':'Montant',{size:9,bold:true,align:'right',color:[31,66,50]});y+=8}
+  headRow();
+  var rates={pension:+e.tauxPension||0,cours:+e.tauxCours||0,frais:+e.tauxFrais||0};
+  f.lignes.forEach(function(l){
+    var ls=d.wrap(l.label,descW,9.5),h=ls.length*4.6+3.4;
+    if(y+h>262){d.addPage();y=20;headRow()}
+    ls.forEach(function(t,i){d.text(18,y+5+i*4.6,t,{size:9.5})});
+    var m=+l.montant||0;
+    if(tva){var r=rates[lineCat(l)];d.text(150,y+5,String(r).replace('.',',')+' %',{size:9.5,align:'right',color:MU});d.text(172,y+5,money(Math.round(m/(1+r/100)*100)/100),{size:9.5,align:'right'})}
+    d.text(192,y+5,money(m),{size:9.5,align:'right'});
+    y+=h;d.line(15,y,195,y);
+  });
+  var s=tvaSummary(f);y+=6;if(y>240){d.addPage();y=24}
+  function tot(lbl,val,b){d.text(160,y,lbl,{size:b?11:9.5,bold:b,align:'right',color:b?[28,36,32]:MU});d.text(192,y,val,{size:b?11:9.5,bold:b,align:'right'});y+=b?7:5}
+  if(tva){tot('Total HT',money(s.ht));s.parts.forEach(function(p){tot('TVA '+String(p.taux).replace('.',',')+' %',money(p.tva))});tot('Total TTC',money(s.ttc))}
+  y+=1;d.rect(120,y-5,75,9,G);d.text(124,y+1,'Net à payer',{size:11,bold:true,color:[255,255,255]});d.text(192,y+1,money(s.ttc),{size:11,bold:true,align:'right',color:[255,255,255]});y+=14;
+  if(y>250){d.addPage();y=24}
+  d.text(15,y,'Conditions de paiement',{size:9.5,bold:true});y+=5;
+  d.text(15,y,'À régler avant le '+fdl(f.echeance)+'.',{size:9.5});y+=4.6;
+  if(e.iban){d.text(15,y,'Par virement : IBAN '+e.iban+(e.bic?'  ·  BIC '+e.bic:''),{size:9.5});y+=4.6}
+  if(!tva){y+=2;d.text(15,y,'TVA non applicable, article 293 B du CGI.',{size:9,color:MU});y+=4.6}
+  if(e.mention){y+=2;d.wrap(e.mention,180,9).forEach(function(l){if(y>280){d.addPage();y=24}d.text(15,y,l,{size:9,color:MU});y+=4.3})}
+  var np=d.pages.length;
+  for(var i=0;i<np;i++){d.cur=d.pages[i];d.line(15,284,195,284);d.text(105,289,(e.nom||'')+(e.siret?' · SIRET '+e.siret:'')+'  —  Facture '+f.numero+'  —  Page '+(i+1)+'/'+np,{size:7.5,align:'center',color:MU})}
+  return d.blob();
+}
+function slug(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+function pdfName(f){var o=owner(f.proprietaireId);return 'Facture-'+f.numero+'-'+slug(o?o.nom:'')+'.pdf'}
+function fillMsg(f){var o=owner(f.proprietaireId)||{nom:''},e=db.ecurie;
+  return (e.message||ECURIE_DEF.message).replace(/\{prenom\}/g,(o.nom||'').split(' ')[0]).replace(/\{nom\}/g,o.nom||'').replace(/\{mois\}/g,monthLabel(f.mois).toLowerCase())
+    .replace(/\{numero\}/g,f.numero).replace(/\{montant\}/g,money(f.total)).replace(/\{echeance\}/g,fdl(f.echeance)).replace(/\{ecurie\}/g,e.nom||'')}
+function openBlob(blob,name,download){if(window.__saveFile){window.__saveFile(blob,name);return}var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;if(download)a.download=name;else{a.target='_blank';a.rel='noopener'}document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},60000)}
+function markSent(f){f.envoyeeLe=today();put('factures',f);if(M&&M.draft===f)M.render();render();toast('Facture marquée comme envoyée')}
+function sendFacture(f){
+  ensureNumero(f);put('factures',f);
+  var blob=buildPdf(f),name=pdfName(f),msg=fillMsg(f),file=null;
+  try{file=new File([blob],name,{type:'application/pdf'})}catch(e){}
+  if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:'Facture '+monthLabel(f.mois),text:msg}).then(function(){markSent(f)},function(err){if(err&&err.name==='AbortError')return;fallbackSend(f,blob,name)});
+  }else fallbackSend(f,blob,name);
+}
+function fallbackSend(f,blob,name){openBlob(blob,name,true);M.sendHelp=true;M.render()}
+function mailtoFor(f){var o=owner(f.proprietaireId)||{};return 'mailto:'+encodeURIComponent(o.email||'')+'?subject='+encodeURIComponent('Facture '+monthLabel(f.mois)+' — '+(db.ecurie.nom||'écurie'))+'&body='+encodeURIComponent(fillMsg(f)+'\n\n(Facture '+f.numero+' en pièce jointe)')}
+function factMonthTarget(){var t=today(),d=+t.slice(8);if(d>=25)return t.slice(0,7);if(d<=10)return addDays(t.slice(0,7)+'-01',-1).slice(0,7);return null}
+
+/* ---------- toast ---------- */
+var tt;function toast(m){var e=document.getElementById('toast');e.textContent=m;e.hidden=false;clearTimeout(tt);tt=setTimeout(function(){e.hidden=true},2600)}
+
+/* ---------- actions ---------- */
+var ACT={
+  tab:function(id){var te=document.getElementById('toast');if(te)te.hidden=true;S.tab=id;S.confirmClear=false;S.confirmAnnul=null;if(id!=='messages')S.thread=null;try{localStorage.setItem(KEY+'-tab',id)}catch(e){}render();window.scrollTo(0,0)},
+  horse:function(id){horseModal(id)},owner:function(id){ownerModal(id)},cours:function(id){coursModal(id)},fact:function(id){factModal(id)},settings:function(){settingsModal()},
+  close:function(){closeModal()},
+  task:function(id,el){var k=db.taches.find(function(x){return x.id===id});if(!k)return;k.doneOn=el.checked?today():null;put('taches',k);render()},
+  'task-del':function(id){db.taches=db.taches.filter(function(x){return x.id!==id});drop('taches',id);render()},
+  migrate:function(){var d=localPending();if(d)mergeIn(d)},
+  'migrate-skip':function(){try{localStorage.setItem(KEY+'-migrated','1')}catch(e){}render()},
+  week:function(n){S.coursDate=addDays(S.coursDate,+n);render()},
+  day:function(d){S.coursDate=d;render()},
+  gen:generate,
+  clear:function(){S.confirmClear=true;render()},'clear-no':function(){S.confirmClear=false;render()},
+  'clear-ok':function(){S.confirmClear=false;replaceAll(emptyDb(),'Exemples effacés. Pensez à saisir vos tarifs dans Réglages.')},
+  'soin-add':function(){M.read();var d=v('s-date');if(!d){toast('Choisissez une date.');return}var s={id:uid(),type:v('s-type'),date:d},mt=parseFloat(v('s-montant').replace(',','.'));if(mt>0)s.montant=Math.round(mt*100)/100;M.draft.soins.push(s);M.render()},
+  'frais-add':function(){M.read();var d=v('f-date'),mt=parseFloat(v('f-montant').replace(',','.'));if(!d){toast('Choisissez une date.');return}if(!(mt>0)){toast('Indiquez un montant.');var e=document.getElementById('f-montant');if(e)e.focus();return}
+    var fr={id:uid(),type:v('f-type'),date:d,montant:Math.round(mt*100)/100,note:v('f-note')},fi=document.getElementById('f-piece'),file=fi&&fi.files&&fi.files[0],dr=M.draft;
+    function done(){dr.frais.push(fr);if(M&&M.draft===dr)M.render();toast('Frais ajouté. Pensez à enregistrer la fiche.')}
+    if(file){toast('Enregistrement du justificatif…');addPieceTo(fr,file).then(done,function(e){pieceErr(e);done()})}else done()},
+  'piece-voir':function(id){showPiece(id)},
+  'piece-dl':function(id){pieceGet(id).then(function(p){if(p)openBlob(p.blob,p.nom,true)})},
+  'fact-send':function(){sendFacture(M.draft)},
+  'fact-pdf':function(){var f=M.draft;if(isG()){ensureNumero(f);put('factures',f)}openBlob(buildPdf(f),pdfName(f),!isG())},
+  'fact-publier':function(){markSent(M.draft)},
+  'demo-role':function(id){if(M)closeModal();setDemoRole(id||'gerant');window.scrollTo(0,0)},
+  logout:function(){if(M)closeModal();try{localStorage.removeItem(cacheKey())}catch(e){}if(sb)sb.auth.signOut().then(function(){},function(){});me={role:'gerant',prop:null,email:'',uid:null};db=emptyDb();normalize();authState='login';authView='login';authMsg='';render()},
+  'auth-view':function(id){authView=id;authMsg='';render()},
+  forgot:function(){var em=v('li-email');if(!em){authMsg='Saisissez votre e-mail, puis touchez « Mot de passe oublié ».';render();return}if(!sb)return;sb.auth.resetPasswordForEmail(em,{redirectTo:appUrl()}).then(function(r){authMsg=r.error?frErr(r.error):'';if(!r.error)toast('E-mail de réinitialisation envoyé');render()},function(e){authMsg=frErr(e);render()})},
+  'c-reserver':function(id){reserver(id)},'c-annuler-ask':function(id){S.confirmAnnul=id;render()},'c-annuler':function(id){annuler(id)},
+  'ask-horse':function(id){S.msgCheval=id;S.msgDraft='';S.tab='messages';render();var t=document.getElementById('msg-texte');if(t)t.focus()},
+  'msg-cheval-x':function(){S.msgCheval=null;render()},
+  thread:function(id){S.thread=id||null;S.msgDraft='';S.msgCheval=null;render();window.scrollTo(0,id?document.body.scrollHeight:0)},
+  'an-del':function(id){db.annonces=db.annonces.filter(function(a){return a.id!==id});drop('annonces',id);render()},
+  'owner-code':function(){M.read();var d=M.draft,code=genCode();sb.from('proprietaires').update({invite_code:code}).eq('id',d.id).then(function(r){if(r.error){cloudErr(r.error);return}d._code=code;var o=owner(d.id);if(o)o._code=code;if(M&&M.draft===d)M.render()},cloudErr)},
+  'owner-copy':function(){M.read();copyText(inviteText(M.draft),'Invitation copiée')},
+  'owner-share':function(){M.read();var t=inviteText(M.draft);if(navigator.share)navigator.share({text:t}).catch(function(){});else copyText(t,'Invitation copiée')},
+  'fact-sent':function(){M.sendHelp=false;markSent(M.draft)},
+  'goto-fact':function(m){S.tab='factures';S.mois=m;try{localStorage.setItem(KEY+'-tab','factures')}catch(e){}render();window.scrollTo(0,0)},
+  'viewer-close':closeViewer,
+  'piece-joindre':function(id){M.read();M.pieceFor=id;var i=document.getElementById('piece-input');i.value='';i.click()},
+  'piece-retirer':function(id){M.read();var f=M.draft.frais.find(function(x){return x.id===id});if(f){delete f.pieceId;delete f.pieceNom;delete f.pieceType}M.render()},
+  'frais-del':function(id){M.read();M.draft.frais=M.draft.frais.filter(function(f){return f.id!==id});M.render()},
+  'soin-del':function(id){M.read();M.draft.soins=M.draft.soins.filter(function(s){return s.id!==id});M.render()},
+  del:function(){M.read();if(M.kind==='proprietaires'&&db.chevaux.some(function(c){return c.proprietaireId===M.draft.id})){M.err='Ce propriétaire a encore des chevaux : rattachez-les à quelqu\'un d\'autre ou supprimez-les d\'abord.';M.render();return}M.confirmDel=true;M.render()},
+  'del-no':function(){M.read();M.confirmDel=false;M.render()},
+  'del-ok':function(){var id=M.draft.id,k=M.kind;db[k]=db[k].filter(function(x){return x.id!==id});
+    var changed=[];if(k==='proprietaires')db.cours.forEach(function(c){if(c.inscrits.indexOf(id)>-1){c.inscrits=c.inscrits.filter(function(i){return i!==id});changed.push(c)}});
+    (async function(){await drop(k,id);for(var i=0;i<changed.length;i++)await put('cours',changed[i])})();
+    closeModal();render();toast('Supprimé');cleanupPieces()},
+  'fact-st':function(){var f=M.draft;f.statut=f.statut==='payee'?'attente':'payee';put('factures',f);M.render();render();toast(f.statut==='payee'?'Facture marquée payée':'Facture marquée en attente')},
+  copy:function(){var ta=document.getElementById('expjson');var p=navigator.clipboard&&navigator.clipboard.writeText(ta.value);
+    if(p)p.then(function(){toast('Sauvegarde copiée')},function(){ta.focus();ta.select();toast('Sélectionnée : copiez avec Ctrl+C ou un appui long')});else{ta.focus();ta.select();toast('Sélectionnée : copiez avec Ctrl+C ou un appui long')}},
+  import:function(){var raw=document.getElementById('impjson').value.trim();
+    try{var d=JSON.parse(raw);if(!d||!Array.isArray(d.chevaux)||!Array.isArray(d.proprietaires))throw 0;
+      ['cours','taches','factures'].forEach(function(k){if(!Array.isArray(d[k]))d[k]=[]});d.tarifs=d.tarifs||emptyDb().tarifs;
+      d.exemple=!!d.exemple;var pcs=d.pieces||{};delete d.pieces;closeModal();
+      var ids=Object.keys(pcs);if(!ids.length){replaceAll(d,'Sauvegarde restaurée');return}
+      toast('Restauration des justificatifs…');
+      Promise.all(ids.map(function(id){var p=pcs[id];return fetch(p.data).then(function(r){return r.blob()}).then(function(b){return piecePut(id,{blob:b,nom:p.nom,type:p.type})}).catch(function(){})}))
+        .then(function(){replaceAll(d,'Sauvegarde restaurée avec '+ids.length+' justificatif'+(ids.length>1?'s':''))})}
+    catch(e){M.err='Ce texte n\'est pas une sauvegarde de l\'appli. Collez le contenu complet copié depuis « Copier la sauvegarde ».';M.render()}},
+  reset:function(){M.confirmReset=true;M.render()},'reset-no':function(){M.confirmReset=false;M.render()},
+  install:function(){if(!installEvt)return;installEvt.prompt();installEvt.userChoice.then(function(){installEvt=null;render()})},
+  'ios-hide':function(){S.iosHidden=true;try{localStorage.setItem(KEY+'-ioshint','1')}catch(e){}render()},
+  download:function(){
+    var ids=Object.keys(referencedPieces()),out=JSON.parse(JSON.stringify(db));out.pieces={};
+    if(ids.length)toast('Préparation de la sauvegarde avec les justificatifs…');
+    Promise.all(ids.map(function(id){return pieceGet(id).then(function(p){if(!p)return;return blobToData(p.blob).then(function(dt){out.pieces[id]={nom:p.nom,type:p.type,data:dt}})}).catch(function(){})}))
+      .then(function(){saveBackup(out)})},
+  'reset-ok':function(){closeModal();replaceAll(emptyDb(),'Toutes les données ont été effacées')}
+};
+function saveBackup(out){var blob=new Blob([JSON.stringify(out)],{type:'application/json'});if(window.__saveFile){window.__saveFile(blob,'sauvegarde-ecurie-'+today()+'.json');return}var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sauvegarde-ecurie-'+today()+'.json';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1000);toast('Sauvegarde téléchargée')}
+document.addEventListener('click',function(e){
+  if(e.target.id==='viewer'){closeViewer();return}
+  if(e.target.id==='modal'){closeModal();return}
+  var el=e.target.closest('[data-act]');if(!el)return;
+  var a=el.dataset.act;if(ACT[a]){if(el.tagName!=='INPUT')e.preventDefault();ACT[a](el.dataset.id,el,e)}
+});
+document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(!document.getElementById('viewer').hidden)closeViewer();else if(M)closeModal()});
+document.addEventListener('input',function(e){if(e.target.id==='msg-texte'){S.msgDraft=e.target.value;return}if(e.target.id==='q'){S.q=e.target.value;document.getElementById('hlist').innerHTML=hList()}});
+document.addEventListener('change',function(e){
+  if(e.target.id==='fmois'&&e.target.value){S.mois=e.target.value;render()}
+  if(e.target.id==='demo-role'){ACT['demo-role'](e.target.value)}
+  if(e.target.id==='e-tva'){var bx=document.getElementById('e-tvabox');if(bx)bx.hidden=e.target.value!=='tva'}
+  if(e.target.id==='f-piece'){var fl=e.target.files[0],sp=document.getElementById('f-piece-nom');if(sp)sp.textContent=fl?fl.name:'Pas de justificatif'}
+  if(e.target.id==='piece-input'&&e.target.files[0]&&M&&M.pieceFor){var dr=M.draft,fr=dr.frais.find(function(x){return x.id===M.pieceFor});M.pieceFor=null;
+    if(fr){toast('Enregistrement du justificatif…');addPieceTo(fr,e.target.files[0]).then(function(){if(M&&M.draft===dr)M.render();toast('Justificatif joint. Pensez à enregistrer la fiche.')},pieceErr)}}
+  if((e.target.id==='h-race'||e.target.id==='h-box')&&M){var on=e.target.value==='__autre',key=e.target.id==='h-race'?'oRace':'oBox';
+    if(on!==!!M[key]||on){M.read();M[key]=on;if(on)M.draft[e.target.id==='h-race'?'race':'box']='';M.render();if(on){var ip=document.getElementById(e.target.id+'-autre');if(ip)ip.focus()}}}
+  if(e.target.id==='c-type'&&M){M.read();if(M.draft.type==='particulier'){M.draft.places=1;M.draft.prix=db.tarifs.particulier}else{if(M.draft.places<2)M.draft.places=5;M.draft.prix=db.tarifs.collectif}M.render()}
+  if(e.target.id==='impfile'&&e.target.files[0]){var r=new FileReader();r.onload=function(){document.getElementById('impjson').value=r.result};r.readAsText(e.target.files[0])}
+});
+document.addEventListener('submit',function(e){
+  e.preventDefault();var id=e.target.id;
+  if(id==='flogin'||id==='fsignup'||id==='factivate'||id==='fnewpass'){if(!sb){authMsg='Base inaccessible : vérifiez votre connexion puis rechargez la page.';render();return}doAuth(id);return}
+  if(id==='fmsg'){sendMsg();return}
+  if(id==='fannonce'){var ti=v('an-titre'),tx=v('an-texte');if(!ti&&!tx){toast('Écrivez un titre ou un message.');return}var an={id:uid(),titre:ti||'Information',texte:tx,date:new Date().toISOString()};db.annonces.push(an);put('annonces',an);render();toast('Annonce publiée');return}
+  if(readOnly){toast('Accès en lecture seule.');return}
+  if(id==='ftask'){var l=v('newtask');if(!l)return;var tk={id:uid(),label:l,doneOn:null};db.taches.push(tk);put('taches',tk);render();var n=document.getElementById('newtask');if(n)n.focus();return}
+  if(id==='fecurie'){var ec=db.ecurie;ec.nom=v('e-nom');ec.adresse=v('e-adr');ec.siret=v('e-siret');ec.tel=v('e-tel');ec.email=v('e-email');ec.delai=Math.max(0,+v('e-delai')||0);
+    ec.tvaRegime=v('e-tva')||'franchise';if(ec.tvaRegime==='tva'){ec.tvaNum=v('e-tvanum');ec.tauxPension=+v('e-tp')||0;ec.tauxCours=+v('e-tc')||0;ec.tauxFrais=+v('e-tf')||0}
+    ec.iban=v('e-iban');ec.bic=v('e-bic');ec.mention=v('e-mention');ec.message=v('e-msg')||ECURIE_DEF.message;putConfig();toast('Écurie enregistrée');if(M)M.render();render();return}
+  if(id==='ftarifs'){['complete','pre','demi','collectif','particulier'].forEach(function(k){db.tarifs[k]=+v('t-'+k)||0});db.annulHeures=Math.max(0,+v('t-annul')||0);var li=v('t-lieux').split('\n').map(function(x){return x.trim()}).filter(Boolean);db.lieux=li.length?li:LIEUX_DEF.slice();putConfig();toast('Réglages enregistrés');render();return}
+  if(!M)return;M.read();var d=M.draft;
+  if(id==='fhorse'){if(!d.nom){toast('Indiquez le nom du cheval.');return}if(!d.proprietaireId){toast('Ajoutez d\'abord un propriétaire.');return}}
+  if(id==='fowner'&&!d.nom){toast('Indiquez le nom du propriétaire.');return}
+  if(id==='fcours'){if(!d.titre){M.err='Indiquez un intitulé pour le cours.';M.render();return}if(d.inscrits.length>d.places){M.err=d.inscrits.length+' inscrits pour '+d.places+' place'+(d.places>1?'s':'')+' : augmentez le nombre de places ou retirez un cavalier.';M.render();return}}
+  delete M.err;var k=M.kind;
+  if(d.id){var i=db[k].findIndex(function(x){return x.id===d.id});db[k][i]=d}else{d.id=uid();db[k].push(d)}
+  if(k==='cours')S.coursDate=d.date;
+  put(k,d);closeModal();render();toast('Enregistré');if(k==='chevaux')cleanupPieces();
+});
+renderNav();render();
+if(mode==='cloud'){var lib=document.createElement('script');lib.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+  lib.onload=function(){if(window.supabase&&window.supabase.createClient)startCloud();else lib.onerror()};
+  lib.onerror=function(){authState='login';authMsg='Impossible de joindre la base de l\'écurie : vérifiez votre connexion puis rechargez la page.';renderNav();render()};
+  document.head.appendChild(lib)}
+else startLocal();
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(){})})}
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();installEvt=e;if(S.tab==='jour')render()});
+window.addEventListener('appinstalled',function(){installEvt=null;render();toast('Application installée')});
+
+})();
+</script>
+
+</body>
+</html>
