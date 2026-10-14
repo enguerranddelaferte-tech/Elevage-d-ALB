@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Élevage d'ALB</title>
 <meta name="description" content="Gestion d'une écurie de propriétaires : chevaux, soins, cours, tâches et factures.">
-<meta name="theme-color" content="#2F5D46">
+<meta name="theme-color" content="#1E2A44">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
@@ -20,11 +20,11 @@
 html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
 /* Layout : une colonne d'appli mobile (max 640px), en-tête collant, barre d'onglets fixée en bas */
 :root{
-  --bg:#F4F5F2; --surface:#FFFFFF; --surface-2:#E9ECE6; --fg:#1C2420; --muted:#56605A; --line:#DFE3DC;
-  --accent:#2F5D46; --accent-ink:#1F4232; --accent-soft:#E2ECE5; --on-accent:#FFFFFF;
+  --bg:#F3F4F7; --surface:#FFFFFF; --surface-2:#E8EBF1; --fg:#161B26; --muted:#535B6A; --line:#DCE0E8;
+  --accent:#1E2A44; --accent-ink:#16203A; --accent-soft:#E2E6EF; --on-accent:#FFFFFF;
   --warn-bg:#FBF1DE; --warn-fg:#6F470D; --danger:#9A3B2A; --danger-soft:#F6E3DE; --overlay:rgba(20,26,23,.45);
   --f-display:'Outfit',ui-sans-serif,system-ui,sans-serif; --f-body:'DM Sans',ui-sans-serif,system-ui,sans-serif;
-  --r:14px;--c1:#2B7D4F;--c2:#C0781A;
+  --r:14px;--c1:#3D63B0;--c2:#C0781A;--brand:#C8102E;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#111614; --surface:#1A211E; --surface-2:#232B27; --fg:#E6ECE8; --muted:#A2ADA6; --line:#2D3732;
@@ -144,7 +144,8 @@ nav.tabs button[aria-current="page"]{color:var(--accent);font-weight:700}
   #view{grid-template-columns:repeat(auto-fit,minmax(400px,1fr))}
   nav.tabs{top:0;bottom:0;right:auto;width:var(--side);border-top:0;border-right:1px solid var(--line);padding:env(safe-area-inset-top,0px) 12px 16px max(12px,env(safe-area-inset-left,0px))}
   nav.tabs .in{flex-direction:column;gap:4px;max-width:none;height:100%}
-  nav.tabs .in::before{content:"Élevage d'ALB";font-family:var(--f-display);font-weight:700;font-size:19px;padding:22px 12px 18px;color:var(--fg)}
+  nav.tabs .in .brand{display:block;font-family:var(--f-display);font-weight:700;font-size:19px;padding:22px 12px 18px;color:var(--fg)}
+  nav.tabs .brand span{color:var(--brand)}
   nav.tabs button{flex:0 0 auto;flex-direction:row;justify-content:flex-start;gap:12px;padding:11px 12px;border-radius:12px;font-size:14px;min-height:44px}
   nav.tabs button[aria-current="page"]{background:var(--accent-soft);color:var(--accent-ink)}
   nav.tabs button:hover{background:var(--surface-2)}
@@ -171,6 +172,11 @@ nav.tabs button[aria-current="page"]{color:var(--accent);font-weight:700}
 .b1{background:var(--c1)}.b2{background:var(--c2)}.bcol:hover .bar{filter:brightness(1.1)}
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;margin-bottom:10px}.legend span{display:inline-flex;align-items:center;gap:6px}.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
 details summary{list-style-position:inside}
+nav.tabs .brand{display:none}
+.swatches{display:flex;flex-wrap:wrap;gap:8px}
+.swatch{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-weight:600;font-size:14px;cursor:pointer}
+.swatch.on{border:2px solid var(--fg)}
+.swatch .dot{width:18px;height:18px;border-radius:50%;box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--line)}
 .warnline{font-size:13px;color:var(--danger);font-weight:500}
 @media (prefers-reduced-motion:no-preference){.modal{animation:up .18s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.6}}}
 </style>
@@ -435,12 +441,53 @@ function addPieceTo(fr,file){
 }
 function pieceErr(e){toast(e&&e.message==='trop lourd'?'Fichier trop lourd (15 Mo maximum).':'Impossible d\'enregistrer le justificatif sur cet appareil.')}
 
+/* ---------- thèmes de couleurs ----------
+   Le thème (couleurs) est commun à toute l'écurie (choisi par le gérant) ; le mode clair/sombre est propre à chaque appareil.
+   Ordre des couleurs : principale, texte principal, fond doux, texte sur principale, graphique 1, graphique 2. */
+var THEMES={
+  alb:{nom:"Élevage d'ALB",n:'cool',l:['#1E2A44','#16203A','#E2E6EF','#FFFFFF','#3D63B0','#C0781A'],d:['#8FA6D6','#B9C8EA','#1E2638','#0E1422','#6A8DD6','#CC7A1A']},
+  foret:{nom:'Vert forêt',n:'green',l:['#2F5D46','#1F4232','#E2ECE5','#FFFFFF','#2B7D4F','#C0781A'],d:['#7DB894','#A9D4B8','#1F3128','#0D1511','#3C9A66','#CC7A1A']},
+  bordeaux:{nom:'Bordeaux',n:'warm',l:['#7A2233','#5E1827','#F3E3E6','#FFFFFF','#A8344C','#3D63B0'],d:['#E08A9A','#F0B4BF','#3A1E24','#1A0B0F','#D96A80','#6A8DD6']},
+  cuir:{nom:'Cuir',n:'warm',l:['#6E4220','#523016','#F1E7DD','#FFFFFF','#A5601F','#3D63B0'],d:['#D4A373','#E6C29D','#33261A','#1A120A','#B0712E','#6A8DD6']},
+  prune:{nom:'Prune',n:'cool',l:['#5B3A6E','#452B55','#ECE4F1','#FFFFFF','#7E58A0','#C0781A'],d:['#B99AD0','#D3BFE3','#2C2236','#140D1A','#9470B8','#CC7A1A']}
+};
+var NEUTRAL={
+  cool:{l:{bg:'#F3F4F7',surface:'#FFFFFF','surface-2':'#E8EBF1',fg:'#161B26',muted:'#535B6A',line:'#DCE0E8'},d:{bg:'#0F131B',surface:'#171C26','surface-2':'#212734',fg:'#E6E9EF',muted:'#A3AAB8',line:'#2B3242'}},
+  warm:{l:{bg:'#F6F3F0',surface:'#FFFFFF','surface-2':'#ECE7E2',fg:'#221B17',muted:'#625750',line:'#E3DCD5'},d:{bg:'#151210',surface:'#1F1B17','surface-2':'#2A2420',fg:'#EDE7E2',muted:'#B0A59C',line:'#352E28'}},
+  green:{l:{bg:'#F4F5F2',surface:'#FFFFFF','surface-2':'#E9ECE6',fg:'#1C2420',muted:'#56605A',line:'#DFE3DC'},d:{bg:'#111614',surface:'#1A211E','surface-2':'#232B27',fg:'#E6ECE8',muted:'#A2ADA6',line:'#2D3732'}}
+};
+var TKEYS=['accent','accent-ink','accent-soft','on-accent','c1','c2'];
+function themeKey(){var k=db&&db.ecurie&&db.ecurie.theme;if(!k){try{k=localStorage.getItem(KEY+'-theme')}catch(e){}}return THEMES[k]?k:'alb'}
+function modePref(){var m='auto';try{m=localStorage.getItem(KEY+'-mode')||'auto'}catch(e){}return ['auto','light','dark'].indexOf(m)>-1?m:'auto'}
+function themeTokens(t,side){var o={},n=NEUTRAL[t.n][side];Object.keys(n).forEach(function(k){o[k]=n[k]});TKEYS.forEach(function(k,i){o[k]=t[side][i]});o.brand=side==='l'?'#C8102E':'#F0566B';return o}
+function tokCss(o){return Object.keys(o).map(function(k){return '--'+k+':'+o[k]}).join(';')}
+var lastTheme='';
+function applyTheme(force){
+  var k=themeKey(),md=modePref(),sig=k+'|'+md;if(sig===lastTheme&&!force)return;lastTheme=sig;var t=THEMES[k],L=themeTokens(t,'l'),D=themeTokens(t,'d');
+  var el=document.getElementById('theme-css');if(!el){el=document.createElement('style');el.id='theme-css';document.head.appendChild(el)}
+  el.textContent=':root{'+tokCss(L)+'}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){'+tokCss(D)+';color-scheme:dark}}:root[data-theme="dark"]{'+tokCss(D)+';color-scheme:dark}';
+  if(md==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',md);
+  var dark=md==='dark'||(md==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
+  var mt=document.querySelector('meta[name="theme-color"]');if(mt)mt.setAttribute('content',dark?D.bg:L.accent);
+  try{localStorage.setItem(KEY+'-theme',k)}catch(e){}
+}
+try{window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){applyTheme(true)})}catch(e){}
+function hexRgb(h){h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+function appearanceBox(){
+  var k=themeKey(),md=modePref();
+  return '<div class="form panel" style="padding:14px"><span class="lbl">Apparence</span>'+
+    (isG()?'<div class="field"><span class="lbl" id="th-lbl">Couleurs de l\'appli (pour tout le monde)</span><div class="swatches" role="radiogroup" aria-labelledby="th-lbl">'+Object.keys(THEMES).map(function(x){var t=THEMES[x];
+      return '<button type="button" role="radio" aria-checked="'+(x===k)+'" class="swatch'+(x===k?' on':'')+'" data-act="theme" data-id="'+x+'"><span class="dot" style="background:'+t.l[0]+'"></span>'+esc(t.nom)+'</button>'}).join('')+'</div></div>':'')+
+    sel('mode-pref','Mode d\'affichage (cet appareil)',[['auto','Automatique (comme l\'appareil)'],['light','Toujours clair'],['dark','Toujours sombre']],md)+'</div>';
+}
+
 function normalize(){
   COLS.forEach(function(k){if(!Array.isArray(db[k]))db[k]=[]});if(!db.tarifs)db.tarifs=emptyDb().tarifs;if(db.annulHeures===undefined||db.annulHeures===null)db.annulHeures=24;
   db.cours.forEach(function(c){if(!Array.isArray(c.inscrits))c.inscrits=[]});db.factures.forEach(function(f){if(!Array.isArray(f.lignes))f.lignes=[]});
   if(!Array.isArray(db.lieux)||!db.lieux.length)db.lieux=LIEUX_DEF.slice();
   db.ecurie=Object.assign({},ECURIE_DEF,db.ecurie||{});if(!db.compteurs)db.compteurs={};
   db.chevaux.forEach(function(c){if(!Array.isArray(c.soins))c.soins=[];if(!Array.isArray(c.frais))c.frais=[]});
+  applyTheme();
 }
 
 
@@ -701,7 +748,7 @@ function renderNav(){
   if(!ok)return;
   var items=isG()?[['jour',"Aujourd'hui",'sun'],['chevaux','Chevaux','doc'],['cours','Cours','cal'],['factures','Factures','eur'],['compta','Compta','chart'],['proprios','Clients','people']]
     :[['accueil','Accueil','home'],['cours','Cours','cal'],['cheval',myHorses().length>1?'Chevaux':'Mon cheval','doc'],['factures','Factures','eur'],['messages','Messages','chat']];
-  inn.innerHTML=items.map(function(x){return '<button data-act="tab" data-id="'+x[0]+'"'+(S.tab===x[0]?' aria-current="page"':'')+'><span style="position:relative;display:inline-flex"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[x[2]]+'</svg>'+(x[0]==='messages'?'<span class="nbadge" id="nav-msg-badge" hidden></span>':'')+'</span><span>'+x[1]+'</span></button>'}).join('');
+  inn.innerHTML='<div class="brand" aria-hidden="true">Élevage d\'<span>ALB</span></div>'+items.map(function(x){return '<button data-act="tab" data-id="'+x[0]+'"'+(S.tab===x[0]?' aria-current="page"':'')+'><span style="position:relative;display:inline-flex"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[x[2]]+'</svg>'+(x[0]==='messages'?'<span class="nbadge" id="nav-msg-badge" hidden></span>':'')+'</span><span>'+x[1]+'</span></button>'}).join('');
   updateBadge();
 }
 function updateBadge(){var u=authState==='ok'?unreadTotal():0;['hmsg-badge','nav-msg-badge'].forEach(function(i){var b=document.getElementById(i);if(b){b.textContent=u;b.hidden=!u}})}
@@ -857,12 +904,12 @@ function demoSwitch(){return '<div class="field panel" style="padding:14px"><lab
 function accountBox(){return '<div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:8px"><span class="lbl">Compte</span><div>'+esc(me.email||'')+(isG()?' · gérant':'')+'</div><button class="btn" data-act="logout">Se déconnecter</button></div>'}
 function settingsModal(){
   if(!isG()){M={kind:'settings',draft:{},read:function(){},focus:false,render:function(){var o=owner(me.prop)||{};
-    var h=head('Mon compte')+(mode==='local'?demoSwitch():'')+'<div class="panel" style="padding:14px"><b>'+esc(o.nom||'')+'</b><div class="sub" style="white-space:pre-wrap">'+esc([o.email,o.tel,o.adresse].filter(Boolean).join('\n'))+'</div></div>'+
+    var h=head('Mon compte')+(mode==='local'?demoSwitch():'')+appearanceBox()+'<div class="panel" style="padding:14px"><b>'+esc(o.nom||'')+'</b><div class="sub" style="white-space:pre-wrap">'+esc([o.email,o.tel,o.adresse].filter(Boolean).join('\n'))+'</div></div>'+
       '<p class="sub" style="margin:0">Pour modifier vos coordonnées, écrivez au gérant dans Messages.</p>'+(mode==='cloud'?accountBox():'');mb(h)}};openModal();return}
   M={kind:'settings',draft:{},read:function(){},focus:false,render:function(){
     var t=db.tarifs;
     var e=db.ecurie,tv=e.tvaRegime==='tva';
-    var h=head('Réglages')+(mode==='local'?demoSwitch():'')+(mode==='cloud'?accountBox():'')+'<form class="form" id="fecurie"><span class="lbl">Mon écurie (en-tête des factures)</span>'+fld('e-nom','Nom de l\'écurie',e.nom)+
+    var h=head('Réglages')+(mode==='local'?demoSwitch():'')+(mode==='cloud'?accountBox():'')+appearanceBox()+'<form class="form" id="fecurie"><span class="lbl">Mon écurie (en-tête des factures)</span>'+fld('e-nom','Nom de l\'écurie',e.nom)+
       '<div class="field"><label for="e-adr">Adresse</label><textarea id="e-adr">'+esc(e.adresse)+'</textarea></div><div class="grid2">'+fld('e-siret','SIRET',e.siret)+fld('e-tel','Téléphone',e.tel,'tel')+fld('e-email','E-mail',e.email,'email')+fld('e-delai','Délai de paiement (jours)',e.delai,'number',' min="0"')+'</div>'+
       sel('e-tva','TVA',[['franchise','Non assujetti (franchise en base, art. 293 B)'],['tva','Assujetti à la TVA (prix saisis TTC)']],e.tvaRegime)+
       ('<div id="e-tvabox" class="form"'+(tv?'':' hidden')+'><div class="grid2">'+fld('e-tvanum','N° de TVA intracommunautaire',e.tvaNum)+fld('e-tp','Taux pension (%)',e.tauxPension,'number',' min="0" step="0.1"')+fld('e-tc','Taux cours (%)',e.tauxCours,'number',' min="0" step="0.1"')+fld('e-tf','Taux frais refacturés (%)',e.tauxFrais,'number',' min="0" step="0.1"')+'</div><p class="sub" style="margin:0">Les taux applicables dépendent de votre situation : faites-les valider par votre comptable.</p></div>')+
@@ -972,7 +1019,7 @@ function tvaSummary(f){
 }
 function fdl(s){return fdate(s,{day:'numeric',month:'long',year:'numeric'})}
 function buildPdf(f){
-  var e=db.ecurie,o=owner(f.proprietaireId)||{nom:'Propriétaire'},d=new PDFDoc(),G=[47,93,70],MU=[86,96,90],SOFT=[226,236,229],tva=e.tvaRegime==='tva';
+  var e=db.ecurie,o=owner(f.proprietaireId)||{nom:'Propriétaire'},d=new PDFDoc(),TH=THEMES[themeKey()].l,G=hexRgb(TH[0]),INK=hexRgb(TH[1]),MU=[86,93,104],SOFT=hexRgb(TH[2]),tva=e.tvaRegime==='tva';
   var y=20;
   d.text(15,y,e.nom||'[Nom de l\'écurie]',{size:15,bold:true,color:G});y+=6;
   d.wrap(e.adresse,85,9.5).forEach(function(l){if(l){d.text(15,y,l,{size:9.5});y+=4.4}});
@@ -988,9 +1035,9 @@ function buildPdf(f){
   y=Math.max(y,cy+ch)+10;
   d.text(15,y,'Période : '+monthLabel(f.mois),{size:11,bold:true});y+=6;
   var descW=tva?110:150;
-  function headRow(){d.rect(15,y,180,8,SOFT);d.text(18,y+5.4,'Désignation',{size:9,bold:true,color:[31,66,50]});
-    if(tva){d.text(150,y+5.4,'TVA',{size:9,bold:true,align:'right',color:[31,66,50]});d.text(172,y+5.4,'HT',{size:9,bold:true,align:'right',color:[31,66,50]})}
-    d.text(192,y+5.4,tva?'TTC':'Montant',{size:9,bold:true,align:'right',color:[31,66,50]});y+=8}
+  function headRow(){d.rect(15,y,180,8,SOFT);d.text(18,y+5.4,'Désignation',{size:9,bold:true,color:INK});
+    if(tva){d.text(150,y+5.4,'TVA',{size:9,bold:true,align:'right',color:INK});d.text(172,y+5.4,'HT',{size:9,bold:true,align:'right',color:INK})}
+    d.text(192,y+5.4,tva?'TTC':'Montant',{size:9,bold:true,align:'right',color:INK});y+=8}
   headRow();
   var rates={pension:+e.tauxPension||0,cours:+e.tauxCours||0,frais:+e.tauxFrais||0};
   f.lignes.forEach(function(l){
@@ -1239,7 +1286,7 @@ function chartSection(y){
   var ms=[];for(var i=1;i<=12;i++)ms.push(y+'-'+String(i).padStart(2,'0'));
   var ca=ms.map(function(m){return r2(db.factures.filter(function(f){return f.mois===m}).reduce(function(s,f){return s+(+f.total||0)},0))}),
       dp=ms.map(function(m){return r2(db.depenses.filter(function(d){return (d.date||'').slice(0,7)===m}).reduce(function(s,d){return s+(+d.ttc||0)},0))});
-  var mx=Math.max.apply(null,ca.concat(dp,[1])),step=niceStep(mx),top=Math.ceil(mx/step)*step||1,H=150;
+  var mx=Math.max.apply(null,ca.concat(dp,[100])),step=niceStep(mx),top=Math.ceil(mx/step)*step||1,H=150;
   var bars=ms.map(function(m,i){var lb=toD(m+'-01').toLocaleDateString('fr-FR',{month:'short'}).replace('.','');
     return '<div class="bcol" title="'+esc(monthLabel(m)+' — facturé '+money(ca[i])+', dépenses '+money(dp[i]))+'"><div class="bpair" style="height:'+H+'px"><span class="bar b1" style="height:'+Math.round(ca[i]/top*H)+'px"></span><span class="bar b2" style="height:'+Math.round(dp[i]/top*H)+'px"></span></div><small>'+lb+'</small></div>'}).join('');
   var grid='';for(var g=0;g<=top;g+=step)grid+='<div class="gl" style="bottom:'+(18+Math.round(g/top*H))+'px"><span>'+fmtK(g)+'</span></div>';
@@ -1319,6 +1366,7 @@ var ACT={
     (async function(){await drop(k,id);for(var i=0;i<changed.length;i++)await put('cours',changed[i])})();
     closeModal();render();toast('Supprimé');cleanupPieces()},
   'fact-st':function(){var f=M.draft;f.statut='attente';delete f.payeLe;delete f.modePaiement;put('factures',f);M.render();render();toast('Paiement annulé')},
+  theme:function(id){if(!THEMES[id])return;db.ecurie.theme=id;putConfig();applyTheme(true);if(M)M.render();render();toast('Couleurs « '+THEMES[id].nom+' » appliquées')},
   'fact-pay':function(){payModal(M.draft)},'fact-avoir':function(){avoirModal(M.draft)},
   'fact-relance':function(){sendRelance(M.draft)},'relance-ok':function(){var f=M.draft;M.relHelp=false;f.relances=(f.relances||[]).concat([today()]);put('factures',f);M.render();render();toast('Relance enregistrée')},
   dep:function(id){depModal(id)},'dep-piece-x':function(){M.read();delete M.draft.pieceId;delete M.draft.pieceNom;delete M.draft.pieceType;M.render()},
@@ -1358,6 +1406,7 @@ document.addEventListener('input',function(e){if(e.target.id==='msg-texte'){S.ms
 document.addEventListener('change',function(e){
   if(e.target.id==='fmois'&&e.target.value){S.mois=e.target.value;render()}
   if(e.target.id==='demo-role'){ACT['demo-role'](e.target.value)}
+  if(e.target.id==='mode-pref'){try{localStorage.setItem(KEY+'-mode',e.target.value)}catch(er){}applyTheme(true)}
   if(e.target.id==='c-kind'){S.cKind=e.target.value;render()}
   if(e.target.id==='c-ref'&&e.target.value){S.cRef=e.target.value;render()}
   if(e.target.id==='d-piece'){var dfl=e.target.files[0],dsp=document.getElementById('d-piece-nom');if(dsp)dsp.textContent=dfl?dfl.name:'Aucun fichier'}
@@ -1395,7 +1444,7 @@ document.addEventListener('submit',function(e){
   if(k==='cours')S.coursDate=d.date;
   put(k,d);closeModal();render();toast('Enregistré');if(k==='chevaux')cleanupPieces();
 });
-normalize();renderNav();render();
+applyTheme();normalize();renderNav();render();
 if(mode==='cloud'){var lib=document.createElement('script');lib.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
   lib.onload=function(){if(window.supabase&&window.supabase.createClient)startCloud();else lib.onerror()};
   lib.onerror=function(){authState='login';authMsg='Impossible de joindre la base de l\'écurie : vérifiez votre connexion puis rechargez la page.';renderNav();render()};
