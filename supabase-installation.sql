@@ -1,5 +1,5 @@
 -- =====================================================================
---  Gestion d'Écurie — installation de la base Supabase
+--  Élevage d'ALB — installation de la base Supabase
 --  À coller UNE FOIS dans Supabase › SQL Editor › New query, puis « Run ».
 --  Le résultat affiche votre CODE D'ACTIVATION GÉRANT : notez-le.
 --  Le script peut être relancé sans risque (il ne supprime aucune donnée).
@@ -164,6 +164,16 @@ create policy "pieces gerant" on storage.objects for all to authenticated
 drop policy if exists "pieces client lecture" on storage.objects;
 create policy "pieces client lecture" on storage.objects for select to authenticated
   using (bucket_id = 'pieces' and (storage.foldername(name))[1] = public.mon_proprio());
+
+-- ---------- Droits d'accès de l'appli (les règles RLS ci-dessus filtrent les lignes) ----------
+revoke execute on function public.lier_compte(text), public.reserver_cours(text), public.annuler_cours(text), public.mon_profil(), public.marquer_lus() from public, anon;
+grant execute on function public.lier_compte(text), public.reserver_cours(text), public.annuler_cours(text), public.mon_profil(), public.marquer_lus() to authenticated;
+grant execute on function public.est_gerant(), public.mon_proprio(), public.est_membre() to authenticated;
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on public.config, public.proprietaires, public.chevaux, public.cours, public.taches, public.factures, public.annonces, public.messages to authenticated;
+grant select on public.profils to authenticated;
+revoke all on public.secrets from anon, authenticated;
+revoke all on public.config, public.proprietaires, public.chevaux, public.cours, public.taches, public.factures, public.annonces, public.messages, public.profils from anon;
 
 -- ---------- Votre code d'activation gérant ----------
 select v as "CODE D'ACTIVATION GÉRANT (à noter)" from public.secrets where k = 'code_gerant';
