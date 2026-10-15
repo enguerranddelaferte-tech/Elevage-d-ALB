@@ -1329,13 +1329,26 @@ var WX={data:null,at:0,key:'',err:false,loading:false};
 try{var wxc=JSON.parse(localStorage.getItem(KEY+'-meteo')||'null');if(wxc&&wxc.data){WX.data=wxc.data;WX.at=wxc.at;WX.key=wxc.key}}catch(e){}
 function wxLoc(){return db.ecurie&&db.ecurie.meteo&&db.ecurie.meteo.lat!=null?db.ecurie.meteo:null}
 function wxKey(){var m=wxLoc();return m?(+m.lat).toFixed(4)+','+(+m.lon).toFixed(4):''}
+function wxDirect(body){
+  var url;
+  if(body.type==='communes'){
+    if(body.lat!=null)url='https://geo.api.gouv.fr/communes?lat='+(+body.lat).toFixed(4)+'&lon='+(+body.lon).toFixed(4)+'&fields=nom,centre,codesPostaux,departement&limit=1';
+    else url=/^\d{5}$/.test(body.q)?'https://geo.api.gouv.fr/communes?codePostal='+body.q+'&fields=nom,centre,codesPostaux,departement&limit=8'
+      :'https://geo.api.gouv.fr/communes?nom='+encodeURIComponent(body.q)+'&fields=nom,centre,codesPostaux,departement&boost=population&limit=8';
+  } else url='https://api.met.no/weatherapi/locationforecast/2.0/compact?lat='+(+body.lat).toFixed(4)+'&lon='+(+body.lon).toFixed(4);
+  return fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()});
+}
+function wxCall(body){
+  if(sb&&sb.functions)return sb.functions.invoke('meteo',{body:body}).then(function(r){if(r.error)throw r.error;var d=r.data;if(typeof d==='string')d=JSON.parse(d);if(d&&d.error)throw new Error(d.error);return d}).catch(function(){return wxDirect(body)});
+  return wxDirect(body);
+}
 function wxEnsure(){
   var k=wxKey();if(!k||WX.loading)return;
   if(WX.key===k&&WX.data&&Date.now()-WX.at<45*60000)return;
   if(WX.key!==k){WX.data=null}
   if(WX.err&&Date.now()-(WX.errAt||0)<5*60000)return;
   WX.loading=true;var c=k.split(',');
-  fetch('https://api.met.no/weatherapi/locationforecast/2.0/compact?lat='+c[0]+'&lon='+c[1]).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
+  wxCall({lat:c[0],lon:c[1]})
     .then(function(j){WX.data=wxParse(j);WX.at=Date.now();WX.key=k;WX.err=false;try{localStorage.setItem(KEY+'-meteo',JSON.stringify({key:k,at:WX.at,data:WX.data}))}catch(e){}})
     .catch(function(){WX.err=true;WX.errAt=Date.now()})
     .then(function(){WX.loading=false;wxUpdate()});
@@ -1399,14 +1412,14 @@ function wxInner(){
   var m=wxLoc();
   if(!m||S.meteoEdit){
     if(!isG())return '<div class="panel empty">La météo n\'est pas encore configurée par l\'écurie.</div>';
-    return '<form class="panel form" id="fmeteo" style="padding:14px"><div class="field"><label for="meteo-q">Commune de l\'écurie</label><div class="actions"><input class="search grow" id="meteo-q" placeholder="ex. Alençon ou 61000" autocomplete="off" value="'+esc(S.meteoQ||'')+'"><button class="btn primary" type="submit">Rechercher</button></div></div>'+
+    return '<form class="panel form" id="fmeteo" style="padding:14px"><div class="field"><label for="meteo-q">Commune de l\'écurie</label><div class="actions"><input class="search grow" id="meteo-q" placeholder="ex. Alençon ou 61000" autocomplete="off" value="'+esc(S.meteoQ||'')+'"><button class="btn primary" type="submit">Rechercher</button></div></div>'+(navigator.geolocation?'<button type="button" class="btn" data-act="meteo-geo">Utiliser ma position actuelle</button>':'')+
       (S.meteoMsg?'<p class="sub" style="margin:0">'+esc(S.meteoMsg)+'</p>':'')+
       ((S.meteoRes||[]).length?'<div class="items">'+S.meteoRes.map(function(r,i){return '<button type="button" class="item" data-act="meteo-pick" data-id="'+i+'"><span class="x"><b>'+esc(r.nom)+'</b><span>'+esc([r.cp,r.dep].filter(Boolean).join(' · '))+'</span></span></button>'}).join('')+'</div>':'')+
       (m?'<button type="button" class="btn sm" data-act="meteo-cancel">Annuler</button>':'')+'</form>';
   }
   wxEnsure();
   var w=WX.key===wxKey()?WX.data:null;
-  if(!w)return '<div class="panel empty">'+(WX.err?'Météo indisponible pour le moment (pas de connexion ?).':'Chargement de la météo…')+'</div>';
+  if(!w)return '<div class="panel empty">'+(WX.err?'Météo indisponible pour le moment. <button class="btn sm" data-act="meteo-retry">Réessayer</button>':'Chargement de la météo…')+'</div>';
   var n=w.now,info=wxInfo(n.sym),cs=wxConseils(w),age=Math.round((Date.now()-WX.at)/60000);
   var h='<div class="panel wx"><div class="wx-now"><span class="wx-ic">'+wxIcon(n.sym,44,true)+'</span><div class="x"><div class="wx-t">'+deg(n.temp)+'</div><div><b>'+esc(info.l)+'</b></div>'+
     '<div class="sub">Vent '+Math.round(n.wind)+' km/h · Pluie '+String(w.pr24).replace('.',',')+' mm sur 24 h'+(w.nuit!=null?' · Nuit '+deg(w.nuit):'')+'</div></div></div>'+
@@ -1422,10 +1435,8 @@ function weatherSection(){
 function wxUpdate(){var el=document.getElementById('meteo-in');if(el){var a=document.activeElement;if(a&&a.id==='meteo-q')return;el.innerHTML=wxInner()}}
 function meteoSearch(q){
   q=String(q||'').trim();S.meteoQ=q;if(q.length<2){S.meteoMsg='Saisissez au moins 2 lettres ou un code postal.';wxUpdate();return}
-  var url=/^\d{5}$/.test(q)?'https://geo.api.gouv.fr/communes?codePostal='+q+'&fields=nom,centre,codesPostaux,departement&limit=8'
-    :'https://geo.api.gouv.fr/communes?nom='+encodeURIComponent(q)+'&fields=nom,centre,codesPostaux,departement&boost=population&limit=8';
   S.meteoMsg='Recherche…';S.meteoRes=[];render();
-  fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()}).then(function(l){
+  wxCall({type:'communes',q:q}).then(function(l){
     S.meteoRes=(l||[]).filter(function(c){return c.centre&&c.centre.coordinates}).map(function(c){return{nom:c.nom,cp:(c.codesPostaux||[])[0]||'',dep:c.departement?c.departement.nom:'',lat:+c.centre.coordinates[1],lon:+c.centre.coordinates[0]}});
     S.meteoMsg=S.meteoRes.length?'Choisissez la commune :':'Aucune commune trouvée.';render();
   },function(){S.meteoMsg='Recherche impossible : vérifiez la connexion.';render()});
@@ -1486,6 +1497,10 @@ var ACT={
   'fact-st':function(){var f=M.draft;f.statut='attente';delete f.payeLe;delete f.modePaiement;put('factures',f);M.render();render();toast('Paiement annulé')},
   theme:function(id){if(!THEMES[id])return;db.ecurie.theme=id;putConfig();applyTheme(true);if(M)M.render();render();toast('Couleurs « '+THEMES[id].nom+' » appliquées')},
   'meteo-edit':function(){S.meteoEdit=true;S.meteoRes=[];S.meteoMsg='';render();var q=document.getElementById('meteo-q');if(q)q.focus()},
+  'meteo-retry':function(){WX.err=false;WX.errAt=0;wxEnsure();wxUpdate()},
+  'meteo-geo':function(){S.meteoMsg='Localisation…';wxUpdate();navigator.geolocation.getCurrentPosition(function(p){var la=Math.round(p.coords.latitude*1e4)/1e4,lo=Math.round(p.coords.longitude*1e4)/1e4;
+    wxCall({type:'communes',lat:la,lon:lo}).then(function(l){return (l||[])[0]},function(){return null}).then(function(c){db.ecurie.meteo={nom:c?c.nom:'Ma position',cp:c&&c.codesPostaux?c.codesPostaux[0]:'',lat:la,lon:lo};putConfig();S.meteoEdit=false;S.meteoMsg='';S.meteoRes=[];WX.err=false;render();toast('Météo réglée sur '+db.ecurie.meteo.nom)})},
+    function(){S.meteoMsg='Position refusée ou indisponible : recherchez la commune par son nom.';wxUpdate()},{timeout:10000,maximumAge:600000})},
   'meteo-cancel':function(){S.meteoEdit=false;S.meteoRes=[];S.meteoMsg='';render()},
   'meteo-pick':function(i){var r=(S.meteoRes||[])[+i];if(!r)return;db.ecurie.meteo={nom:r.nom,cp:r.cp,lat:Math.round(r.lat*1e4)/1e4,lon:Math.round(r.lon*1e4)/1e4};putConfig();S.meteoEdit=false;S.meteoRes=[];S.meteoMsg='';S.meteoQ='';WX.err=false;render();toast('Météo réglée sur '+r.nom)},
   'fact-pay':function(){payModal(M.draft)},'fact-avoir':function(){avoirModal(M.draft)},
