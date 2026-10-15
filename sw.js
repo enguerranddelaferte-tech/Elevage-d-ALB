@@ -1,6 +1,6 @@
 // Service worker : met l'application en cache pour qu'elle s'ouvre même avec un réseau faible.
 // Après une modification des fichiers, augmentez le numéro de version ci-dessous.
-const VERSION = 'ecurie-v13';
+const VERSION = 'ecurie-v14';
 const APP = [
   './',
   './index.html',

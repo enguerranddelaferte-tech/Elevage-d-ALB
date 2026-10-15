@@ -183,6 +183,16 @@ nav.tabs .brand{display:none}
 .wx-days{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .wx-day{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--surface-2);border-radius:12px;padding:8px 4px;font-variant-numeric:tabular-nums;text-align:center}
 .wx-day small{font-size:12px;font-weight:700}.wx-tips{display:flex;flex-direction:column;gap:6px}
+.wx-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.wx-grid>div{display:flex;flex-direction:column;gap:2px;background:var(--surface-2);border-radius:12px;padding:10px;font-variant-numeric:tabular-nums}
+.hours{display:flex;overflow-x:auto;gap:6px;padding:10px;scroll-snap-type:x proximity}
+.hcell{flex:0 0 58px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:10px;font-variant-numeric:tabular-nums;scroll-snap-align:start}
+.hcell small{font-size:12px;font-weight:700}.hsep{flex:0 0 auto;writing-mode:vertical-rl;transform:rotate(180deg);font-size:11px;font-weight:700;color:var(--muted);border-left:1px solid var(--line);padding:4px 2px}
+.dayrow{gap:10px}.dname{display:flex;flex-direction:column;width:64px;flex:none}
+.trange{display:flex;align-items:center;gap:8px;margin-top:4px;font-variant-numeric:tabular-nums}.trange b{width:34px;text-align:center;font-size:14px}
+.tbar{position:relative;flex:1;height:6px;border-radius:3px;background:var(--surface-2)}.tbar i{position:absolute;top:0;height:6px;border-radius:3px;background:var(--c1)}
+svg .cg{stroke:var(--line);stroke-width:1}svg .cg.cd{stroke:var(--muted);stroke-dasharray:3 3}svg .ct{fill:var(--muted);font-size:12px}svg .cv{fill:var(--fg);font-size:13px;font-weight:700}
+svg .cl{fill:none;stroke:var(--c1);stroke-width:2;stroke-linejoin:round}svg .ca{fill:var(--c1);opacity:.12}svg .cp{fill:var(--c1);stroke:var(--surface);stroke-width:2}
 .warnline{font-size:13px;color:var(--danger);font-weight:500}
 @media (prefers-reduced-motion:no-preference){.modal{animation:up .18s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.6}}}
 </style>
@@ -215,7 +225,7 @@ var SOINS=['Vaccin grippe','Vaccin tétanos','Vaccin rhinopneumonie','Vermifuge'
 var RACES=['Selle Français','Pur-sang','Trotteur Français','Anglo-Arabe','Arabe','Demi-sang arabe','KWPN','Hanovrien','Holsteiner','Oldenbourg','Zangersheide','BWP','Lusitanien','Pure Race Espagnole (PRE)','Frison','Quarter Horse','Appaloosa','Paint Horse','Camargue','Mérens','Barbe','Irish Cob','Fjord','Haflinger','Islandais','Cheval de trait','Connemara','Welsh','New Forest','Poney Français de Selle','Shetland','Origine non constatée (ONC)'];
 var FRAIS=['Vétérinaire','Ostéopathe','Maréchal','Dentiste','Entretien / soins','Tonte','Pharmacie','Fournitures','Autre'];
 var LIEUX_DEF=['Box 1','Box 2','Box 3','Box 4','Box 5','Box 6','Box 7','Box 8','Box 9','Box 10','Box 11','Box 12','Pré n°1','Pré n°2','Pré n°3','Pré n°4','Paddock 1','Paddock 2'];
-var TITLES={compta:'Comptabilité',accueil:'Accueil',cheval:'Mon cheval',messages:'Messages',jour:"Aujourd'hui",chevaux:'Chevaux',cours:'Planning des cours',factures:'Factures',proprios:'Propriétaires'};
+var TITLES={meteo:'Météo',compta:'Comptabilité',accueil:'Accueil',cheval:'Mon cheval',messages:'Messages',jour:"Aujourd'hui",chevaux:'Chevaux',cours:'Planning des cours',factures:'Factures',proprios:'Propriétaires'};
 var canSave=true;
 
 /* ---------- dates & formats ---------- */
@@ -405,7 +415,7 @@ async function doAuth(id){
     if(id==='fnewpass'){var r3=await sb.auth.updateUser({password:document.getElementById('np-pass').value});if(r3.error)throw r3.error;authView='login';toast('Mot de passe modifié');var s2=(await sb.auth.getSession()).data.session;if(s2)await afterLogin(s2);else render();return}
   }catch(e){authMsg=frErr(e);render()}
 }
-var TABS_G=['jour','chevaux','cours','factures','compta','proprios'],TABS_C=['accueil','cours','cheval','factures','messages'];
+var TABS_G=['jour','chevaux','cours','factures','compta','proprios','meteo'],TABS_C=['accueil','cours','cheval','factures','messages','meteo'];
 function fixTab(){var ok=isG()?TABS_G.concat(['messages']):TABS_C;if(ok.indexOf(S.tab)<0)S.tab=ok[0]}
 /* ---------- justificatifs (photos, PDF) : base IndexedDB de l'appareil ---------- */
 var IDBP=null;
@@ -742,20 +752,21 @@ function appUrl(){return location.origin+location.pathname}
 function inviteText(p){return 'Bonjour '+firstName(p.nom)+',\n\nVoici votre accès à l\'espace client de '+(db.ecurie.nom||'l\'écurie')+' : réservation des cours, suivi de votre cheval, factures et messages.\n\n1. Ouvrez '+appUrl()+'\n2. Touchez « Première connexion : créer mon compte »\n3. Saisissez votre e-mail, un mot de passe et ce code d\'activation : '+p._code+'\n\nÀ bientôt !'}
 function copyText(t,okMsg){var p=navigator.clipboard&&navigator.clipboard.writeText(t);if(p)p.then(function(){toast(okMsg)},function(){toast('Copie impossible : sélectionnez le texte affiché')});else toast('Copie impossible : sélectionnez le texte affiché')}
 
-var VIEWS_G={compta:vCompta,jour:vJour,chevaux:vChevaux,cours:vCours,factures:vFactures,proprios:vProprios,messages:vMessagesG};
-var VIEWS_C={accueil:cAccueil,cours:cCours,cheval:cCheval,factures:cFactures,messages:cMessages};
+var VIEWS_G={meteo:vMeteo,compta:vCompta,jour:vJour,chevaux:vChevaux,cours:vCours,factures:vFactures,proprios:vProprios,messages:vMessagesG};
+var VIEWS_C={meteo:vMeteo,accueil:cAccueil,cours:cCours,cheval:cCheval,factures:cFactures,messages:cMessages};
 function titleFor(){if(authState!=='ok')return 'Connexion';if(!isG()){if(S.tab==='cours')return 'Réserver un cours';if(S.tab==='factures')return 'Mes factures';if(S.tab==='cheval'&&myHorses().length>1)return 'Mes chevaux'}return TITLES[S.tab]||''}
 var ICONS={sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   doc:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
   eur:'<path d="M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9"/>',people:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>',
+  wx:'<path d="M7 3v1.5M2.8 4.8l1 1M1.5 9H3M11.2 4.8l-1 1"/><path d="M4.6 11.5A3 3 0 0 1 9.5 7.6"/><path d="M8 20h9a4 4 0 0 0 0-8 5 5 0 0 0-9.6 1.6A3.2 3.2 0 0 0 8 20z"/>',
   chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
   home:'<path d="M3 11l9-7 9 7v9H3z"/><path d="M10 20v-5h4v5"/>',chat:'<path d="M4 5h16v11H8l-4 4z"/>'};
 function renderNav(){
   var nav=document.querySelector('nav.tabs'),inn=nav.querySelector('.in'),ok=authState==='ok';
   nav.hidden=!ok;document.getElementById('hset').hidden=!ok;document.getElementById('hmsg').hidden=!(ok&&isG());
   if(!ok)return;
-  var items=isG()?[['jour',"Aujourd'hui",'sun'],['chevaux','Chevaux','doc'],['cours','Cours','cal'],['factures','Factures','eur'],['compta','Compta','chart'],['proprios','Clients','people']]
-    :[['accueil','Accueil','home'],['cours','Cours','cal'],['cheval',myHorses().length>1?'Chevaux':'Mon cheval','doc'],['factures','Factures','eur'],['messages','Messages','chat']];
+  var items=isG()?[['jour',"Accueil",'sun'],['chevaux','Chevaux','doc'],['cours','Cours','cal'],['factures','Factures','eur'],['compta','Compta','chart'],['proprios','Clients','people'],['meteo','Météo','wx']]
+    :[['accueil','Accueil','home'],['cours','Cours','cal'],['cheval',myHorses().length>1?'Chevaux':'Mon cheval','doc'],['factures','Factures','eur'],['messages','Messages','chat'],['meteo','Météo','wx']];
   inn.innerHTML='<div class="brand" aria-hidden="true">Élevage d\'<span>ALB</span></div>'+items.map(function(x){return '<button data-act="tab" data-id="'+x[0]+'"'+(S.tab===x[0]?' aria-current="page"':'')+'><span style="position:relative;display:inline-flex"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[x[2]]+'</svg>'+(x[0]==='messages'?'<span class="nbadge" id="nav-msg-badge" hidden></span>':'')+'</span><span>'+x[1]+'</span></button>'}).join('');
   updateBadge();
 }
@@ -1326,7 +1337,7 @@ function depModal(id){
    Recherche de commune : geo.api.gouv.fr (licence ouverte Etalab 2.0).
    Les requêtes sont de simples GET sans en-tête particulier, et le résultat est gardé 45 min sur l'appareil. */
 var WX={data:null,at:0,key:'',err:false,loading:false};
-try{var wxc=JSON.parse(localStorage.getItem(KEY+'-meteo')||'null');if(wxc&&wxc.data){WX.data=wxc.data;WX.at=wxc.at;WX.key=wxc.key}}catch(e){}
+try{var wxc=JSON.parse(localStorage.getItem(KEY+'-meteo2')||'null');if(wxc&&wxc.data){WX.data=wxc.data;WX.at=wxc.at;WX.key=wxc.key}}catch(e){}
 function wxLoc(){return db.ecurie&&db.ecurie.meteo&&db.ecurie.meteo.lat!=null?db.ecurie.meteo:null}
 function wxKey(){var m=wxLoc();return m?(+m.lat).toFixed(4)+','+(+m.lon).toFixed(4):''}
 function wxDirect(body){
@@ -1349,12 +1360,12 @@ function wxEnsure(){
   if(WX.err&&Date.now()-(WX.errAt||0)<5*60000)return;
   WX.loading=true;var c=k.split(',');
   wxCall({lat:c[0],lon:c[1]})
-    .then(function(j){WX.data=wxParse(j);WX.at=Date.now();WX.key=k;WX.err=false;try{localStorage.setItem(KEY+'-meteo',JSON.stringify({key:k,at:WX.at,data:WX.data}))}catch(e){}})
+    .then(function(j){WX.data=wxParse(j);WX.at=Date.now();WX.key=k;WX.err=false;try{localStorage.setItem(KEY+'-meteo2',JSON.stringify({key:k,at:WX.at,data:WX.data}))}catch(e){}})
     .catch(function(){WX.err=true;WX.errAt=Date.now()})
     .then(function(){WX.loading=false;wxUpdate()});
 }
 function wxParse(j){
-  var ts=(j.properties&&j.properties.timeseries)||[],days={},order=[],cov=0,now=new Date(),t0=iso(now),t1=addDays(t0,1),night=[],pr24=0,wind24=0;
+  var ts=(j.properties&&j.properties.timeseries)||[],days={},order=[],cov=0,now=new Date(),t0=iso(now),t1=addDays(t0,1),night=[],pr24=0,wind24=0,hours=[];
   ts.forEach(function(e,i){
     var t=new Date(e.time),dk=iso(t),h=t.getHours(),d=e.data||{},inst=(d.instant||{}).details||{},tt=inst.air_temperature,ws=(inst.wind_speed||0)*3.6;
     if(t.getTime()<now.getTime()-36e5)return;
@@ -1365,11 +1376,12 @@ function wxParse(j){
     if(t.getTime()<now.getTime()+864e5)wind24=Math.max(wind24,ws);
     var s=(d.next_1_hours||d.next_6_hours||d.next_12_hours||{}).summary;if(s&&Math.abs(h-13)<D.symD){D.symD=Math.abs(h-13);D.sym=s.symbol_code}
     if(tt!=null&&((dk===t0&&h>=18)||(dk===t1&&h<=9)))night.push(tt);
+    if(d.next_1_hours&&hours.length<48&&tt!=null)hours.push({t:e.time,temp:tt,sym:(d.next_1_hours.summary||{}).symbol_code||'cloudy',pr:(d.next_1_hours.details||{}).precipitation_amount||0,wind:ws,dir:inst.wind_from_direction});
   });
   var f=ts.find(function(e){return new Date(e.time).getTime()>=now.getTime()-36e5})||ts[0]||{data:{}},fi=((f.data||{}).instant||{}).details||{};
   var fs=((f.data||{}).next_1_hours||(f.data||{}).next_6_hours||{}).summary||{};
-  return{now:{temp:fi.air_temperature,wind:(fi.wind_speed||0)*3.6,sym:fs.symbol_code||'cloudy'},
-    days:order.slice(0,4).map(function(k){var D=days[k];return{date:k,min:D.min,max:D.max,pr:Math.round(D.pr*10)/10,wind:Math.round(D.wind),sym:D.sym||'cloudy'}}),
+  return{now:{temp:fi.air_temperature,wind:(fi.wind_speed||0)*3.6,sym:fs.symbol_code||'cloudy',dir:fi.wind_from_direction,hum:fi.relative_humidity,cloud:fi.cloud_area_fraction,press:fi.air_pressure_at_sea_level},hours:hours,
+    days:order.slice(0,10).filter(function(k){return days[k].max>-99}).map(function(k){var D=days[k];return{date:k,min:D.min,max:D.max,pr:Math.round(D.pr*10)/10,wind:Math.round(D.wind),sym:D.sym||'cloudy'}}),
     nuit:night.length?Math.min.apply(null,night):null,pr24:Math.round(pr24*10)/10,vent24:Math.round(wind24)};
 }
 function wxInfo(code){
@@ -1423,16 +1435,16 @@ function wxInner(){
   var n=w.now,info=wxInfo(n.sym),cs=wxConseils(w),age=Math.round((Date.now()-WX.at)/60000);
   var h='<div class="panel wx"><div class="wx-now"><span class="wx-ic">'+wxIcon(n.sym,44,true)+'</span><div class="x"><div class="wx-t">'+deg(n.temp)+'</div><div><b>'+esc(info.l)+'</b></div>'+
     '<div class="sub">Vent '+Math.round(n.wind)+' km/h · Pluie '+String(w.pr24).replace('.',',')+' mm sur 24 h'+(w.nuit!=null?' · Nuit '+deg(w.nuit):'')+'</div></div></div>'+
-    '<div class="wx-days">'+w.days.map(function(d,i){return '<div class="wx-day"><small>'+dayShort(d.date,i)+'</small><span class="wx-ic">'+wxIcon(d.sym,26,true)+'</span><b>'+deg(d.max)+'</b><span class="sub">'+deg(d.min)+'</span>'+(d.pr>=0.5?'<span class="sub">'+String(d.pr).replace('.',',')+' mm</span>':'<span class="sub">&nbsp;</span>')+'</div>'}).join('')+'</div>'+
+    '<div class="wx-days">'+w.days.slice(0,4).map(function(d,i){return '<div class="wx-day"><small>'+dayShort(d.date,i)+'</small><span class="wx-ic">'+wxIcon(d.sym,26,true)+'</span><b>'+deg(d.max)+'</b><span class="sub">'+deg(d.min)+'</span>'+(d.pr>=0.5?'<span class="sub">'+String(d.pr).replace('.',',')+' mm</span>':'<span class="sub">&nbsp;</span>')+'</div>'}).join('')+'</div>'+
     (cs.length?'<div class="wx-tips">'+cs.map(function(c){return '<div class="alert" style="padding:8px 12px;font-size:13px"><div class="x">'+esc(c)+'</div></div>'}).join('')+'</div>':'')+
     '<p class="sub" style="margin:0;font-size:12px">'+(WX.err?'Hors connexion · ':'')+'Mis à jour il y a '+(age<1?'moins d\'une minute':age+' min')+' · Données <a href="https://api.met.no/" target="_blank" rel="noopener">MET Norway</a> (<a href="https://creativecommons.org/licenses/by/4.0/deed.fr" target="_blank" rel="noopener">CC BY 4.0</a>), résumées par jour</p></div>';
   return h;
 }
 function weatherSection(){
   var m=wxLoc();if(!m&&!isG())return '';
-  return '<section id="meteo"><div class="sh"><h2>Météo'+(m?' · '+esc(m.nom):'')+'</h2>'+(isG()&&m&&!S.meteoEdit?'<button class="btn sm" data-act="meteo-edit">Changer</button>':'')+'</div><div id="meteo-in">'+wxInner()+'</div></section>';
+  return '<section id="meteo"><div class="sh"><h2>Météo'+(m?' · '+esc(m.nom):'')+'</h2>'+(m&&!S.meteoEdit?'<span class="actions" style="flex-wrap:nowrap">'+(isG()?'<button class="btn sm" data-act="meteo-edit">Changer</button>':'')+'<button class="btn sm" data-act="tab" data-id="meteo">Détails</button></span>':'')+'</div><div id="meteo-in">'+wxInner()+'</div></section>';
 }
-function wxUpdate(){var el=document.getElementById('meteo-in');if(el){var a=document.activeElement;if(a&&a.id==='meteo-q')return;el.innerHTML=wxInner()}}
+function wxUpdate(){var a=document.activeElement;if(a&&a.id==='meteo-q')return;if(S.tab==='meteo'&&!M){render();return}var el=document.getElementById('meteo-in');if(el)el.innerHTML=wxInner()}
 function meteoSearch(q){
   q=String(q||'').trim();S.meteoQ=q;if(q.length<2){S.meteoMsg='Saisissez au moins 2 lettres ou un code postal.';wxUpdate();return}
   S.meteoMsg='Recherche…';S.meteoRes=[];render();
@@ -1440,6 +1452,70 @@ function meteoSearch(q){
     S.meteoRes=(l||[]).filter(function(c){return c.centre&&c.centre.coordinates}).map(function(c){return{nom:c.nom,cp:(c.codesPostaux||[])[0]||'',dep:c.departement?c.departement.nom:'',lat:+c.centre.coordinates[1],lon:+c.centre.coordinates[0]}});
     S.meteoMsg=S.meteoRes.length?'Choisissez la commune :':'Aucune commune trouvée.';render();
   },function(){S.meteoMsg='Recherche impossible : vérifiez la connexion.';render()});
+}
+
+/* ---------- page Météo complète ---------- */
+function wxDir(deg){if(deg==null)return '';var n=['nord','nord-est','est','sud-est','sud','sud-ouest','ouest','nord-ouest'];return n[Math.round(((+deg%360)+360)%360/45)%8]}
+function wxArrow(deg){if(deg==null)return '';return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate('+((+deg+180)%360)+'deg);vertical-align:-3px"><path d="M12 19V5M6 11l6-6 6 6"/></svg>'}
+function hh(s){return new Date(s).getHours()+'h'}
+function num1(n){return String(Math.round((+n||0)*10)/10).replace('.',',')}
+/* créneaux pour monter : heures de jour sèches, vent modéré, température confortable */
+function ridingSlots(hours,dayIso){
+  var ok=hours.filter(function(x){var d=new Date(x.t),h=d.getHours();return iso(d)===dayIso&&h>=8&&h<=19&&d.getTime()>=Date.now()-36e5}).map(function(x){
+    var h=new Date(x.t).getHours();return{h:h,ok:x.pr<0.1&&x.wind<35&&x.temp>=3&&x.temp<=28&&!/thunder|rain|sleet|snow/.test(x.sym)}});
+  var res=[],cur=null;
+  ok.forEach(function(x){if(x.ok){if(cur&&cur.b===x.h){cur.b=x.h+1}else{cur={a:x.h,b:x.h+1};res.push(cur)}}else cur=null});
+  return res.filter(function(r){return r.b-r.a>=2}).map(function(r){return r.a+'h–'+r.b+'h'});
+}
+function tempChart(hours){
+  var H=hours.slice(0,48);if(H.length<4)return '';
+  var vw=window.innerWidth||640,W=Math.round(Math.max(330,Math.min(1000,vw>=1000?vw-300:vw-62))),Ht=W<500?190:220,pl=34,pr=10,pt=14,pb=30,ts=H.map(function(x){return x.temp}),mn=Math.floor(Math.min.apply(null,ts))-1,mx=Math.ceil(Math.max.apply(null,ts))+1;
+  var step=(mx-mn)>12?5:2;mn=Math.floor(mn/step)*step;mx=Math.ceil(mx/step)*step;if(mx===mn)mx=mn+step;
+  var X=function(i){return pl+i*(W-pl-pr)/(H.length-1)},Y=function(v){return pt+(mx-v)*(Ht-pt-pb)/(mx-mn)};
+  var g='';for(var v=mn;v<=mx;v+=step)g+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" class="cg"/><text x="'+(pl-6)+'" y="'+(Y(v)+4)+'" text-anchor="end" class="ct">'+(v<0?'−'+(-v):v)+'°</text>';
+  var xl='';H.forEach(function(x,i){var d=new Date(x.t),h=d.getHours();if(h%6===0){xl+='<line x1="'+X(i)+'" x2="'+X(i)+'" y1="'+pt+'" y2="'+(Ht-pb)+'" class="cg'+(h===0?' cd':'')+'"/><text x="'+X(i)+'" y="'+(Ht-pb+16)+'" text-anchor="middle" class="ct">'+(h===0?d.toLocaleDateString('fr-FR',{weekday:'short'}).replace('.',''):h+'h')+'</text>'}});
+  var pts=H.map(function(x,i){return X(i).toFixed(1)+','+Y(x.temp).toFixed(1)}),area='M'+pts[0]+' L'+pts.join(' L')+' L'+X(H.length-1)+','+(Ht-pb)+' L'+pl+','+(Ht-pb)+' Z';
+  var iMax=ts.indexOf(Math.max.apply(null,ts)),iMin=ts.indexOf(Math.min.apply(null,ts));
+  var lab=function(i,up){return '<circle cx="'+X(i)+'" cy="'+Y(ts[i])+'" r="4" class="cp"/><text x="'+Math.min(W-pr-12,Math.max(pl+12,X(i)))+'" y="'+(Y(ts[i])+(up?-9:17))+'" text-anchor="middle" class="cv">'+deg(ts[i])+'</text>'};
+  var hit=H.map(function(x,i){var w=(W-pl-pr)/(H.length-1);return '<rect x="'+(X(i)-w/2)+'" y="'+pt+'" width="'+w+'" height="'+(Ht-pt-pb)+'" fill="transparent"><title>'+esc(new Date(x.t).toLocaleDateString('fr-FR',{weekday:'long'})+' '+hh(x.t)+' : '+deg(x.temp)+', '+wxInfo(x.sym).l.toLowerCase()+(x.pr>0?', '+num1(x.pr)+' mm':''))+'</title></rect>'}).join('');
+  return '<div class="chartbox"><svg viewBox="0 0 '+W+' '+Ht+'" width="100%" role="img" aria-label="Température heure par heure sur 48 heures, de '+deg(Math.min.apply(null,ts))+' à '+deg(Math.max.apply(null,ts))+'" style="display:block;min-width:320px;max-width:'+W+'px;margin:0 auto">'+g+xl+
+    '<path d="'+area+'" class="ca"/><polyline points="'+pts.join(' ')+'" class="cl"/>'+lab(iMax,true)+(iMin!==iMax?lab(iMin,false):'')+hit+'</svg></div>';
+}
+function vMeteo(){
+  var m=wxLoc(),h='';
+  if(!m&&!isG())return '<div class="panel empty">La météo n\'est pas encore configurée par l\'écurie.</div>';
+  if(!m||S.meteoEdit)return weatherSection();
+  wxEnsure();var w=WX.key===wxKey()?WX.data:null;
+  h+='<div class="sh" style="grid-column:1/-1"><h2>'+esc(m.nom)+(m.cp?' <span class="sub">'+esc(m.cp)+'</span>':'')+'</h2>'+(isG()?'<button class="btn sm" data-act="meteo-edit">Changer de commune</button>':'')+'</div>';
+  if(!w||!w.hours)return h+'<div class="panel empty">'+(WX.err?'Météo indisponible pour le moment. <button class="btn sm" data-act="meteo-retry">Réessayer</button>':'Chargement de la météo…')+'</div>';
+  var n=w.now,info=wxInfo(n.sym),cs=wxConseils(w),t0=today(),t1=addDays(t0,1),s0=ridingSlots(w.hours,t0),s1=ridingSlots(w.hours,t1);
+  // maintenant
+  h+='<section><div class="panel wx"><div class="wx-now"><span class="wx-ic">'+wxIcon(n.sym,56,true)+'</span><div class="x"><div class="wx-t" style="font-size:44px">'+deg(n.temp)+'</div><div><b>'+esc(info.l)+'</b></div></div></div>'+
+    '<div class="wx-grid">'+
+      '<div><span class="sub">Vent</span><b>'+wxArrow(n.dir)+' '+Math.round(n.wind)+' km/h</b><span class="sub">'+(n.dir!=null?'de '+wxDir(n.dir):'')+'</span></div>'+
+      '<div><span class="sub">Pluie 24 h</span><b>'+num1(w.pr24)+' mm</b></div>'+
+      '<div><span class="sub">Cette nuit</span><b>'+deg(w.nuit)+'</b></div>'+
+      '<div><span class="sub">Humidité</span><b>'+(n.hum!=null?Math.round(n.hum)+' %':'–')+'</b></div>'+
+      '<div><span class="sub">Nuages</span><b>'+(n.cloud!=null?Math.round(n.cloud)+' %':'–')+'</b></div>'+
+      '<div><span class="sub">Pression</span><b>'+(n.press!=null?Math.round(n.press)+' hPa':'–')+'</b></div>'+
+    '</div></div></section>';
+  // chevaux
+  h+='<section><div class="sh"><h2>Pour les chevaux</h2></div><div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:10px">'+
+    '<div><span class="lbl">Créneaux pour monter (sec, vent modéré)</span><div style="margin-top:4px"><b>Aujourd\'hui :</b> '+(s0.length?s0.join(', '):'aucun créneau favorable')+'<br><b>Demain :</b> '+(s1.length?s1.join(', '):'aucun créneau favorable')+'</div></div>'+
+    (cs.length?cs.map(function(c){return '<div class="alert" style="padding:8px 12px;font-size:13px"><div class="x">'+esc(c)+'</div></div>'}).join(''):'<div class="sub">Rien de particulier à signaler pour les prochaines 24 heures.</div>')+'</div></section>';
+  // graphique
+  h+='<section style="grid-column:1/-1"><div class="sh"><h2>Température sur 48 heures</h2></div><div class="panel" style="padding:12px 14px">'+tempChart(w.hours)+'</div></section>';
+  // heure par heure
+  h+='<section style="grid-column:1/-1"><div class="sh"><h2>Heure par heure</h2><span class="sub">pluie en mm, vent en km/h</span></div><div class="panel hours">'+w.hours.slice(0,36).map(function(x,i){var d=new Date(x.t),nd=d.getHours()===0&&i>0;
+    return (nd?'<div class="hsep">'+esc(d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'}).replace('.',''))+'</div>':'')+'<div class="hcell"><small>'+(i===0?'Maint.':hh(x.t))+'</small><span class="wx-ic">'+wxIcon(x.sym,24,true)+'</span><b>'+deg(x.temp)+'</b><span class="sub">'+(x.pr>=0.1?num1(x.pr):'–')+'</span><span class="sub">'+Math.round(x.wind)+'</span></div>'}).join('')+'</div></section>';
+  // jours
+  var dl=w.days,gmin=Math.min.apply(null,dl.map(function(d){return d.min})),gmax=Math.max.apply(null,dl.map(function(d){return d.max})),sp=Math.max(1,gmax-gmin);
+  h+='<section style="grid-column:1/-1"><div class="sh"><h2>Prochains jours</h2></div><div class="panel items">'+dl.map(function(d,i){var inf=wxInfo(d.sym);
+    return '<div class="item dayrow" style="cursor:default"><span class="dname"><b>'+dayShort(d.date,i)+'</b><span class="sub">'+fdate(d.date)+'</span></span><span class="wx-ic">'+wxIcon(d.sym,26,true)+'</span>'+
+      '<span class="x"><span class="sub">'+esc(inf.l)+(d.pr>=0.5?' · '+num1(d.pr)+' mm':'')+' · vent '+d.wind+' km/h</span><span class="trange"><b>'+deg(d.min)+'</b><span class="tbar"><i style="left:'+((d.min-gmin)/sp*100)+'%;width:'+Math.max(4,(d.max-d.min)/sp*100)+'%"></i></span><b>'+deg(d.max)+'</b></span></span></div>'}).join('')+'</div></section>';
+  var age=Math.round((Date.now()-WX.at)/60000);
+  h+='<p class="sub" style="margin:0;font-size:12px;grid-column:1/-1">'+(WX.err?'Hors connexion · ':'')+'Mis à jour il y a '+(age<1?'moins d\'une minute':age+' min')+'. Données <a href="https://api.met.no/" target="_blank" rel="noopener">MET Norway</a> (<a href="https://creativecommons.org/licenses/by/4.0/deed.fr" target="_blank" rel="noopener">CC BY 4.0</a>), mises en forme et résumées par l\'appli. Créneaux et conseils : indications automatiques à vérifier sur place.</p>';
+  return h;
 }
 
 /* ---------- toast ---------- */
