@@ -73,6 +73,11 @@ La clé « anon » est prévue pour être publique : ce sont les règles d'accè
 - **TVA** : récapitulatif collectée / déductible / nette si vous êtes assujetti.
 - **Pour la comptable** : journaux Excel (CSV) des ventes, encaissements et dépenses, et un **pack comptable .zip** par mois, trimestre ou année (factures et avoirs en PDF, justificatifs, journaux).
 
+## Météo
+
+Sur l'écran Aujourd'hui (gérant) et l'Accueil (clients) : la météo du jour, les 4 prochains jours et des conseils pour les chevaux (gel, nuit fraîche, chaleur, pluie, vent fort, orage). Le gérant choisit la commune avec le bouton « Changer ».
+Sources ouvertes, utilisables pour une activité professionnelle : prévisions MET Norway (api.met.no, CC BY 4.0, attribution affichée sous la météo) et recherche de commune geo.api.gouv.fr (licence ouverte Etalab).
+
 ## Bon à savoir
 
 - **Offre gratuite Supabase** : 500 Mo de base et 1 Go de fichiers (justificatifs), largement suffisant pour une écurie. Un projet gratuit est mis en pause après 7 jours sans activité ; avec un usage régulier cela n'arrive pas. Sinon, relancez-le d'un clic dans le tableau de bord Supabase : les données sont conservées.
