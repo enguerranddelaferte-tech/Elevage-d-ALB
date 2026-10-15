@@ -160,6 +160,13 @@ grant execute on function public.marquer_lus() to authenticated;
 drop policy if exists "lit son profil" on public.profils;
 create policy "lit son profil" on public.profils for select to authenticated using (user_id = auth.uid() or public.est_gerant());
 
+-- Un cavalier (demi-pension, location…) voit le cheval qui lui est confié
+drop policy if exists "cavalier lit les chevaux confiés" on public.chevaux;
+create policy "cavalier lit les chevaux confiés" on public.chevaux for select to authenticated
+  using (exists (select 1 from jsonb_array_elements(coalesce(data->'cavaliers','[]'::jsonb)) a
+                 where a->>'proprietaireId' = public.mon_proprio()
+                   and coalesce(nullif(a->>'fin',''),'9999-12-31') >= to_char(now() at time zone 'Europe/Paris','YYYY-MM-DD')));
+
 -- ---------- Notifications (cloche de l'appli + téléphones) ----------
 create table if not exists public.notifications (
   id uuid primary key default gen_random_uuid(),

@@ -55,7 +55,7 @@ La clé « anon » est prévue pour être publique : ce sont les règles d'accè
 
 ## 5. Inviter les clients
 
-1. Onglet **Clients** › **+ Propriétaire** › Enregistrer : la fiche se rouvre avec son **code d'activation** prêt.
+1. Onglet **Clients** › **+ Client** › Enregistrer : la fiche se rouvre avec son **code d'activation** prêt.
 2. **Envoyer l'invitation (SMS, WhatsApp…)** : le message contient le lien de l'appli et le code. Pour une fiche existante : **Créer l'invitation**.
 3. Le client ouvre le lien, crée son compte avec ce code ; sa fiche affiche ensuite « Compte client activé ». Chaque code ne sert qu'une fois.
 
@@ -63,6 +63,11 @@ La clé « anon » est prévue pour être publique : ce sont les règles d'accè
 
 - **Android (Chrome)** : bandeau « Installer », ou menu ⋮ › Installer l'application.
 - **iPhone (Safari)** : Partager › **Sur l'écran d'accueil**.
+
+## Carnets de cours et chevaux confiés
+
+- **Carnets** : fiche du client › Carnets de cours › 5, 10 ou 20 cours (collectifs, particuliers ou tous types), prix proposé avec 10 % de remise et modifiable. Le carnet est facturé le mois de l'achat ; les cours suivants sont décomptés automatiquement (marqués « carnet » à 0 € sur la facture). Le client voit ses cours restants ; « Dernier » ou « Épuisé » s'affiche quand il faut le renouveler.
+- **Confier un cheval** à un client qui n'en a pas : fiche du cheval › Cavaliers › formule (demi-pension, location, prêt…), jours de monte, prix par mois, date de début. Le prix est ajouté à la facture du cavalier (au prorata le premier et le dernier mois) ; option « Déduire de la facture du propriétaire ». « Arrêter » termine la formule à la date du jour. Le cavalier voit le cheval dans son espace (soins, consignes, pas les frais du propriétaire).
 
 ## Notifications et e-mails
 
