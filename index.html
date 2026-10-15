@@ -925,7 +925,7 @@ function factModal(id){
   M={kind:'factures',draft:f,read:function(){},render:function(){
     var o=owner(f.proprietaireId),g=isG();
     if(g)ensureNumero(f);
-    var h=head(g?(isAvoir(f)?'Avoir · ':'Facture · ')+(o?o.nom:'?'):(isAvoir(f)?'Avoir ':'Facture ')+monthLabel(f.mois).toLowerCase())+'<div class="sub">'+monthLabel(f.mois)+' · N° '+esc(f.numero||'')+' · à régler avant le '+fdl(f.echeance)+'</div><table class="lines"><tbody>'+f.lignes.map(function(l){return '<tr><td>'+esc(l.label)+(l.pieceId?'<br><button class="btn sm" style="margin-top:6px" data-act="piece-voir" data-id="'+esc(l.pieceId)+'">Voir le justificatif</button>':'')+'</td><td>'+money(l.montant)+'</td></tr>'}).join('')+'<tr class="tot"><td>Total'+(db.ecurie.tvaRegime==='tva'?' TTC':'')+'</td><td>'+money(f.total)+'</td></tr>'+tvaRowsHtml(f)+'</tbody></table>';
+    var h=head(g?(isAvoir(f)?'Avoir · ':'Facture · ')+(o?o.nom:'?'):(isAvoir(f)?'Avoir ':'Facture ')+monthLabel(f.mois).toLowerCase())+'<div class="sub">'+monthLabel(f.mois)+' · N° '+esc(f.numero||'')+' · à régler avant le '+fdl(f.echeance)+'</div><table class="lines"><tbody>'+f.lignes.map(function(l){return '<tr><td>'+esc(l.label)+(l.pieceId?'<br><button class="btn sm" style="margin-top:6px" data-act="piece-voir" data-id="'+esc(l.pieceId)+'">Voir le justificatif</button>':'')+'</td><td>'+money(l.montant)+'</td></tr>'}).join('')+'<tr class="tot"><td>Total'+(invTva(f)?' TTC':'')+'</td><td>'+money(f.total)+'</td></tr>'+tvaRowsHtml(f)+'</tbody></table>';
     if(!g){var e=db.ecurie;
       h+='<div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:10px">'+(f.statut==='payee'?'<div><span class="pill">Payée</span></div>':'<div><span class="pill warn">À régler</span> avant le '+fdl(f.echeance)+'</div>'+(e.iban?'<div class="sub">Par virement : IBAN '+esc(e.iban)+(e.bic?' · BIC '+esc(e.bic):'')+'</div>':''))+
         '<button class="btn primary block" data-act="fact-pdf">Télécharger la facture (PDF)</button></div>';
@@ -1006,11 +1006,11 @@ function generate(mois,silent){
         .concat((c.frais||[]).filter(function(f){return f.date.slice(0,7)===m}).map(function(f){return{date:f.date,label:f.type+(f.note?' ('+f.note+')':''),montant:+f.montant||0,pieceId:f.pieceId||null}}));
       ex2.sort(function(a,b){return a.date.localeCompare(b.date)}).forEach(function(x){var l={label:x.label+' — '+c.nom+', '+fdate(x.date),montant:x.montant,cat:'frais'};if(x.pieceId)l.pieceId=x.pieceId;lignes.push(l)});
     });
-    if(db.ecurie.tvaRegime==='tva')lignes.forEach(function(l){l.taux=lineRate({cat:l.cat,label:l.label})});
+    lignes.forEach(function(l){l.taux=lineRate({cat:l.cat,label:l.label})});
     if(!lignes.length){if(ex){db.factures.splice(db.factures.indexOf(ex),1);drops.push(ex.id)}return}
     var tot=r2(lignes.reduce(function(s,l){return s+l.montant},0)),f;
     if(ex){ex.lignes=lignes;ex.total=tot;f=ex}else{f={id:uid(),mois:m,proprietaireId:p.id,lignes:lignes,total:tot,statut:'attente'};db.factures.push(f)}
-    f.dateEmission=today();f.echeance=addDays(f.dateEmission,+db.ecurie.delai||10);ensureNumero(f);
+    f.regime=db.ecurie.tvaRegime==='tva'?'tva':'franchise';f.dateEmission=today();f.echeance=addDays(f.dateEmission,+db.ecurie.delai||10);ensureNumero(f);
     puts.push(f);n++;
   });
   saveLocal();
@@ -1075,7 +1075,7 @@ function tvaSummary(f){
 }
 function fdl(s){return fdate(s,{day:'numeric',month:'long',year:'numeric'})}
 function buildPdf(f){
-  var e=db.ecurie,o=owner(f.proprietaireId)||{nom:'Propriétaire'},d=new PDFDoc(),TH=THEMES[themeKey()].l,G=hexRgb(TH[0]),INK=hexRgb(TH[1]),MU=[86,93,104],SOFT=hexRgb(TH[2]),tva=e.tvaRegime==='tva';
+  var e=db.ecurie,o=owner(f.proprietaireId)||{nom:'Propriétaire'},d=new PDFDoc(),TH=THEMES[themeKey()].l,G=hexRgb(TH[0]),INK=hexRgb(TH[1]),MU=[86,93,104],SOFT=hexRgb(TH[2]),tva=invTva(f);
   var y=20;
   d.text(15,y,e.nom||'[Nom de l\'écurie]',{size:15,bold:true,color:G});y+=6;
   d.wrap(e.adresse,85,9.5).forEach(function(l){if(l){d.text(15,y,l,{size:9.5});y+=4.4}});
@@ -1268,13 +1268,13 @@ function createAvoir(){
   if(!d.motif){M.err='Indiquez le motif de l\'avoir.';M.render();return}
   var lignes,lib=parseFloat(String(d.libre).replace(',','.'));
   if(lib>0){if(lib>f.total){M.err='Le montant dépasse celui de la facture.';M.render();return}lignes=[{label:'Avoir — '+d.motif,montant:-r2(lib),cat:'pension'}];
-    var cats=catTotals(f),main=Object.keys(cats).sort(function(a,b){return cats[b]-cats[a]})[0];lignes[0].cat=main||'pension'}
-  else{lignes=f.lignes.filter(function(l,i){return d.sel[i]}).map(function(l){return{label:'Annulation : '+l.label,montant:-r2(l.montant),cat:lineCat(l)}});
+    var cats=catTotals(f),main=Object.keys(cats).sort(function(a,b){return cats[b]-cats[a]})[0];lignes[0].cat=main||'pension';var ml=f.lignes.find(function(l){var k=lineCat(l);return (k==='pensionN'?'pension':k)===lignes[0].cat});lignes[0].taux=ml?lineRate(ml):lineRate(lignes[0])}
+  else{lignes=f.lignes.filter(function(l,i){return d.sel[i]}).map(function(l){return{label:'Annulation : '+l.label,montant:-r2(l.montant),cat:lineCat(l),taux:lineRate(l)}});
     if(!lignes.length){M.err='Cochez au moins une ligne ou indiquez un montant.';M.render();return}}
   var y=today().slice(0,4);db.compteurs=db.compteurs||{};var k='AV'+y;
   var maxi=db.factures.reduce(function(m,x){var r=/^AV(\d{4})-(\d+)$/.exec(x.numero||'');return r&&r[1]===y?Math.max(m,+r[2]):m},0);
   db.compteurs[k]=Math.max(db.compteurs[k]||0,maxi)+1;
-  var av={id:uid(),type:'avoir',factureId:f.id,motif:d.motif,mois:f.mois,proprietaireId:f.proprietaireId,lignes:lignes,total:r2(lignes.reduce(function(s,l){return s+l.montant},0)),
+  var av={id:uid(),type:'avoir',factureId:f.id,regime:f.regime||db.ecurie.tvaRegime,motif:d.motif,mois:f.mois,proprietaireId:f.proprietaireId,lignes:lignes,total:r2(lignes.reduce(function(s,l){return s+l.montant},0)),
     statut:'attente',numero:'AV'+y+'-'+String(db.compteurs[k]).padStart(4,'0'),dateEmission:today(),echeance:today()};
   db.factures.push(av);put('factures',av);putConfig();
   toast('Avoir '+av.numero+' créé');factModal(av.id);render();
@@ -1632,8 +1632,9 @@ function presChip(c,id){var o=owner(id),p=(c.presences||{})[id];if(!o)return '';
 
 /* ---------- TVA ---------- */
 function tvaRates(){var e=db.ecurie;return{pension:+e.tauxPension||0,pensionN:e.tauxPensionN==null||e.tauxPensionN===''?20:+e.tauxPensionN,cours:+e.tauxCours||0,frais:+e.tauxFrais||0}}
-function lineRate(l){if(db.ecurie.tvaRegime!=='tva')return 0;if(l.taux!=null&&l.taux!=='')return +l.taux;var r=tvaRates()[lineCat(l)];return r==null?0:r}
-function tvaRowsHtml(f){if(db.ecurie.tvaRegime!=='tva')return '';var s=tvaSummary(f);
+function lineRate(l){if(l.taux!=null&&l.taux!=='')return +l.taux;if(db.ecurie.tvaRegime!=='tva')return 0;var r=tvaRates()[lineCat(l)];return r==null?0:r}
+function invTva(f){return f.regime?f.regime==='tva':db.ecurie.tvaRegime==='tva'}
+function tvaRowsHtml(f){if(!invTva(f))return '';var s=tvaSummary(f);
   return '<tr class="sub-row"><td>Total HT</td><td>'+money(s.ht)+'</td></tr>'+s.parts.filter(function(p){return p.taux>0}).map(function(p){return '<tr class="sub-row"><td>dont TVA '+String(p.taux).replace('.',',')+' %</td><td>'+money(p.tva)+'</td></tr>'}).join('')}
 
 /* ---------- carnets de cours ---------- */
