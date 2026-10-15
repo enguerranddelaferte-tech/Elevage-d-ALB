@@ -876,11 +876,10 @@ function accessSection(d){
   if(!d.id)return t+'<p class="sub" style="margin:0">Enregistrez d\'abord la fiche pour pouvoir inviter ce client.</p></div>';
   if(mode!=='cloud')return t+'<p class="sub" style="margin:0">En mode démo, il n\'y a pas de comptes : visualisez son espace directement.</p><button type="button" class="btn" data-act="demo-role" data-id="'+d.id+'">Voir l\'appli comme '+esc(firstName(d.nom))+'</button></div>';
   if(d._lie)return t+'<div><span class="pill">Compte client activé</span></div></div>';
-  var mailBtn=d.email?'<button type="button" class="btn primary" data-act="owner-mail">Envoyer l\'invitation par e-mail à '+esc(d.email)+'</button>':'<p class="sub" style="margin:0">Ajoutez son e-mail pour lui envoyer l\'invitation automatiquement.</p>';
-  if(!d._code)return t+'<p class="sub" style="margin:0">Envoyez l\'invitation par e-mail, ou créez un code à transmettre vous-même.</p>'+mailBtn+'<button type="button" class="btn" data-act="owner-code">Créer un code d\'accès</button></div>';
+  if(!d._code)return t+'<p class="sub" style="margin:0">Créez son invitation, puis envoyez-la par SMS, WhatsApp ou e-mail.</p><button type="button" class="btn primary" data-act="owner-code">Créer l\'invitation</button></div>';
   return t+'<div style="font-family:ui-monospace,monospace;font-size:22px;font-weight:700;letter-spacing:2px">'+esc(d._code)+'</div>'+
-    '<textarea readonly class="search" id="inv-text" aria-label="Texte de l\'invitation" style="min-height:150px;font-size:13px">'+esc(inviteText(d))+'</textarea>'+
-    (d.email?mailBtn:'')+'<div class="actions"><button type="button" class="btn'+(d.email?'':' primary')+' grow" data-act="owner-share">Envoyer l\'invitation</button><button type="button" class="btn grow" data-act="owner-copy">Copier</button></div>'+
+    '<p class="sub" style="margin:0">À envoyer par SMS, WhatsApp ou e-mail : le client y trouve le lien et son code.</p>'+'<textarea readonly class="search" id="inv-text" aria-label="Texte de l\'invitation" style="min-height:150px;font-size:13px">'+esc(inviteText(d))+'</textarea>'+
+    '<div class="actions"><button type="button" class="btn primary grow" data-act="owner-share">Envoyer l\'invitation</button><button type="button" class="btn grow" data-act="owner-copy">Copier</button></div>'+
     '<button type="button" class="btn sm" data-act="owner-code">Changer le code</button></div>';
 }
 function readOwner(){var d=M.draft;d.nom=v('o-nom');d.tel=v('o-tel');d.email=v('o-email');d.licence=v('o-lic');d.rcFin=v('o-rc');d.adresse=v('o-adr')}
@@ -1604,19 +1603,6 @@ function pushBanner(){
   try{if(localStorage.getItem(KEY+'-pushask'))return ''}catch(e){}
   return '<div class="banner"><div class="x"><b>Notifications</b><br>Recevez sur ce téléphone les annulations de cours, messages et factures.</div><button class="btn sm primary" data-act="push-on">Activer</button><button class="btn sm" data-act="push-later">Plus tard</button></div>';
 }
-/* --- e-mail d'invitation --- */
-function inviteEmail(pid,auto){
-  if(mode!=='cloud'){var o=owner(pid);if(o&&o.email)toast((auto?'Fiche créée. ':'')+'En ligne, l\'invitation partirait par e-mail à '+o.email+'.');return}
-  fnCall({action:'invite',proprietaire_id:pid,lien:appUrl()}).then(function(r){
-    var o=owner(pid);if(o&&r&&r.code){o._code=r.code;if(M&&M.draft&&M.draft.id===pid){M.draft._code=r.code;M.render()}}
-    if(r&&r.ok)toast('Invitation envoyée par e-mail à '+r.email);
-    else if(r&&r.raison==='pas_email'){if(!auto)toast('Ajoutez d\'abord l\'adresse e-mail du propriétaire.')}
-    else if(r&&r.raison==='deja_active'){if(!auto)toast('Ce propriétaire a déjà activé son compte.')}
-    else if(r&&r.raison==='email_non_configure')toast((auto?'Fiche créée. ':'')+'E-mail automatique pas encore configuré : envoyez l\'invitation avec le bouton « Envoyer l\'invitation ».');
-    else toast('L\'e-mail n\'a pas pu partir. Envoyez l\'invitation avec le bouton « Envoyer l\'invitation ».');
-    loadAll();
-  },function(){toast('Envoi de l\'e-mail impossible pour le moment.')});
-}
 /* --- cours annulés --- */
 function coursLabel(c){return c.titre+' · '+fdate(c.date,{weekday:'long',day:'numeric',month:'short'})+' à '+String(c.heure||'').replace(':','h')}
 function annulerCours(list,motif){
@@ -1678,7 +1664,6 @@ var ACT={
   'day-annul':function(d){dayCancelModal(d)},
   'cours-annul':function(){M.read();var c=db.cours.find(function(x){return x.id===M.draft.id});if(!c)return;var mo=v('c-motif');annulerCours([c],mo);closeModal();render();toast(c.inscrits.length?'Cours annulé : '+c.inscrits.length+' cavalier'+(c.inscrits.length>1?'s':'')+' prévenu'+(c.inscrits.length>1?'s':''):'Cours annulé')},
   'cours-retablir':function(){var c=db.cours.find(function(x){return x.id===M.draft.id});if(!c)return;retablirCours(c);closeModal();render();toast('Cours rétabli, cavaliers prévenus')},
-  'owner-mail':function(){M.read();var d=M.draft;if(!d.email){toast('Ajoutez d\'abord l\'adresse e-mail.');return}var o=owner(d.id);if(o&&o.email!==d.email){toast('Enregistrez d\'abord la fiche avec la nouvelle adresse.');return}toast('Envoi de l\'invitation…');inviteEmail(d.id,false)},
   'demo-role':function(id){if(M)closeModal();setDemoRole(id||'gerant');window.scrollTo(0,0)},
   logout:function(){if(M)closeModal();try{localStorage.removeItem(cacheKey())}catch(e){}if(sb)sb.auth.signOut().then(function(){},function(){});me={role:'gerant',prop:null,email:'',uid:null};db=emptyDb();normalize();authState='login';authView='login';authMsg='';render()},
   'auth-view':function(id){authView=id;authMsg='';render()},
@@ -1796,7 +1781,7 @@ document.addEventListener('submit',function(e){
     if(old&&rest.length&&(old.date!==d.date||old.heure!==d.heure||old.lieu!==d.lieu))notifier({type:'proprios',ids:rest},'Cours modifié',coursLabel(d)+' · '+d.lieu+' (avant : '+fdate(old.date,{day:'numeric',month:'short'})+' à '+String(old.heure).replace(':','h')+')','cours');
     if(old){var out=old.inscrits.filter(function(p){return d.inscrits.indexOf(p)<0});if(out.length)notifier({type:'proprios',ids:out},'Désinscription d\'un cours',coursLabel(old),'cours')}}}
   var pr=put(k,d);closeModal();render();toast('Enregistré');if(k==='chevaux')cleanupPieces();
-  if(k==='proprietaires'&&isNew&&d.email)pr.then(function(){inviteEmail(d.id,true)});
+  if(k==='proprietaires'&&isNew&&mode==='cloud')pr.then(function(){var code=genCode();return sb.from('proprietaires').update({invite_code:code}).eq('id',d.id).then(function(r){if(r.error)return;d._code=code;if(!M){ownerModal(d.id);toast('Fiche créée : envoyez-lui l\'invitation par SMS ou WhatsApp')}})});
 });
 applyTheme();normalize();renderNav();render();
 if(mode==='cloud'){var lib=document.createElement('script');lib.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';

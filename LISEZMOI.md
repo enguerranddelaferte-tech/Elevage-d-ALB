@@ -55,8 +55,8 @@ La clé « anon » est prévue pour être publique : ce sont les règles d'accè
 
 ## 5. Inviter les clients
 
-1. Onglet **Clients** › **+ Propriétaire** : si vous saisissez son e-mail, **l'invitation part automatiquement par e-mail** à l'enregistrement de la fiche (lien de l'appli + code d'activation). Bouton « Envoyer l'invitation par e-mail » pour la renvoyer.
-2. Sans e-mail automatique (pas encore configuré) : fiche du client › **Créer un code d'accès** › **Envoyer l'invitation** (SMS, WhatsApp, e-mail…).
+1. Onglet **Clients** › **+ Propriétaire** › Enregistrer : la fiche se rouvre avec son **code d'activation** prêt.
+2. **Envoyer l'invitation (SMS, WhatsApp…)** : le message contient le lien de l'appli et le code. Pour une fiche existante : **Créer l'invitation**.
 3. Le client ouvre le lien, crée son compte avec ce code ; sa fiche affiche ensuite « Compte client activé ». Chaque code ne sert qu'une fois.
 
 ## 6. Installer sur le téléphone
@@ -70,7 +70,7 @@ La clé « anon » est prévue pour être publique : ce sont les règles d'accè
 - **Sur le téléphone, même appli fermée** : chaque personne touche « Activer les notifications » (bandeau d'accueil ou Réglages). Sur iPhone, il faut d'abord installer l'appli sur l'écran d'accueil (iOS 16.4 ou plus récent).
 - **Annuler des cours** : Planning › « Annuler les cours de ce jour… » (ou depuis Aujourd'hui), motif en un clic (Piste gelée, Intempéries…). Ou fiche d'un cours › « Annuler ce cours ». Les cavaliers inscrits sont prévenus, le cours n'est plus réservable ni facturé. « Rétablir le cours » prévient aussi.
 - Le gérant est prévenu quand un client réserve, annule ou écrit un message.
-- **E-mails automatiques** (invitation des clients) : service gratuit **Brevo** (300 e-mails/jour). Créez un compte sur brevo.com, validez l'adresse e-mail de l'écurie comme expéditeur (Senders), créez une clé API (SMTP & API › API Keys), puis dans Supabase › Edge Functions › Secrets ajoutez `BREVO_API_KEY` = votre clé. L'adresse expéditrice est l'e-mail saisi dans Réglages › Mon écurie (ou le secret `EMAIL_FROM`).
+- Pas d'e-mail automatique : tout passe par les notifications de l'appli. Seule l'invitation de départ est envoyée par vous (SMS, WhatsApp…), puisque le client n'a pas encore l'appli.
 
 ## Comptabilité (onglet Compta)
 
