@@ -160,6 +160,23 @@ grant execute on function public.marquer_lus() to authenticated;
 drop policy if exists "lit son profil" on public.profils;
 create policy "lit son profil" on public.profils for select to authenticated using (user_id = auth.uid() or public.est_gerant());
 
+-- Le client indique s'il sera présent ou absent à un cours où il est inscrit
+create or replace function public.repondre_presence(p_id text, p_rep text) returns jsonb
+  language plpgsql security definer set search_path = public as $$
+declare v_prop text := mon_proprio(); d jsonb;
+begin
+  if v_prop is null then raise exception 'Compte client non activé.'; end if;
+  if p_rep not in ('oui','non') then raise exception 'Réponse invalide.'; end if;
+  select data into d from cours where id = p_id for update;
+  if d is null then raise exception 'Cours introuvable.'; end if;
+  if not coalesce(d->'inscrits','[]'::jsonb) ? v_prop then raise exception 'Vous n''êtes pas inscrit à ce cours.'; end if;
+  d := jsonb_set(d, '{presences}', coalesce(d->'presences','{}'::jsonb) || jsonb_build_object(v_prop, p_rep));
+  update cours set data = d, updated_at = now() where id = p_id;
+  return d;
+end $$;
+revoke execute on function public.repondre_presence(text,text) from public, anon;
+grant execute on function public.repondre_presence(text,text) to authenticated;
+
 -- Le client modifie lui-même ses coordonnées (téléphone, e-mail, adresse, licence, assurance)
 create or replace function public.modifier_coordonnees(p_tel text, p_email text, p_adresse text, p_licence text, p_rc text) returns jsonb
   language plpgsql security definer set search_path = public as $$
