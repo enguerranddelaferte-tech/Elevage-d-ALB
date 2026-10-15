@@ -87,6 +87,7 @@ section{display:flex;flex-direction:column;gap:10px}
 .checkline{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:500;color:var(--fg);min-height:40px}.checkline input,.daypick input{width:18px;height:18px;accent-color:var(--accent)}
 .daypick{display:flex;flex-wrap:wrap;gap:6px}.daypick label{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px;font-weight:500;min-height:40px;cursor:pointer}
 .meter{display:block;height:6px;border-radius:3px;background:var(--surface-2);margin-top:6px;overflow:hidden}.meter span{display:block;height:100%;background:var(--accent);border-radius:3px}
+.linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--accent);text-decoration:underline;cursor:pointer}
 .ndot{width:9px;height:9px;border-radius:5px;background:var(--danger);flex:none;margin-top:6px;align-self:flex-start}.ndot.lu{background:transparent}
 .item.annule b{text-decoration:line-through;opacity:.7}
 #hnotif{position:relative}#hnotif .nbadge{top:0;right:0}
@@ -1363,8 +1364,12 @@ function depModal(id){
    Prévisions : MET Norway, api.met.no, données CC BY 4.0 (usage commercial autorisé, attribution obligatoire).
    Recherche de commune : geo.api.gouv.fr (licence ouverte Etalab 2.0).
    Les requêtes sont de simples GET sans en-tête particulier, et le résultat est gardé 45 min sur l'appareil. */
-var WX={data:null,at:0,key:'',err:false,loading:false};
-try{var wxc=JSON.parse(localStorage.getItem(KEY+'-meteo2')||'null');if(wxc&&wxc.data){WX.data=wxc.data;WX.at=wxc.at;WX.key=wxc.key}}catch(e){}
+/* La météo est rechargée toutes les 20 minutes tant que l'appli est ouverte, et l'heure « maintenant » est recalculée à chaque heure. */
+var WX_FRAIS=20*60000,WX={raw:null,data:null,hk:'',at:0,key:'',err:false,loading:false};
+try{var wxc=JSON.parse(localStorage.getItem(KEY+'-meteo3')||'null');if(wxc&&wxc.raw){WX.raw=wxc.raw;WX.at=wxc.at;WX.key=wxc.key}}catch(e){}
+function wxHourKey(){var d=new Date();return iso(d)+'T'+d.getHours()}
+function wxData(){if(!WX.raw||WX.key!==wxKey())return null;var hk=wxHourKey();if(!WX.data||WX.hk!==hk){try{WX.data=wxParse(WX.raw);WX.hk=hk}catch(e){WX.data=null}}return WX.data}
+function wxHeure(){var d=new Date(WX.at);return d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}).replace(':','h')}
 function wxLoc(){return db.ecurie&&db.ecurie.meteo&&db.ecurie.meteo.lat!=null?db.ecurie.meteo:null}
 function wxKey(){var m=wxLoc();return m?(+m.lat).toFixed(4)+','+(+m.lon).toFixed(4):''}
 function wxDirect(body){
@@ -1382,12 +1387,12 @@ function wxCall(body){
 }
 function wxEnsure(){
   var k=wxKey();if(!k||WX.loading)return;
-  if(WX.key===k&&WX.data&&Date.now()-WX.at<45*60000)return;
-  if(WX.key!==k){WX.data=null}
+  if(WX.key===k&&WX.raw&&Date.now()-WX.at<WX_FRAIS)return;
+  if(WX.key!==k){WX.raw=null;WX.data=null}
   if(WX.err&&Date.now()-(WX.errAt||0)<5*60000)return;
   WX.loading=true;var c=k.split(',');
   wxCall({lat:c[0],lon:c[1]})
-    .then(function(j){WX.data=wxParse(j);WX.at=Date.now();WX.key=k;WX.err=false;try{localStorage.setItem(KEY+'-meteo2',JSON.stringify({key:k,at:WX.at,data:WX.data}))}catch(e){}})
+    .then(function(j){if(!j||!j.properties)throw new Error('vide');WX.raw={properties:{timeseries:j.properties.timeseries||[]}};WX.data=null;WX.at=Date.now();WX.key=k;WX.err=false;try{localStorage.removeItem(KEY+'-meteo2');localStorage.setItem(KEY+'-meteo3',JSON.stringify({key:k,at:WX.at,raw:WX.raw}))}catch(e){}})
     .catch(function(){WX.err=true;WX.errAt=Date.now()})
     .then(function(){WX.loading=false;wxUpdate()});
 }
@@ -1457,14 +1462,14 @@ function wxInner(){
       (m?'<button type="button" class="btn sm" data-act="meteo-cancel">Annuler</button>':'')+'</form>';
   }
   wxEnsure();
-  var w=WX.key===wxKey()?WX.data:null;
+  var w=wxData();
   if(!w)return '<div class="panel empty">'+(WX.err?'Météo indisponible pour le moment. <button class="btn sm" data-act="meteo-retry">Réessayer</button>':'Chargement de la météo…')+'</div>';
   var n=w.now,info=wxInfo(n.sym),cs=wxConseils(w),age=Math.round((Date.now()-WX.at)/60000);
   var h='<div class="panel wx"><div class="wx-now"><span class="wx-ic">'+wxIcon(n.sym,44,true)+'</span><div class="x"><div class="wx-t">'+deg(n.temp)+'</div><div><b>'+esc(info.l)+'</b></div>'+
     '<div class="sub">Vent '+Math.round(n.wind)+' km/h · Pluie '+String(w.pr24).replace('.',',')+' mm sur 24 h'+(w.nuit!=null?' · Nuit '+deg(w.nuit):'')+'</div></div></div>'+
     '<div class="wx-days">'+w.days.slice(0,4).map(function(d,i){return '<div class="wx-day"><small>'+dayShort(d.date,i)+'</small><span class="wx-ic">'+wxIcon(d.sym,26,true)+'</span><b>'+deg(d.max)+'</b><span class="sub">'+deg(d.min)+'</span>'+(d.pr>=0.5?'<span class="sub">'+String(d.pr).replace('.',',')+' mm</span>':'<span class="sub">&nbsp;</span>')+'</div>'}).join('')+'</div>'+
     (cs.length?'<div class="wx-tips">'+cs.map(function(c){return '<div class="alert" style="padding:8px 12px;font-size:13px"><div class="x">'+esc(c)+'</div></div>'}).join('')+'</div>':'')+
-    '<p class="sub" style="margin:0;font-size:12px">'+(WX.err?'Hors connexion · ':'')+'Mis à jour il y a '+(age<1?'moins d\'une minute':age+' min')+' · Données <a href="https://api.met.no/" target="_blank" rel="noopener">MET Norway</a> (<a href="https://creativecommons.org/licenses/by/4.0/deed.fr" target="_blank" rel="noopener">CC BY 4.0</a>), résumées par jour</p></div>';
+    '<p class="sub" style="margin:0;font-size:12px">'+(WX.err?'Hors connexion · ':'')+'Mise à jour à '+wxHeure()+(WX.loading?' · actualisation…':'')+' · <button class="linkbtn" data-act="meteo-refresh">Actualiser</button> · Données <a href="https://api.met.no/" target="_blank" rel="noopener">MET Norway</a> (<a href="https://creativecommons.org/licenses/by/4.0/deed.fr" target="_blank" rel="noopener">CC BY 4.0</a>), résumées par jour</p></div>';
   return h;
 }
 function weatherSection(){
@@ -1472,6 +1477,15 @@ function weatherSection(){
   return '<section id="meteo"><div class="sh"><h2>Météo'+(m?' · '+esc(m.nom):'')+'</h2>'+(m&&!S.meteoEdit?'<span class="actions" style="flex-wrap:nowrap">'+(isG()?'<button class="btn sm" data-act="meteo-edit">Changer</button>':'')+'<button class="btn sm" data-act="tab" data-id="meteo">Détails</button></span>':'')+'</div><div id="meteo-in">'+wxInner()+'</div></section>';
 }
 function wxUpdate(){var a=document.activeElement;if(a&&a.id==='meteo-q')return;if(S.tab==='meteo'&&!M){render();return}var el=document.getElementById('meteo-in');if(el)el.innerHTML=wxInner()}
+var wxLastHk=wxHourKey();
+setInterval(function(){
+  if(document.visibilityState!=='visible'||authState!=='ok'||!wxLoc())return;
+  var shown=S.tab==='meteo'||document.getElementById('meteo-in');if(!shown)return;
+  var stale=Date.now()-WX.at>=WX_FRAIS,hk=wxHourKey();
+  if(stale)wxEnsure();
+  if(hk!==wxLastHk){wxLastHk=hk;wxUpdate()}
+},60000);
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&authState==='ok'&&wxLoc()){wxEnsure();wxUpdate()}});
 function meteoSearch(q){
   q=String(q||'').trim();S.meteoQ=q;if(q.length<2){S.meteoMsg='Saisissez au moins 2 lettres ou un code postal.';wxUpdate();return}
   S.meteoMsg='Recherche…';S.meteoRes=[];render();
@@ -1512,7 +1526,7 @@ function vMeteo(){
   var m=wxLoc(),h='';
   if(!m&&!isG())return '<div class="panel empty">La météo n\'est pas encore configurée par l\'écurie.</div>';
   if(!m||S.meteoEdit)return weatherSection();
-  wxEnsure();var w=WX.key===wxKey()?WX.data:null;
+  wxEnsure();var w=wxData();
   h+='<div class="sh" style="grid-column:1/-1"><h2>'+esc(m.nom)+(m.cp?' <span class="sub">'+esc(m.cp)+'</span>':'')+'</h2>'+(isG()?'<button class="btn sm" data-act="meteo-edit">Changer de commune</button>':'')+'</div>';
   if(!w||!w.hours)return h+'<div class="panel empty">'+(WX.err?'Météo indisponible pour le moment. <button class="btn sm" data-act="meteo-retry">Réessayer</button>':'Chargement de la météo…')+'</div>';
   var n=w.now,info=wxInfo(n.sym),cs=wxConseils(w),t0=today(),t1=addDays(t0,1),s0=ridingSlots(w.hours,t0),s1=ridingSlots(w.hours,t1);
@@ -1541,7 +1555,7 @@ function vMeteo(){
     return '<div class="item dayrow" style="cursor:default"><span class="dname"><b>'+dayShort(d.date,i)+'</b><span class="sub">'+fdate(d.date)+'</span></span><span class="wx-ic">'+wxIcon(d.sym,26,true)+'</span>'+
       '<span class="x"><span class="sub">'+esc(inf.l)+(d.pr>=0.5?' · '+num1(d.pr)+' mm':'')+' · vent '+d.wind+' km/h</span><span class="trange"><b>'+deg(d.min)+'</b><span class="tbar"><i style="left:'+((d.min-gmin)/sp*100)+'%;width:'+Math.max(4,(d.max-d.min)/sp*100)+'%"></i></span><b>'+deg(d.max)+'</b></span></span></div>'}).join('')+'</div></section>';
   var age=Math.round((Date.now()-WX.at)/60000);
-  h+='<p class="sub" style="margin:0;font-size:12px;grid-column:1/-1">'+(WX.err?'Hors connexion · ':'')+'Mis à jour il y a '+(age<1?'moins d\'une minute':age+' min')+'. Données <a href="https://api.met.no/" target="_blank" rel="noopener">MET Norway</a> (<a href="https://creativecommons.org/licenses/by/4.0/deed.fr" target="_blank" rel="noopener">CC BY 4.0</a>), mises en forme et résumées par l\'appli. Créneaux et conseils : indications automatiques à vérifier sur place.</p>';
+  h+='<p class="sub" style="margin:0;font-size:12px;grid-column:1/-1">'+(WX.err?'Hors connexion · ':'')+'Mise à jour à '+wxHeure()+' (actualisée automatiquement toutes les 20 min) · <button class="linkbtn" data-act="meteo-refresh">Actualiser</button>. Données <a href="https://api.met.no/" target="_blank" rel="noopener">MET Norway</a> (<a href="https://creativecommons.org/licenses/by/4.0/deed.fr" target="_blank" rel="noopener">CC BY 4.0</a>), mises en forme et résumées par l\'appli. Créneaux et conseils : indications automatiques à vérifier sur place.</p>';
   return h;
 }
 
@@ -1778,6 +1792,7 @@ var ACT={
   theme:function(id){if(!THEMES[id])return;db.ecurie.theme=id;putConfig();applyTheme(true);if(M)M.render();render();toast('Couleurs « '+THEMES[id].nom+' » appliquées')},
   'meteo-edit':function(){S.meteoEdit=true;S.meteoRes=[];S.meteoMsg='';render();var q=document.getElementById('meteo-q');if(q)q.focus()},
   'meteo-retry':function(){WX.err=false;WX.errAt=0;wxEnsure();wxUpdate()},
+  'meteo-refresh':function(){WX.err=false;WX.errAt=0;WX.at=0;wxEnsure();wxUpdate();toast('Actualisation de la météo…')},
   'meteo-geo':function(){S.meteoMsg='Localisation…';wxUpdate();navigator.geolocation.getCurrentPosition(function(p){var la=Math.round(p.coords.latitude*1e4)/1e4,lo=Math.round(p.coords.longitude*1e4)/1e4;
     wxCall({type:'communes',lat:la,lon:lo}).then(function(l){return (l||[])[0]},function(){return null}).then(function(c){db.ecurie.meteo={nom:c?c.nom:'Ma position',cp:c&&c.codesPostaux?c.codesPostaux[0]:'',lat:la,lon:lo};putConfig();S.meteoEdit=false;S.meteoMsg='';S.meteoRes=[];WX.err=false;render();toast('Météo réglée sur '+db.ecurie.meteo.nom)})},
     function(){S.meteoMsg='Position refusée ou indisponible : recherchez la commune par son nom.';wxUpdate()},{timeout:10000,maximumAge:600000})},
