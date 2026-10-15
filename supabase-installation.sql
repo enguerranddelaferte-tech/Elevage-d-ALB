@@ -160,6 +160,19 @@ grant execute on function public.marquer_lus() to authenticated;
 drop policy if exists "lit son profil" on public.profils;
 create policy "lit son profil" on public.profils for select to authenticated using (user_id = auth.uid() or public.est_gerant());
 
+-- Le client modifie lui-même ses coordonnées (téléphone, e-mail, adresse, licence, assurance)
+create or replace function public.modifier_coordonnees(p_tel text, p_email text, p_adresse text, p_licence text, p_rc text) returns jsonb
+  language plpgsql security definer set search_path = public as $$
+declare v_prop text := mon_proprio(); d jsonb;
+begin
+  if v_prop is null then raise exception 'Compte client non activé.'; end if;
+  update proprietaires set data = data || jsonb_build_object('tel', left(coalesce(p_tel,''),40), 'email', left(coalesce(p_email,''),120), 'adresse', left(coalesce(p_adresse,''),400), 'licence', left(coalesce(p_licence,''),40), 'rcFin', left(coalesce(p_rc,''),10)), updated_at = now()
+    where id = v_prop returning data into d;
+  return d;
+end $$;
+revoke execute on function public.modifier_coordonnees(text,text,text,text,text) from public, anon;
+grant execute on function public.modifier_coordonnees(text,text,text,text,text) to authenticated;
+
 -- Un cavalier (demi-pension, location…) voit le cheval qui lui est confié
 drop policy if exists "cavalier lit les chevaux confiés" on public.chevaux;
 create policy "cavalier lit les chevaux confiés" on public.chevaux for select to authenticated

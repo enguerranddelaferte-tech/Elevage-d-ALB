@@ -88,6 +88,12 @@ section{display:flex;flex-direction:column;gap:10px}
 .daypick{display:flex;flex-wrap:wrap;gap:6px}.daypick label{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px;font-weight:500;min-height:40px;cursor:pointer}
 .meter{display:block;height:6px;border-radius:3px;background:var(--surface-2);margin-top:6px;overflow:hidden}.meter span{display:block;height:100%;background:var(--accent);border-radius:3px}
 .linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--accent);text-decoration:underline;cursor:pointer}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;align-self:flex-start}.seg button{border:0;background:var(--surface);color:var(--fg);font:inherit;font-size:14px;font-weight:600;padding:8px 16px;min-height:40px;cursor:pointer}.seg button.on{background:var(--accent);color:var(--surface)}
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.mh{font-size:11px;text-align:center;color:var(--muted);text-transform:uppercase;padding-bottom:2px}
+.mcell{min-height:52px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;padding:6px 2px;font:inherit;cursor:pointer;min-width:0}
+.mcell b{font-size:15px}.mcell small{font-size:10px;line-height:1.1;color:var(--accent);font-weight:600;text-align:center;overflow:hidden;text-overflow:ellipsis;max-width:100%;white-space:nowrap}.mcell small.ann{color:var(--danger)}
+.mcell.empty{border:0;background:none;cursor:default}.mcell.today{border-color:var(--accent)}.mcell.mine{background:var(--accent-soft)}.mcell.on{background:var(--accent);color:var(--surface);border-color:var(--accent)}.mcell.on small{color:var(--surface)}
+@media (min-width:700px){.mcell{min-height:68px}.mcell small{font-size:12px}}
 .ndot{width:9px;height:9px;border-radius:5px;background:var(--danger);flex:none;margin-top:6px;align-self:flex-start}.ndot.lu{background:transparent}
 .item.annule b{text-decoration:line-through;opacity:.7}
 #hnotif{position:relative}#hnotif .nbadge{top:0;right:0}
@@ -518,7 +524,7 @@ function normalize(){
 
 
 var S={tab:'jour',coursDate:today(),mois:today().slice(0,7),q:'',confirmClear:false};
-try{var lt=localStorage.getItem(KEY+'-tab');if(lt&&TITLES[lt])S.tab=lt}catch(e){}
+try{var lt=localStorage.getItem(KEY+'-tab');if(lt&&TITLES[lt])S.tab=lt;S.calMode=localStorage.getItem(KEY+'-calmode')||'semaine'}catch(e){}
 var M=null,installEvt=null;
 var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent),isStandalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
 try{S.iosHidden=!!localStorage.getItem(KEY+'-ioshint')}catch(e){}
@@ -590,8 +596,7 @@ function hList(){
 function vCours(){
   var d=toD(S.coursDate),start=addDays(S.coursDate,-((d.getDay()+6)%7)),h='';
   var days=[];for(var i=0;i<7;i++)days.push(addDays(start,i));
-  h+='<div class="weeknav"><button class="icon-btn" data-act="week" data-id="-7" aria-label="Semaine précédente">‹</button><span class="sub">Semaine du '+fdate(start,{day:'numeric',month:'long'})+'</span><button class="icon-btn" data-act="week" data-id="7" aria-label="Semaine suivante">›</button></div>';
-  h+='<div class="days">'+days.map(function(x){var has=db.cours.some(function(c){return c.date===x});return '<button class="day'+(x===S.coursDate?' on':'')+'" data-act="day" data-id="'+x+'" aria-pressed="'+(x===S.coursDate)+'"><small>'+toD(x).toLocaleDateString('fr-FR',{weekday:'short'}).replace('.','')+'</small><b>'+toD(x).getDate()+'</b>'+(has?'<span class="dot"></span>':'')+'</button>'}).join('')+'</div>';
+  h+=calToggle()+(calMode()==='mois'?monthGrid():weekStrip());
   var l=db.cours.filter(function(c){return c.date===S.coursDate}).sort(byTime);
   h+='<section><div class="sh"><h2>'+fdate(S.coursDate,{weekday:'long',day:'numeric',month:'long'})+'</h2><button class="btn sm primary" data-act="cours">+ Cours</button></div>';
   h+=l.length?'<div class="panel items">'+l.map(coursItem).join('')+'</div>':'<div class="panel empty">Aucun cours ce jour-là.</div>';
@@ -656,7 +661,8 @@ function cAccueil(){
   if(hs.length){h+='<section><div class="sh"><h2>'+(hs.length>1?'Mes chevaux':'Mon cheval')+'</h2></div><div class="panel items">'+hs.map(function(c){
     return '<button class="item" data-act="tab" data-id="cheval"><span class="avatar">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>'+esc([c.box,c.proprietaireId===me.prop?PENSIONS[c.pension]:confLabel(confDe(c,me.prop))].filter(Boolean).join(' · '))+'</span></span><span class="end">'+nextSoin(c)+'</span></button>'}).join('')+'</div></section>'}
   var ks=carnetSolde(me.prop);
-  if(ks.actif)h+='<section><div class="sh"><h2>Mon carnet de cours</h2>'+(ks.restant<=1?'<span class="pill '+(ks.restant<=0?'late':'warn')+'">'+(ks.restant<=0?'Épuisé':'Plus qu\'1 cours')+'</span>':'')+'</div>'+carnetBox(me.prop,false)+(ks.restant<=1?'<p class="sub" style="margin:0">Pensez à reprendre un carnet auprès de l\'écurie.</p>':'')+'</section>';
+  if(ks.actif)h+='<section><div class="sh"><h2>Mon carnet de cours</h2>'+(ks.restant<=1?'<span class="pill '+(ks.restant<=0?'late':'warn')+'">'+(ks.restant<=0?'Épuisé':'Plus qu\'1 cours')+'</span>':'')+'</div>'+carnetBox(me.prop,false)+'<button class="btn" data-act="carnet-demande">'+(ks.restant<=1?'Reprendre un carnet':'Demander un autre carnet')+'</button></section>';
+  else h+='<section><div class="sh"><h2>Carnet de cours</h2></div><div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:10px"><div class="sub">Prenez un carnet de 5, 10 ou 20 cours : moins cher qu\'à l\'unité, et vos cours sont décomptés automatiquement.</div><button class="btn primary" data-act="carnet-demande">Demander un carnet</button></div></section>';
   var fa=myFactures().filter(function(f){return f.statut!=='payee'&&!isAvoir(f)})[0];
   if(fa)h+='<section><div class="sh"><h2>Facture à régler</h2></div><button class="item panel" data-act="fact" data-id="'+fa.id+'"><span class="x"><b>'+esc(monthLabel(fa.mois))+'</b><span>À régler avant le '+fdl(fa.echeance)+'</span></span><span class="end"><b>'+money(fa.total)+'</b></span></button></section>';
   var an=db.annonces.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))}).slice(0,5);
@@ -675,8 +681,8 @@ function weekStrip(){
       return '<button class="day'+(x===S.coursDate?' on':'')+'" data-act="day" data-id="'+x+'" aria-pressed="'+(x===S.coursDate)+'"><small>'+toD(x).toLocaleDateString('fr-FR',{weekday:'short'}).replace('.','')+'</small><b>'+toD(x).getDate()+'</b>'+(any?'<span class="dot"'+(has||isG()?'':' style="opacity:.35"')+'></span>':'')+'</button>'}).join('')+'</div>';
 }
 function cCours(){
-  var h=demoBanner()+weekStrip(),l=db.cours.filter(function(c){return c.date===S.coursDate}).sort(byTime),now=new Date(),ks=carnetSolde(me.prop);
-  if(ks.actif)h+='<div class="banner"><div class="x">Carnet : <b>'+Math.max(0,ks.restant)+' cours restant'+(ks.restant>1?'s':'')+'</b>'+(ks.reserves?' (après les '+ks.reserves+' déjà réservé'+(ks.reserves>1?'s':'')+')':'')+'. Les cours sont décomptés automatiquement.</div></div>';
+  var h=demoBanner()+calToggle()+(calMode()==='mois'?monthGrid():weekStrip()),l=db.cours.filter(function(c){return c.date===S.coursDate}).sort(byTime),now=new Date(),ks=carnetSolde(me.prop);
+  if(ks.actif)h+='<div class="banner"><div class="x">Carnet : <b>'+Math.max(0,ks.restant)+' cours restant'+(ks.restant>1?'s':'')+'</b>'+(ks.reserves?' (après les '+ks.reserves+' déjà réservé'+(ks.reserves>1?'s':'')+')':'')+'. Les cours sont décomptés automatiquement.</div><button class="btn sm" data-act="carnet-demande">Reprendre un carnet</button></div>';
   h+='<section><div class="sh"><h2>'+fdate(S.coursDate,{weekday:'long',day:'numeric',month:'long'})+'</h2></div>';
   if(!l.length)h+='<div class="panel empty">Aucun cours ce jour-là.</div>';
   else h+='<div class="panel items">'+l.map(function(c){
@@ -946,8 +952,7 @@ function demoSwitch(){return '<div class="field panel" style="padding:14px"><lab
 function accountBox(){return '<div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:8px"><span class="lbl">Compte</span><div>'+esc(me.email||'')+(isG()?' · gérant':'')+'</div><button class="btn" data-act="logout">Se déconnecter</button></div>'}
 function settingsModal(){
   if(!isG()){M={kind:'settings',draft:{},read:function(){},focus:false,render:function(){var o=owner(me.prop)||{};
-    var h=head('Mon compte')+(mode==='local'?demoSwitch():'')+appearanceBox()+pushBox()+'<div class="panel" style="padding:14px"><b>'+esc(o.nom||'')+'</b><div class="sub" style="white-space:pre-wrap">'+esc([o.email,o.tel,o.adresse].filter(Boolean).join('\n'))+'</div></div>'+
-      '<p class="sub" style="margin:0">Pour modifier vos coordonnées, écrivez au gérant dans Messages.</p>'+(mode==='cloud'?accountBox():'');mb(h)}};openModal();return}
+    var h=head('Mon compte')+(mode==='local'?demoSwitch():'')+'<div class="panel" style="padding:14px"><b style="font-size:17px">'+esc(o.nom||'')+'</b></div>'+coordsForm(o)+appearanceBox()+pushBox()+(mode==='cloud'?accountBox():'');mb(h)}};openModal();return}
   M={kind:'settings',draft:{},read:function(){},focus:false,render:function(){
     var t=db.tarifs;
     var e=db.ecurie,tv=e.tvaRegime==='tva';
@@ -1562,6 +1567,55 @@ function vMeteo(){
 /* ---------- toast ---------- */
 var tt;function toast(m){var e=document.getElementById('toast');e.textContent=m;e.hidden=false;clearTimeout(tt);tt=setTimeout(function(){e.hidden=true},2600)}
 
+/* ---------- planning : vue semaine ou mois ---------- */
+function calMode(){return S.calMode==='mois'?'mois':'semaine'}
+function calToggle(){var m=calMode();return '<div class="seg" role="group" aria-label="Affichage du planning"><button class="'+(m==='semaine'?'on':'')+'" data-act="cal-mode" data-id="semaine" aria-pressed="'+(m==='semaine')+'">Semaine</button><button class="'+(m==='mois'?'on':'')+'" data-act="cal-mode" data-id="mois" aria-pressed="'+(m==='mois')+'">Mois</button></div>'}
+function monthGrid(){
+  var d=toD(S.coursDate),y=d.getFullYear(),mo=d.getMonth(),first=new Date(y,mo,1),dim=new Date(y,mo+1,0).getDate(),lead=(first.getDay()+6)%7,t=today(),cells='';
+  for(var i=0;i<lead;i++)cells+='<span class="mcell empty" aria-hidden="true"></span>';
+  for(var j=1;j<=dim;j++){var x=iso(new Date(y,mo,j)),l=db.cours.filter(function(c){return c.date===x&&!c.annule}),mine=!isG()&&l.some(function(c){return c.inscrits.indexOf(me.prop)>-1}),an=db.cours.some(function(c){return c.date===x&&c.annule&&(isG()||c.inscrits.indexOf(me.prop)>-1)});
+    var lab=fdate(x,{weekday:'long',day:'numeric',month:'long'})+(l.length?', '+l.length+' cours':'')+(mine?', vous êtes inscrit':'');
+    cells+='<button class="mcell'+(x===S.coursDate?' on':'')+(x===t?' today':'')+(mine?' mine':'')+'" data-act="day" data-id="'+x+'" aria-pressed="'+(x===S.coursDate)+'" aria-label="'+esc(lab)+'"><b>'+j+'</b>'+(l.length?'<small>'+(isG()?l.length+' cours':(mine?'inscrit':l.length+' cours'))+'</small>':an?'<small class="ann">annulé</small>':'')+'</button>'}
+  return '<div class="weeknav"><button class="icon-btn" data-act="month" data-id="-1" aria-label="Mois précédent">‹</button><span class="sub" style="font-weight:600;color:var(--fg)">'+esc(monthLabel(iso(first).slice(0,7)))+'</span><button class="icon-btn" data-act="month" data-id="1" aria-label="Mois suivant">›</button></div>'+
+    '<div class="mgrid"><span class="mh">lun</span><span class="mh">mar</span><span class="mh">mer</span><span class="mh">jeu</span><span class="mh">ven</span><span class="mh">sam</span><span class="mh">dim</span>'+cells+'</div>';
+}
+function addMonths(s,n){var d=toD(s),y=d.getFullYear(),m=d.getMonth()+n,day=Math.min(d.getDate(),new Date(y,m+1,0).getDate());return iso(new Date(y,m,day))}
+
+/* ---------- espace client : demande de carnet, coordonnées ---------- */
+function carnetDemandeModal(){
+  M={kind:'carnet-demande',draft:{},read:function(){},render:function(){
+    var t=db.tarifs;
+    mb(head('Demander un carnet de cours')+'<form class="form" id="fcarnetdem">'+
+      sel('kd-nb','Nombre de cours',[['5','5 cours'],['10','10 cours'],['20','20 cours']],'10')+
+      sel('kd-type','Type de cours',[['collectif','Cours collectifs ('+money(t.collectif)+' l\'unité)'],['particulier','Cours particuliers ('+money(t.particulier)+' l\'unité)']],'collectif')+
+      '<div class="field"><label for="kd-msg">Message pour l\'écurie (facultatif)</label><textarea id="kd-msg" placeholder="ex. à partir de la semaine prochaine"></textarea></div>'+
+      '<p class="sub" style="margin:0">L\'écurie reçoit votre demande et ajoute le carnet à votre compte. Il sera facturé sur votre prochaine facture, et vos cours seront décomptés automatiquement.</p>'+
+      '<button class="btn primary block" type="submit">Envoyer la demande</button></form>')}};
+  openModal();
+}
+function envoyerMessageClient(texte,titreNotif){
+  var m={id:uid(),proprietaireId:me.prop,de:'client',texte:texte,lu:false,date:new Date().toISOString()};
+  db.messages.push(m);put('messages',m);
+  notifier({type:'gerant'},titreNotif,((owner(me.prop)||{}).nom||'Un client')+' · '+texte.slice(0,120),'messages');
+}
+function coordsForm(o){
+  return '<form class="form panel" id="fcoords" style="padding:14px"><span class="lbl">Mes coordonnées</span>'+
+    '<div class="grid2">'+fld('cc-tel','Téléphone',o.tel||'','tel',' autocomplete="tel"')+fld('cc-email','E-mail',o.email||'','email',' autocomplete="email"')+fld('cc-lic','N° licence FFE',o.licence||'')+fld('cc-rc','Fin d\'assurance RC',o.rcFin||'','date')+'</div>'+
+    '<div class="field"><label for="cc-adr">Adresse (pour les factures)</label><textarea id="cc-adr" autocomplete="street-address">'+esc(o.adresse||'')+'</textarea></div>'+
+    '<button class="btn primary" type="submit">Enregistrer mes coordonnées</button>'+
+    '<p class="sub" style="margin:0">L\'écurie est prévenue de la modification. Pour changer votre nom, écrivez-lui dans Messages.</p></form>';
+}
+function saveCoords(){
+  var o=owner(me.prop);if(!o)return;var n={tel:v('cc-tel'),email:v('cc-email'),adresse:v('cc-adr'),licence:v('cc-lic'),rcFin:v('cc-rc')};
+  if(n.email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(n.email)){toast('Adresse e-mail invalide.');return}
+  var ch=Object.keys(n).filter(function(k){return (o[k]||'')!==n[k]});if(!ch.length){toast('Aucune modification.');return}
+  var noms={tel:'téléphone',email:'e-mail',adresse:'adresse',licence:'licence',rcFin:'assurance RC'};
+  function done(){Object.assign(o,n);if(M)M.render();render();toast('Coordonnées enregistrées');
+    notifier({type:'gerant'},'Coordonnées modifiées',(o.nom||'Un client')+' a modifié : '+ch.map(function(k){return noms[k]}).join(', '),'proprios')}
+  if(mode==='cloud'){sb.rpc('modifier_coordonnees',{p_tel:n.tel,p_email:n.email,p_adresse:n.adresse,p_licence:n.licence,p_rc:n.rcFin}).then(function(r){if(r.error){toast(r.error.message);return}done()},function(){toast('Pas de connexion : réessayez.')})}
+  else{Object.assign(o,n);saveLocal();done()}
+}
+
 /* ---------- carnets de cours ---------- */
 var CARNET_TYPES={collectif:'cours collectifs',particulier:'cours particuliers',tous:'cours (tous types)'};
 function carnetLabel(k){return 'Carnet de '+k.nb+' '+(CARNET_TYPES[k.type]||'cours')}
@@ -1741,6 +1795,9 @@ var ACT={
   'fact-send':function(){sendFacture(M.draft)},
   'fact-pdf':function(){var f=M.draft;if(isG()){ensureNumero(f);put('factures',f)}openBlob(buildPdf(f),pdfName(f),!isG())},
   'fact-publier':function(){markSent(M.draft)},
+  'cal-mode':function(m){S.calMode=m;try{localStorage.setItem(KEY+'-calmode',m)}catch(e){}render()},
+  month:function(n){S.coursDate=addMonths(S.coursDate,+n);render()},
+  'carnet-demande':function(){carnetDemandeModal()},
   'carnet-add':function(){M.read();var d=M.draft,o=owner(d.id);if(!o)return;var k={id:uid(),nb:+v('k-nb')||10,type:v('k-type')||'collectif',prix:r2(parseFloat(String(v('k-prix')).replace(',','.'))||0),date:v('k-date')||today()};
     o.carnets=(o.carnets||[]).concat([k]);d.carnets=clean(o.carnets);put('proprietaires',o);notifier({type:'proprios',ids:[o.id]},'Carnet de cours ajouté',carnetLabel(k)+' · vos prochains cours seront décomptés','cours');M.render();toast(carnetLabel(k)+' ajouté')},
   'carnet-del':function(id){M.read();var d=M.draft,o=owner(d.id);if(!o)return;o.carnets=(o.carnets||[]).filter(function(k){return k.id!==id});d.carnets=clean(o.carnets);put('proprietaires',o);M.render();toast('Carnet supprimé')},
@@ -1856,6 +1913,8 @@ document.addEventListener('submit',function(e){
   if(id==='flogin'||id==='fsignup'||id==='factivate'||id==='fnewpass'){if(!sb){authMsg='Base inaccessible : vérifiez votre connexion puis rechargez la page.';render();return}doAuth(id);return}
   if(id==='fmeteo'){meteoSearch(v('meteo-q'));return}
   if(id==='fmsg'){sendMsg();return}
+  if(id==='fcoords'){saveCoords();return}
+  if(id==='fcarnetdem'){var nb=v('kd-nb'),ty=v('kd-type'),ms=v('kd-msg');envoyerMessageClient('Je souhaite prendre un carnet de '+nb+' cours '+(ty==='particulier'?'particuliers':'collectifs')+'.'+(ms?' '+ms:''),'Demande de carnet');closeModal();render();toast('Demande envoyée à l\'écurie');return}
   if(id==='fannuljour'){var dy=M.draft.day,lst=db.cours.filter(function(c){return c.date===dy&&!c.annule}),nb=annulerCours(lst,v('aj-motif')),pers={};lst.forEach(function(c){c.inscrits.forEach(function(p){pers[p]=1})});closeModal();render();toast(nb+' cours annulé'+(nb>1?'s':'')+(Object.keys(pers).length?' · '+Object.keys(pers).length+' cavalier'+(Object.keys(pers).length>1?'s':'')+' prévenu'+(Object.keys(pers).length>1?'s':''):''));return}
   if(id==='fpay'){var pf=M.draft;pf.statut='payee';pf.payeLe=v('pay-date')||today();pf.modePaiement=v('pay-mode');put('factures',pf);toast(isAvoir(pf)?'Remboursement enregistré':'Paiement enregistré');factModal(pf.id);render();return}
   if(id==='favoir'){createAvoir();return}

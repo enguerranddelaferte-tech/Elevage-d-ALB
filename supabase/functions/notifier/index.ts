@@ -44,6 +44,7 @@ async function envoyer(userIds: string[], n: { titre: string; texte?: string; li
         await appServer!.subscribe(s.sub as webpush.PushSubscription).pushTextMessage(payload, { ttl: 86400 } as webpush.PushMessageOptions);
         ok++;
       } catch (e) {
+        console.log("push:", String(e));
         if (e instanceof webpush.PushMessageError && e.isGone()) await admin.from("push_subs").delete().eq("endpoint", s.endpoint);
       }
     }));
@@ -68,9 +69,18 @@ Deno.serve(async (req) => {
     if (b.action === "vapid") { await vapid(); return json({ publicKey }); }
 
     // Personne connectée
+    // La passerelle Supabase a déjà vérifié la signature du jeton (verify_jwt) : on lit l'identifiant dedans.
     const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
-    const { data: u } = await admin.auth.getUser(token);
-    const uid = u?.user?.id;
+    let uid = "";
+    try {
+      const p = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(token.split(".")[1].length / 4) * 4, "=")));
+      if (p.role === "authenticated" && typeof p.sub === "string" && (!p.exp || p.exp * 1000 > Date.now())) uid = p.sub;
+    } catch { /* jeton illisible */ }
+    if (!uid) {
+      const { data: u, error } = await admin.auth.getUser(token);
+      if (error) console.log("getUser:", error.message);
+      uid = u?.user?.id ?? "";
+    }
     if (!uid) return json({ error: "Connexion requise" }, 401);
     const { data: prof } = await admin.from("profils").select("role, proprietaire_id").eq("user_id", uid).maybeSingle();
     if (!prof) return json({ error: "Compte non activé" }, 403);
