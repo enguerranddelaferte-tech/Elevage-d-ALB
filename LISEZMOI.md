@@ -11,6 +11,7 @@ L'hébergement est gratuit : **GitHub Pages** pour l'appli, **Supabase** pour la
 - `index.html` : l'application
 - `config.js` : l'adresse de votre base Supabase (à remplir, étape 2)
 - `supabase-installation.sql` : le script qui crée la base (étape 1)
+- `supabase/functions/` : les petits services en ligne (météo, notifications et e-mails)
 - `manifest.webmanifest`, `sw.js`, `icons/` : installation sur téléphone et fonctionnement hors ligne
 
 Tant que `config.js` est vide, l'appli fonctionne en **mode démo** : données d'exemple gardées dans le navigateur, et un sélecteur « Voir l'appli comme… » (Réglages) pour tester l'espace d'un client.
@@ -54,14 +55,22 @@ La clé « anon » est prévue pour être publique : ce sont les règles d'accè
 
 ## 5. Inviter les clients
 
-1. Onglet **Propriétaires** › fiche du client › **Créer un code d'accès**.
-2. **Envoyer l'invitation** : le message contient le lien de l'appli et le code.
+1. Onglet **Clients** › **+ Propriétaire** : si vous saisissez son e-mail, **l'invitation part automatiquement par e-mail** à l'enregistrement de la fiche (lien de l'appli + code d'activation). Bouton « Envoyer l'invitation par e-mail » pour la renvoyer.
+2. Sans e-mail automatique (pas encore configuré) : fiche du client › **Créer un code d'accès** › **Envoyer l'invitation** (SMS, WhatsApp, e-mail…).
 3. Le client ouvre le lien, crée son compte avec ce code ; sa fiche affiche ensuite « Compte client activé ». Chaque code ne sert qu'une fois.
 
 ## 6. Installer sur le téléphone
 
 - **Android (Chrome)** : bandeau « Installer », ou menu ⋮ › Installer l'application.
 - **iPhone (Safari)** : Partager › **Sur l'écran d'accueil**.
+
+## Notifications et e-mails
+
+- **Cloche** en haut de l'écran : toutes les notifications (cours annulé ou modifié, inscription à un cours, nouveau message, annonce, facture). Pastille rouge = non lues.
+- **Sur le téléphone, même appli fermée** : chaque personne touche « Activer les notifications » (bandeau d'accueil ou Réglages). Sur iPhone, il faut d'abord installer l'appli sur l'écran d'accueil (iOS 16.4 ou plus récent).
+- **Annuler des cours** : Planning › « Annuler les cours de ce jour… » (ou depuis Aujourd'hui), motif en un clic (Piste gelée, Intempéries…). Ou fiche d'un cours › « Annuler ce cours ». Les cavaliers inscrits sont prévenus, le cours n'est plus réservable ni facturé. « Rétablir le cours » prévient aussi.
+- Le gérant est prévenu quand un client réserve, annule ou écrit un message.
+- **E-mails automatiques** (invitation des clients) : service gratuit **Brevo** (300 e-mails/jour). Créez un compte sur brevo.com, validez l'adresse e-mail de l'écurie comme expéditeur (Senders), créez une clé API (SMTP & API › API Keys), puis dans Supabase › Edge Functions › Secrets ajoutez `BREVO_API_KEY` = votre clé. L'adresse expéditrice est l'e-mail saisi dans Réglages › Mon écurie (ou le secret `EMAIL_FROM`).
 
 ## Comptabilité (onglet Compta)
 

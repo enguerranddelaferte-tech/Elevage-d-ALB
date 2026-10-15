@@ -82,6 +82,7 @@ begin
   if v_prop is null then raise exception 'Compte client non activé.'; end if;
   select data into d from cours where id = p_id for update;
   if d is null then raise exception 'Cours introuvable.'; end if;
+  if coalesce((d->>'annule')::boolean, false) then raise exception 'Ce cours est annulé.'; end if;
   ins := coalesce(d->'inscrits', '[]'::jsonb);
   if ins ? v_prop then return d; end if;
   v_debut := ((d->>'date') || ' ' || coalesce(d->>'heure', '00:00'))::timestamp;
@@ -158,6 +159,31 @@ create or replace function public.marquer_lus() returns void
 grant execute on function public.marquer_lus() to authenticated;
 drop policy if exists "lit son profil" on public.profils;
 create policy "lit son profil" on public.profils for select to authenticated using (user_id = auth.uid() or public.est_gerant());
+
+-- ---------- Notifications (cloche de l'appli + téléphones) ----------
+create table if not exists public.notifications (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  titre text not null, texte text, lien text,
+  lu boolean not null default false,
+  created_at timestamptz not null default now());
+create index if not exists notifications_user on public.notifications(user_id, created_at desc);
+create table if not exists public.push_subs (
+  endpoint text primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  sub jsonb not null,
+  created_at timestamptz not null default now());
+alter table public.notifications enable row level security;
+alter table public.push_subs enable row level security;
+drop policy if exists "lit ses notifications" on public.notifications;
+create policy "lit ses notifications" on public.notifications for select to authenticated using (user_id = auth.uid());
+drop policy if exists "marque ses notifications" on public.notifications;
+create policy "marque ses notifications" on public.notifications for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop policy if exists "gere ses abonnements" on public.push_subs;
+create policy "gere ses abonnements" on public.push_subs for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+grant select, update on public.notifications to authenticated;
+grant select, insert, update, delete on public.push_subs to authenticated;
+revoke all on public.notifications, public.push_subs from anon;
 
 -- ---------- Stockage des justificatifs (photos, PDF) ----------
 insert into storage.buckets (id, name, public) values ('pieces', 'pieces', false) on conflict (id) do nothing;
