@@ -210,6 +210,8 @@ create table if not exists public.push_subs (
   user_id uuid not null references auth.users(id) on delete cascade,
   sub jsonb not null,
   created_at timestamptz not null default now());
+alter table public.push_subs add column if not exists meteo boolean not null default true;  -- météo du matin sur ce téléphone
+insert into public.secrets(k, v) values ('cron_key', encode(gen_random_bytes(24), 'hex')) on conflict (k) do nothing;
 alter table public.notifications enable row level security;
 alter table public.push_subs enable row level security;
 drop policy if exists "lit ses notifications" on public.notifications;
@@ -243,3 +245,14 @@ revoke all on public.config, public.proprietaires, public.chevaux, public.cours,
 
 -- ---------- Votre code d'activation gérant ----------
 select v as "CODE D'ACTIVATION GÉRANT (à noter)" from public.secrets where k = 'code_gerant';
+
+-- ---------- Météo du matin (7 h, heure de Paris) ----------
+-- À lancer une fois après avoir déployé la fonction « notifier ». Remplacez VOTRE-PROJET et VOTRE-CLE-ANON
+-- (Project Settings › API). La tâche tourne à 5 h et 6 h UTC ; la fonction n'envoie qu'à 7 h à Paris (été comme hiver).
+-- create extension if not exists pg_cron;
+-- create extension if not exists pg_net;
+-- select cron.schedule('meteo-du-matin', '0 5,6 * * *', $job$
+--   select net.http_post(url := 'https://VOTRE-PROJET.supabase.co/functions/v1/notifier', body := '{"action":"matin"}'::jsonb,
+--     headers := jsonb_build_object('Content-Type','application/json','Authorization','Bearer VOTRE-CLE-ANON',
+--       'x-cron-key', (select v from public.secrets where k = 'cron_key')), timeout_milliseconds := 30000);
+-- $job$);

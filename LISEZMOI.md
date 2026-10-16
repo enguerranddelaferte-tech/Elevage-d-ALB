@@ -85,6 +85,7 @@ Réglages › Mon écurie › TVA › « Assujetti à la TVA ». Bouton « Appli
 - **Cloche** en haut de l'écran : toutes les notifications (cours annulé ou modifié, inscription à un cours, nouveau message, annonce, facture). Pastille rouge = non lues.
 - **Sur le téléphone, même appli fermée** : chaque personne touche « Activer les notifications » (bandeau d'accueil ou Réglages). Sur iPhone, il faut d'abord installer l'appli sur l'écran d'accueil (iOS 16.4 ou plus récent).
 - **Annuler des cours** : Planning › « Annuler les cours de ce jour… » (ou depuis Aujourd'hui), motif en un clic (Piste gelée, Intempéries…). Ou fiche d'un cours › « Annuler ce cours ». Les cavaliers inscrits sont prévenus, le cours n'est plus réservable ni facturé. « Rétablir le cours » prévient aussi.
+- **Météo du matin** : chaque jour à 7 h, une notification avec le temps du jour (températures, pluie, vent, alertes gel/chaleur/orage), plus les cours du jour (gérant) ou le cours du client. Envoyée par le serveur (tâche planifiée Supabase), même appli fermée. Désactivable par téléphone : Réglages › Notifications › « Météo du jour chaque matin à 7 h ».
 - Le gérant est prévenu quand un client réserve, annule ou écrit un message.
 - Pas d'e-mail automatique : tout passe par les notifications de l'appli. Seule l'invitation de départ est envoyée par vous (SMS, WhatsApp…), puisque le client n'a pas encore l'appli.
 

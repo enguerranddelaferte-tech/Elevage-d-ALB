@@ -1731,16 +1731,16 @@ function marquerNotifsLues(){
 }
 /* --- notifications sur le téléphone (Web Push) --- */
 var PUSH_OK='serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
-var pushState={sub:null,checked:false};
+var pushState={sub:null,checked:false,meteo:true};
 function b64u8(s){var p='='.repeat((4-s.length%4)%4),b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/')),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i);return o}
-function pushCheck(){if(!PUSH_OK||pushState.checked)return;pushState.checked=true;navigator.serviceWorker.getRegistration().then(function(r){return r&&r.pushManager.getSubscription()}).then(function(s){pushState.sub=s||null;if(M&&M.kind==='notifs'||M&&M.kind==='settings')M.render()}).catch(function(){})}
+function pushCheck(){if(!PUSH_OK||pushState.checked)return;pushState.checked=true;navigator.serviceWorker.getRegistration().then(function(r){return r&&r.pushManager.getSubscription()}).then(function(s){pushState.sub=s||null;if(M&&M.kind==='notifs'||M&&M.kind==='settings')M.render();if(s&&mode==='cloud')sb.from('push_subs').select('meteo').eq('endpoint',s.endpoint).then(function(r){var row=(r.data||[])[0];if(row){pushState.meteo=row.meteo!==false;if(M&&(M.kind==='notifs'||M.kind==='settings'))M.render()}},function(){})}).catch(function(){})}
 function pushBox(){
   if(mode!=='cloud')return '<div class="panel" style="padding:14px"><span class="lbl">Notifications sur le téléphone</span><p class="sub" style="margin:4px 0 0">En mode démo, les notifications s\'affichent seulement dans l\'appli (cloche). Une fois en ligne, elles arrivent aussi sur les téléphones.</p></div>';
   pushCheck();var h='<div class="panel form" style="padding:14px"><span class="lbl">Notifications sur ce téléphone</span>';
   if(!PUSH_OK){return h+'<p class="sub" style="margin:0">'+(isIOS&&!isStandalone?'Sur iPhone : installez d\'abord l\'appli sur l\'écran d\'accueil (Partager › Sur l\'écran d\'accueil), ouvrez-la depuis l\'icône, puis revenez ici.':'Ce navigateur ne permet pas les notifications. Essayez avec Chrome, Edge, Firefox, ou l\'appli installée.')+'</p></div>'}
   if(Notification.permission==='denied')return h+'<p class="sub" style="margin:0">Les notifications sont bloquées pour cette appli. Autorisez-les dans les réglages du téléphone ou du navigateur, puis revenez ici.</p></div>';
-  if(pushState.sub)return h+'<div><span class="pill">Activées sur cet appareil</span></div><div class="actions"><button class="btn grow" data-act="push-test">Tester</button><button class="btn grow" data-act="push-off">Désactiver</button></div></div>';
-  return h+'<p class="sub" style="margin:0">Recevez les annulations de cours, les messages, les annonces et les factures, même appli fermée.</p><button class="btn primary" data-act="push-on">Activer les notifications</button></div>';
+  if(pushState.sub)return h+'<div><span class="pill">Activées sur cet appareil</span></div><label class="checks" style="border:0"><span style="display:flex;gap:10px;align-items:center;font-weight:500;color:var(--fg)"><input type="checkbox" id="push-meteo"'+(pushState.meteo?' checked':'')+'>Météo du jour chaque matin à 7 h</span></label><div class="actions"><button class="btn grow" data-act="push-test">Tester</button><button class="btn grow" data-act="push-off">Désactiver</button></div></div>';
+  return h+'<p class="sub" style="margin:0">Recevez les annulations de cours, les messages, les annonces, les factures et la météo de 7 h, même appli fermée.</p><button class="btn primary" data-act="push-on">Activer les notifications</button></div>';
 }
 function pushOn(){
   if(!PUSH_OK)return;toast('Activation…');
@@ -1919,6 +1919,7 @@ document.addEventListener('input',function(e){if(e.target.id==='msg-texte'){S.ms
 document.addEventListener('change',function(e){
   if(e.target.id==='fmois'&&e.target.value){S.mois=e.target.value;render()}
   if(e.target.id==='k-nb'||e.target.id==='k-type')carnetPrixAuto();
+  if(e.target.id==='push-meteo'&&pushState.sub){var on=e.target.checked;pushState.meteo=on;sb.from('push_subs').update({meteo:on}).eq('endpoint',pushState.sub.endpoint).then(function(r){toast(r.error?'Réglage impossible pour le moment.':on?'Météo du matin activée sur ce téléphone':'Météo du matin désactivée sur ce téléphone')},function(){toast('Pas de connexion : réessayez.')})}
   if(e.target.id==='demo-role'){ACT['demo-role'](e.target.value)}
   if(e.target.id==='mode-pref'){try{localStorage.setItem(KEY+'-mode',e.target.value)}catch(er){}applyTheme(true)}
   if(e.target.id==='c-kind'){S.cKind=e.target.value;render()}

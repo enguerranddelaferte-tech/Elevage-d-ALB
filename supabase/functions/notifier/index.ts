@@ -2,6 +2,7 @@
 // - action "vapid"  : renvoie la clé publique utilisée par les téléphones pour s'abonner (créée au premier appel).
 // - action "notify" : enregistre une notification pour les destinataires et l'envoie sur leurs téléphones (Web Push).
 // - action "test"   : envoie une notification de test à la personne connectée.
+// - action "matin"  : météo du jour envoyée chaque matin à 7 h (heure de Paris) par la tâche planifiée de la base.
 // - action "invite" : envoie au propriétaire un e-mail d'invitation avec son code d'accès (service Brevo, clé BREVO_API_KEY).
 import { createClient } from "npm:@supabase/supabase-js@2";
 import * as webpush from "jsr:@negrel/webpush@0.5.0";
@@ -59,6 +60,77 @@ function code() {
 }
 const esc = (s: string) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
+// ---------- météo du matin ----------
+const SYMB: Record<string, string> = { clearsky: "ensoleillé", fair: "beau temps", partlycloudy: "éclaircies", cloudy: "nuageux", fog: "brouillard",
+  lightrain: "pluie faible", rain: "pluie", heavyrain: "forte pluie", lightrainshowers: "quelques averses", rainshowers: "averses", heavyrainshowers: "fortes averses",
+  lightsleet: "neige fondue", sleet: "neige fondue", heavysleet: "neige fondue", sleetshowers: "averses de neige fondue", lightsnow: "un peu de neige", snow: "neige", heavysnow: "forte neige", snowshowers: "averses de neige" };
+function libelle(code: string) { const b = String(code || "").replace(/_(day|night|polartwilight)$/, ""); if (b.includes("thunder")) return "orages"; return SYMB[b] ?? SYMB[b.replace(/^light|^heavy/, "")] ?? "temps variable"; }
+const parisDate = (d: Date) => new Intl.DateTimeFormat("fr-CA", { timeZone: "Europe/Paris" }).format(d);
+const parisHeure = (d: Date) => +(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Paris", hour: "2-digit", hourCycle: "h23" }).formatToParts(d).find((x) => x.type === "hour")?.value ?? "0");
+const deg = (t: number) => Math.round(t) + "°";
+async function meteoDuJour(lat: number, lon: number) {
+  const r = await fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${(+lat).toFixed(4)}&lon=${(+lon).toFixed(4)}`, { headers: { "User-Agent": "ElevageALB/1.0 https://github.com/enguerranddelaferte-tech/elevage-d-alb" } });
+  if (!r.ok) throw new Error("MET " + r.status);
+  const ts = ((await r.json()).properties?.timeseries ?? []) as any[];
+  const now = new Date(), jour = parisDate(now);
+  let min = 99, max = -99, pluie = 0, vent = 0, sym = "", symD = 99, actuel: number | null = null;
+  for (const e of ts) {
+    const t = new Date(e.time); if (parisDate(t) !== jour) continue;
+    const h = parisHeure(t), d = e.data ?? {}, inst = d.instant?.details ?? {};
+    if (inst.air_temperature != null) { min = Math.min(min, inst.air_temperature); max = Math.max(max, inst.air_temperature); if (actuel == null && t.getTime() >= now.getTime() - 36e5) actuel = inst.air_temperature; }
+    vent = Math.max(vent, (inst.wind_speed ?? 0) * 3.6);
+    if (d.next_1_hours) pluie += d.next_1_hours.details?.precipitation_amount ?? 0;
+    const s = (d.next_1_hours ?? d.next_6_hours)?.summary?.symbol_code; if (s && Math.abs(h - 13) < symD) { symD = Math.abs(h - 13); sym = s; }
+  }
+  if (max < -90) throw new Error("pas de prévision");
+  const conseils: string[] = [];
+  if (min <= 0) conseils.push("gel : vérifiez les abreuvoirs");
+  if (max >= 28) conseils.push("chaleur : ombre et eau fraîche");
+  if (pluie >= 5) conseils.push("pluie : terrain lourd, pensez au manège");
+  if (vent >= 50) conseils.push("vent fort");
+  if (sym.includes("thunder")) conseils.push("orages : rentrez les chevaux si besoin");
+  const texte = `${actuel != null ? deg(actuel) + " maintenant, " : ""}${deg(min)} à ${deg(max)}, ${libelle(sym)}${pluie >= 0.5 ? " (" + String(Math.round(pluie * 10) / 10).replace(".", ",") + " mm)" : ""}, vent jusqu'à ${Math.round(vent)} km/h.${conseils.length ? " Attention " + conseils.join(" ; ") + "." : ""}`;
+  return { texte, jour };
+}
+async function pousser(subs: { endpoint: string; sub: unknown }[], n: { titre: string; texte: string; lien: string }) {
+  await vapid(); let ok = 0;
+  await Promise.all(subs.map(async (s) => {
+    try { await appServer!.subscribe(s.sub as webpush.PushSubscription).pushTextMessage(JSON.stringify(n), { ttl: 6 * 3600 } as webpush.PushMessageOptions); ok++; }
+    catch (e) { console.log("push:", String(e)); if (e instanceof webpush.PushMessageError && e.isGone()) await admin.from("push_subs").delete().eq("endpoint", s.endpoint); }
+  }));
+  return ok;
+}
+async function matin(force: boolean) {
+  const now = new Date();
+  if (!force && parisHeure(now) !== 7) return { envoye: false, raison: "pas 7 h à Paris" };
+  const jour = parisDate(now);
+  const { data: last } = await admin.from("secrets").select("v").eq("k", "matin_dernier").maybeSingle();
+  if (!force && last?.v === jour) return { envoye: false, raison: "déjà envoyé aujourd'hui" };
+  const { data: cfg } = await admin.from("config").select("data").eq("id", "main").maybeSingle();
+  const ec = (cfg?.data as any)?.ecurie ?? {}, m = ec.meteo;
+  if (!m || m.lat == null) return { envoye: false, raison: "commune météo non réglée" };
+  if (ec.meteoMatin === false) return { envoye: false, raison: "désactivé par le gérant" };
+  const w = await meteoDuJour(m.lat, m.lon);
+  const { data: subs } = await admin.from("push_subs").select("endpoint, sub, user_id").neq("meteo", false);
+  const { data: profs } = await admin.from("profils").select("user_id, role, proprietaire_id");
+  const { data: cours } = await admin.from("cours").select("data");
+  const duJour = (cours ?? []).map((c) => c.data as any).filter((c) => c.date === w.jour && !c.annule).sort((a, b) => String(a.heure).localeCompare(String(b.heure)));
+  const parUser = new Map<string, { endpoint: string; sub: unknown }[]>();
+  for (const s of subs ?? []) { if (!parUser.has(s.user_id)) parUser.set(s.user_id, []); parUser.get(s.user_id)!.push(s); }
+  let tel = 0;
+  await admin.from("secrets").upsert({ k: "matin_dernier", v: jour });
+  for (const [uid, list] of parUser) {
+    const p = (profs ?? []).find((x) => x.user_id === uid); if (!p) continue;
+    let extra = "";
+    if (p.role === "gerant") extra = duJour.length ? ` ${duJour.length} cours aujourd'hui.` : "";
+    else { const mes = duJour.filter((c) => (c.inscrits ?? []).includes(p.proprietaire_id)); if (mes.length) extra = " Votre cours : " + mes.map((c) => String(c.heure).replace(":", "h") + " " + c.titre).join(", ") + "."; }
+    const n = { titre: `Météo du jour · ${m.nom}`, texte: w.texte + extra, lien: "meteo" };
+    await admin.from("notifications").insert({ user_id: uid, titre: n.titre, texte: n.texte, lien: n.lien });
+    tel += await pousser(list, n);
+  }
+  return { envoye: true, utilisateurs: parUser.size, telephones: tel, texte: w.texte };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "Méthode non autorisée" }, 405);
@@ -67,6 +139,11 @@ Deno.serve(async (req) => {
 
   try {
     if (b.action === "vapid") { await vapid(); return json({ publicKey }); }
+    if (b.action === "matin") {
+      const { data: k } = await admin.from("secrets").select("v").eq("k", "cron_key").maybeSingle();
+      if (!k?.v || req.headers.get("x-cron-key") !== k.v) return json({ error: "Non autorisé" }, 401);
+      return json(await matin(!!b.force));
+    }
 
     // Personne connectée
     // La passerelle Supabase a déjà vérifié la signature du jeton (verify_jwt) : on lit l'identifiant dedans.
