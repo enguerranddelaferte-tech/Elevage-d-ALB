@@ -359,6 +359,12 @@ async function startCloud(){
   sb.auth.onAuthStateChange(function(ev){if(ev==='PASSWORD_RECOVERY'){authState='login';authView='newpass';render()}});
   var s=null;try{s=(await sb.auth.getSession()).data.session}catch(e){}
   if(authView==='newpass')return;
+  if(s){
+    /* Compte supprimé ou session révoquée (ex. base remise à zéro) : on oublie la session et les données gardées sur l'appareil. */
+    var gu=null;try{gu=await sb.auth.getUser()}catch(e){}
+    if(gu&&gu.error&&!/fetch|network/i.test(gu.error.message||'')){try{await sb.auth.signOut({scope:'local'})}catch(e){}
+      try{Object.keys(localStorage).forEach(function(k){if(k.indexOf(KEY+'-cloud-')===0)localStorage.removeItem(k)})}catch(e){}s=null}
+  }
   if(!s){authState='login';renderNav();render();return}
   await afterLogin(s);
 }
@@ -368,7 +374,7 @@ async function afterLogin(s){
   if(r.error){
     try{var c=JSON.parse(localStorage.getItem(cacheKey())||'null');if(c&&c.me){me=c.me;db=c.db;normalize();authState='ok';loadErr=true;fixTab();renderNav();render();return}}catch(e){}
     authState='login';authMsg='Connexion à la base impossible. Vérifiez votre réseau puis réessayez.';renderNav();render();return}
-  if(!r.data){authState='activate';renderNav();render();return}
+  if(!r.data){try{localStorage.removeItem(cacheKey())}catch(e){}db=emptyDb();normalize();authState='activate';renderNav();render();return}
   me.role=r.data.role;me.prop=r.data.proprietaire_id;
   var prevUid=null;try{prevUid=localStorage.getItem(KEY+'-lastuid')}catch(e){}if(prevUid!==me.uid){S.tab=(isG()?TABS_G:TABS_C)[0];try{localStorage.setItem(KEY+'-lastuid',me.uid)}catch(e){}}
   try{var c2=JSON.parse(localStorage.getItem(cacheKey())||'null');if(c2&&c2.db){db=c2.db;normalize()}}catch(e){}
