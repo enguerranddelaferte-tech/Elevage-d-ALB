@@ -265,7 +265,7 @@ var CFG=window.ECURIE_CONFIG||{};
 var CLOUD=!!(CFG.supabaseUrl&&CFG.supabaseKey);
 var COLS=['proprietaires','chevaux','cours','taches','factures','annonces','messages','depenses'];
 function emptyDb(){return{v:1,exemple:false,proprietaires:[],chevaux:[],cours:[],taches:[],factures:[],annonces:[],messages:[],depenses:[],notifs:[],annulHeures:24,
-  tarifs:{complete:0,pre:0,demi:0,collectif:0,particulier:0}}}
+  tarifs:{complete:450,pre:250,demi:300,collectif:30,particulier:40}}}
 function seed(){
   var t=today(),now=Date.now(),o=[{id:uid(),nom:'Claire Martin',tel:'06 00 00 00 01',email:'claire@exemple.fr',licence:'',rcFin:addDays(t,120),adresse:'4 rue des Lilas\n61000 Alençon'},
     {id:uid(),nom:'Lucas Petit',tel:'06 00 00 00 02',email:'',licence:'',rcFin:addDays(t,18)},
@@ -554,6 +554,8 @@ function vJour(){
   else if(isIOS&&!isStandalone&&!S.iosHidden)h+='<div class="banner"><div class="x">Pour installer l\'appli sur iPhone : touchez <b>Partager</b> puis <b>Sur l\'écran d\'accueil</b>.</div><button class="btn sm" data-act="ios-hide">Compris</button></div>';
   if(!canSave)h+='<div class="alert late"><div class="x">Ce navigateur bloque aussi l\'enregistrement : les modifications seront perdues à la fermeture.</div></div>';
   if(mode==='local')h+='<div class="banner"><div class="x">Mode démo : testez l\'espace client avec Réglages › <b>Voir l\'appli comme…</b></div></div>';
+  if(mode==='cloud'){var ec0=db.ecurie||{},manque=[!ec0.siret&&'SIRET',ec0.tvaRegime==='tva'&&!ec0.tvaNum&&'n° de TVA',!ec0.adresse&&'adresse',!ec0.iban&&'IBAN'].filter(Boolean);
+    if(manque.length)h+='<div class="banner"><div class="x"><b>Pour finir l\'installation</b><br>Complétez dans Réglages › Mon écurie : '+manque.join(', ')+'. Vérifiez aussi vos tarifs.</div><button class="btn sm primary" data-act="settings">Réglages</button></div>'}
   if(readOnly)h+='<div class="alert"><div class="x">Accès en lecture seule : demandez au gérant de vous donner le droit de modifier.</div></div>';
   if(loadErr)h+='<div class="alert late"><div class="x">Une partie des données n\'a pas pu être chargée. Rechargez la page.</div></div>';
   var lp=localPending();
@@ -1057,7 +1059,7 @@ PDFDoc.prototype.blob=function(){
 };
 
 /* ---------- factures : numéro, TVA, PDF, envoi ---------- */
-var ECURIE_DEF={autoPrep:true,messageRelance:'',nom:'Élevage d\'ALB',adresse:'',siret:'',tel:'',email:'',tvaRegime:'franchise',tvaNum:'',tauxPension:5.5,tauxPensionN:20,tauxCours:5.5,tauxFrais:20,iban:'',bic:'',delai:10,mention:'',
+var ECURIE_DEF={autoPrep:true,messageRelance:'',nom:'Élevage d\'ALB',adresse:'',siret:'',tel:'',email:'',tvaRegime:'tva',tvaNum:'',tauxPension:5.5,tauxPensionN:20,tauxCours:5.5,tauxFrais:20,iban:'',bic:'',delai:10,mention:'',
   message:'Bonjour {prenom},\n\nVeuillez trouver ci-joint votre facture de {mois} (n° {numero}) d\'un montant de {montant}, à régler avant le {echeance}.\n\nMerci et à bientôt à l\'écurie,\n{ecurie}'};
 function lineCat(l){if(l.cat)return l.cat;if(/^Cours/.test(l.label))return 'cours';if(Object.keys(PENSIONS).some(function(k){return l.label.indexOf(PENSIONS[k])===0}))return 'pension';return 'frais'}
 function ensureNumero(f){
