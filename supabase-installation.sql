@@ -135,22 +135,22 @@ do $$ declare t text; begin
 end $$;
 
 drop policy if exists "membre lit config" on public.config;
-create policy "membre lit config" on public.config for select to authenticated using (public.est_membre());
+create policy "membre lit config" on public.config for select to authenticated using ((select public.est_membre()));
 drop policy if exists "client lit sa fiche" on public.proprietaires;
-create policy "client lit sa fiche" on public.proprietaires for select to authenticated using (id = public.mon_proprio());
+create policy "client lit sa fiche" on public.proprietaires for select to authenticated using (id = (select public.mon_proprio()));
 drop policy if exists "client lit ses chevaux" on public.chevaux;
-create policy "client lit ses chevaux" on public.chevaux for select to authenticated using (proprietaire_id = public.mon_proprio());
+create policy "client lit ses chevaux" on public.chevaux for select to authenticated using (proprietaire_id = (select public.mon_proprio()));
 drop policy if exists "membre lit les cours" on public.cours;
-create policy "membre lit les cours" on public.cours for select to authenticated using (public.est_membre());
+create policy "membre lit les cours" on public.cours for select to authenticated using ((select public.est_membre()));
 drop policy if exists "client lit ses factures" on public.factures;
-create policy "client lit ses factures" on public.factures for select to authenticated using (proprietaire_id = public.mon_proprio());
+create policy "client lit ses factures" on public.factures for select to authenticated using (proprietaire_id = (select public.mon_proprio()));
 drop policy if exists "membre lit les annonces" on public.annonces;
-create policy "membre lit les annonces" on public.annonces for select to authenticated using (public.est_membre());
+create policy "membre lit les annonces" on public.annonces for select to authenticated using ((select public.est_membre()));
 drop policy if exists "client lit ses messages" on public.messages;
-create policy "client lit ses messages" on public.messages for select to authenticated using (proprietaire_id = public.mon_proprio());
+create policy "client lit ses messages" on public.messages for select to authenticated using (proprietaire_id = (select public.mon_proprio()));
 drop policy if exists "client écrit au gérant" on public.messages;
 create policy "client écrit au gérant" on public.messages for insert to authenticated
-  with check (proprietaire_id = public.mon_proprio() and data->>'de' = 'client');
+  with check (proprietaire_id = (select public.mon_proprio()) and data->>'de' = 'client');
 drop policy if exists "client marque lu" on public.messages;
 create or replace function public.marquer_lus() returns void
   language sql security definer set search_path = public as $$
@@ -158,7 +158,7 @@ create or replace function public.marquer_lus() returns void
   where proprietaire_id = mon_proprio() and data->>'de' = 'gerant' and coalesce((data->>'lu')::boolean, false) = false $$;
 grant execute on function public.marquer_lus() to authenticated;
 drop policy if exists "lit son profil" on public.profils;
-create policy "lit son profil" on public.profils for select to authenticated using (user_id = auth.uid() or public.est_gerant());
+create policy "lit son profil" on public.profils for select to authenticated using (user_id = (select auth.uid()) or (select public.est_gerant()));
 
 -- Le client indique s'il sera présent ou absent à un cours où il est inscrit
 create or replace function public.repondre_presence(p_id text, p_rep text) returns jsonb
@@ -194,7 +194,7 @@ grant execute on function public.modifier_coordonnees(text,text,text,text,text) 
 drop policy if exists "cavalier lit les chevaux confiés" on public.chevaux;
 create policy "cavalier lit les chevaux confiés" on public.chevaux for select to authenticated
   using (exists (select 1 from jsonb_array_elements(coalesce(data->'cavaliers','[]'::jsonb)) a
-                 where a->>'proprietaireId' = public.mon_proprio()
+                 where a->>'proprietaireId' = (select public.mon_proprio())
                    and coalesce(nullif(a->>'fin',''),'9999-12-31') >= to_char(now() at time zone 'Europe/Paris','YYYY-MM-DD')));
 
 -- ---------- Notifications (cloche de l'appli + téléphones) ----------
@@ -215,11 +215,11 @@ insert into public.secrets(k, v) values ('cron_key', encode(gen_random_bytes(24)
 alter table public.notifications enable row level security;
 alter table public.push_subs enable row level security;
 drop policy if exists "lit ses notifications" on public.notifications;
-create policy "lit ses notifications" on public.notifications for select to authenticated using (user_id = auth.uid());
+create policy "lit ses notifications" on public.notifications for select to authenticated using (user_id = (select auth.uid()));
 drop policy if exists "marque ses notifications" on public.notifications;
-create policy "marque ses notifications" on public.notifications for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "marque ses notifications" on public.notifications for update to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 drop policy if exists "gere ses abonnements" on public.push_subs;
-create policy "gere ses abonnements" on public.push_subs for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "gere ses abonnements" on public.push_subs for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 grant select, update on public.notifications to authenticated;
 grant select, insert, update, delete on public.push_subs to authenticated;
 revoke all on public.notifications, public.push_subs from anon;
@@ -228,13 +228,14 @@ revoke all on public.notifications, public.push_subs from anon;
 insert into storage.buckets (id, name, public) values ('pieces', 'pieces', false) on conflict (id) do nothing;
 drop policy if exists "pieces gerant" on storage.objects;
 create policy "pieces gerant" on storage.objects for all to authenticated
-  using (bucket_id = 'pieces' and public.est_gerant()) with check (bucket_id = 'pieces' and public.est_gerant());
+  using (bucket_id = 'pieces' and (select public.est_gerant())) with check (bucket_id = 'pieces' and (select public.est_gerant()));
 drop policy if exists "pieces client lecture" on storage.objects;
 create policy "pieces client lecture" on storage.objects for select to authenticated
-  using (bucket_id = 'pieces' and (storage.foldername(name))[1] = public.mon_proprio());
+  using (bucket_id = 'pieces' and (storage.foldername(name))[1] = (select public.mon_proprio()));
 
 -- ---------- Droits d'accès de l'appli (les règles RLS ci-dessus filtrent les lignes) ----------
 revoke execute on function public.lier_compte(text), public.reserver_cours(text), public.annuler_cours(text), public.mon_profil(), public.marquer_lus() from public, anon;
+revoke execute on function public.est_gerant(), public.est_membre(), public.mon_proprio() from public, anon;
 grant execute on function public.lier_compte(text), public.reserver_cours(text), public.annuler_cours(text), public.mon_profil(), public.marquer_lus() to authenticated;
 grant execute on function public.est_gerant(), public.mon_proprio(), public.est_membre() to authenticated;
 grant usage on schema public to authenticated;
