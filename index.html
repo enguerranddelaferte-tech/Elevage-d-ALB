@@ -14,6 +14,9 @@
 <meta name="apple-mobile-web-app-title" content="Élevage d'ALB">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="./config.js"></script>
+<script>/* Démarrage plus rapide en ligne : connexion anticipée à la base et téléchargement immédiat de la bibliothèque de connexion. */
+(function(){var c=window.ECURIE_CONFIG||{};if(!c.supabaseUrl||!c.supabaseKey)return;
+  [[c.supabaseUrl.replace(/\/$/,''),'preconnect'],['https://cdn.jsdelivr.net','preconnect'],['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js','preload']].forEach(function(x){var l=document.createElement('link');l.rel=x[1];l.href=x[0];if(x[1]==='preload')l.as='script';l.crossOrigin='anonymous';document.head.appendChild(l)})})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Outfit:wght@500;600;700&display=swap">
 <style>
@@ -360,10 +363,12 @@ async function startCloud(){
   var s=null;try{s=(await sb.auth.getSession()).data.session}catch(e){}
   if(authView==='newpass')return;
   if(s){
+    /* Affichage immédiat des dernières données gardées sur l'appareil, pendant la vérification en ligne. */
+    try{var c0=JSON.parse(localStorage.getItem(KEY+'-cloud-'+s.user.id)||'null');if(c0&&c0.me&&c0.db){me=c0.me;db=c0.db;normalize();authState='ok';fixTab();renderNav();render()}}catch(e){}
     /* Compte supprimé ou session révoquée (ex. base remise à zéro) : on oublie la session et les données gardées sur l'appareil. */
     var gu=null;try{gu=await sb.auth.getUser()}catch(e){}
     if(gu&&gu.error&&!/fetch|network/i.test(gu.error.message||'')){try{await sb.auth.signOut({scope:'local'})}catch(e){}
-      try{Object.keys(localStorage).forEach(function(k){if(k.indexOf(KEY+'-cloud-')===0)localStorage.removeItem(k)})}catch(e){}s=null}
+      try{Object.keys(localStorage).forEach(function(k){if(k.indexOf(KEY+'-cloud-')===0)localStorage.removeItem(k)})}catch(e){}s=null;me={role:'gerant',prop:null,email:'',uid:null};db=emptyDb();normalize()}
   }
   if(!s){authState='login';renderNav();render();return}
   await afterLogin(s);
@@ -1978,7 +1983,7 @@ document.addEventListener('submit',function(e){
   if(k==='proprietaires'&&isNew&&mode==='cloud')pr.then(function(){var code=genCode();return sb.from('proprietaires').update({invite_code:code}).eq('id',d.id).then(function(r){if(r.error)return;d._code=code;if(!M){ownerModal(d.id);toast('Fiche créée : envoyez-lui l\'invitation par SMS ou WhatsApp')}})});
 });
 applyTheme();normalize();renderNav();render();
-if(mode==='cloud'){var lib=document.createElement('script');lib.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+if(mode==='cloud'){var lib=document.createElement('script');lib.crossOrigin='anonymous';lib.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
   lib.onload=function(){if(window.supabase&&window.supabase.createClient)startCloud();else lib.onerror()};
   lib.onerror=function(){authState='login';authMsg='Impossible de joindre la base de l\'écurie : vérifiez votre connexion puis rechargez la page.';renderNav();render()};
   document.head.appendChild(lib)}

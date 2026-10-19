@@ -1,6 +1,6 @@
 // Service worker : met l'application en cache pour qu'elle s'ouvre même avec un réseau faible.
 // Après une modification des fichiers, augmentez le numéro de version ci-dessous.
-const VERSION = 'ecurie-v23';
+const VERSION = 'ecurie-v24';
 const APP = [
   './',
   './index.html',
@@ -10,9 +10,11 @@ const APP = [
   './icons/icon-maskable-512.png',
   './icons/apple-touch-icon.png'
 ];
+// Bibliothèque de connexion à la base : mise en cache dès l'installation (ouverture hors ligne).
+const LIBS = ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js'];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(VERSION).then((c) => c.addAll(APP)).then(() => self.skipWaiting()));
+  event.waitUntil(caches.open(VERSION).then((c) => c.addAll(APP).then(() => c.addAll(LIBS).catch(() => {}))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (event) => {
