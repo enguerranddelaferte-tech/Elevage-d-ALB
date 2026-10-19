@@ -130,7 +130,7 @@ alter table public.secrets enable row level security;  -- aucune règle : illisi
 do $$ declare t text; begin
   foreach t in array array['config','proprietaires','chevaux','cours','taches','factures','annonces','messages','depenses'] loop
     execute format('drop policy if exists "gerant tout" on public.%I', t);
-    execute format('create policy "gerant tout" on public.%I for all to authenticated using (public.est_gerant()) with check (public.est_gerant())', t);
+    execute format('create policy "gerant tout" on public.%I for all to authenticated using ((select public.est_gerant())) with check ((select public.est_gerant()))', t);
   end loop;
 end $$;
 
