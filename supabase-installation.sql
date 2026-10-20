@@ -176,6 +176,7 @@ begin
   s := jsonb_build_object('id', left(coalesce(p_soin->>'id', md5(random()::text)), 20), 'type', left(coalesce(p_soin->>'type','Autre'), 60),
         'date', v_date, 'note', left(coalesce(p_soin->>'note',''), 200), 'par', 'client',
         'fait', v_date <= to_char(now() at time zone 'Europe/Paris','YYYY-MM-DD'));
+  if coalesce(p_soin->>'produit','') <> '' then s := s || jsonb_build_object('produit', left(p_soin->>'produit', 80)); end if;
   d := jsonb_set(d, '{soins}', coalesce(d->'soins','[]'::jsonb) || jsonb_build_array(s));
   update chevaux set data = d, updated_at = now() where id = p_cheval;
   return d;

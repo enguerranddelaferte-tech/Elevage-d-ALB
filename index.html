@@ -605,7 +605,7 @@ function coursItem(c){
 }
 function vChevaux(){
   var hv=S.hView||'liste';if(hv==='pres')return hViewToggle()+vPres();if(hv==='rations')return hViewToggle()+vRations();
-  return hViewToggle()+'<div class="actions"><input class="search grow" id="q" type="search" placeholder="Rechercher un cheval ou un propriétaire" aria-label="Rechercher" value="'+esc(S.q)+'"><button class="btn primary" data-act="horse">+ Cheval</button></div><div id="hlist">'+hList()+'</div>';
+  return hViewToggle()+'<div class="actions"><input class="search grow" id="q" type="search" placeholder="Rechercher un cheval ou un propriétaire" aria-label="Rechercher" value="'+esc(S.q)+'"><button class="btn" data-act="groupe">Soin groupé</button><button class="btn primary" data-act="horse">+ Cheval</button></div><div id="hlist">'+hList()+'</div>';
 }
 function hList(){
   var q=S.q.trim().toLowerCase(),l=db.chevaux.filter(function(c){var o=owner(c.proprietaireId);return !q||(c.nom+' '+(o?o.nom:'')+' '+c.race).toLowerCase().indexOf(q)>-1}).sort(function(a,b){return a.nom.localeCompare(b.nom)});
@@ -866,10 +866,10 @@ function horseModal(id){
     h+='<div class="field"><label for="h-ration">Ration</label><textarea id="h-ration">'+esc(d.ration)+'</textarea></div><div class="field"><label for="h-cons">Consignes et soins particuliers</label><textarea id="h-cons">'+esc(d.consignes)+'</textarea></div>';
     var sav=soinsAVenir(d),sfa=soinsFaits(d);
     h+='<div class="field"><span class="lbl">Soins et visites prévus</span><div class="panel items">'+(sav.length?sav.map(function(s){var n=diff(s.date,t);
-      return '<div class="item" style="cursor:default"><span class="x"><b>'+esc(s.type)+'</b><span>'+fdate(s.date,{day:'numeric',month:'long',year:'numeric'})+' · '+whenTxt(n)+(s.note?' · '+esc(s.note):'')+'</span></span>'+(+s.montant>0?'<span class="end"><b>'+money(s.montant)+'</b></span>':'')+'<button type="button" class="btn sm" data-act="soin-fait" data-id="'+s.id+'">Fait</button><button type="button" class="del-x" data-act="soin-del" data-id="'+s.id+'" aria-label="Supprimer '+esc(s.type)+'">✕</button></div>'}).join(''):'<div class="empty">Aucune échéance enregistrée.</div>')+
-      '<div class="item" style="cursor:default;flex-wrap:wrap"><select class="search" id="s-type" aria-label="Type de soin" style="flex:1 1 130px;min-width:0">'+SOINS.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select><input class="search" type="date" id="s-date" aria-label="Date du soin" value="'+addDays(t,30)+'" style="flex:1 1 130px;min-width:0"><input class="search" type="number" id="s-montant" min="0" step="0.01" inputmode="decimal" placeholder="Montant € (facultatif)" aria-label="Montant à facturer" style="flex:1 1 150px;min-width:0"><label style="display:flex;gap:6px;align-items:center;font-size:13px;flex:1 1 110px"><input type="checkbox" id="s-fait" style="width:18px;height:18px;flex:none;accent-color:var(--accent)">Déjà fait</label><button type="button" class="btn sm" data-act="soin-add">Ajouter</button></div></div>'+
+      return '<div class="item" style="cursor:default"><span class="x"><b>'+esc(soinNom(s))+'</b><span>'+fdate(s.date,{day:'numeric',month:'long',year:'numeric'})+' · '+whenTxt(n)+(s.note?' · '+esc(s.note):'')+'</span></span>'+(+s.montant>0?'<span class="end"><b>'+money(s.montant)+'</b></span>':'')+'<button type="button" class="btn sm" data-act="soin-fait" data-id="'+s.id+'">Fait</button><button type="button" class="del-x" data-act="soin-del" data-id="'+s.id+'" aria-label="Supprimer '+esc(s.type)+'">✕</button></div>'}).join(''):'<div class="empty">Aucune échéance enregistrée.</div>')+
+      '<div class="item" style="cursor:default;flex-wrap:wrap"><select class="search" id="s-type" aria-label="Type de soin" style="flex:1 1 130px;min-width:0">'+SOINS.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select><select class="search" id="s-produit" aria-label="Vermifuge utilisé" hidden style="flex:2 1 200px;min-width:0">'+VERMIFUGES.map(function(x){return '<option>'+esc(x)+'</option>'}).join('')+'</select><input class="search" type="date" id="s-date" aria-label="Date du soin" value="'+addDays(t,30)+'" style="flex:1 1 130px;min-width:0"><input class="search" type="number" id="s-montant" min="0" step="0.01" inputmode="decimal" placeholder="Montant € (facultatif)" aria-label="Montant à facturer" style="flex:1 1 150px;min-width:0"><label style="display:flex;gap:6px;align-items:center;font-size:13px;flex:1 1 110px"><input type="checkbox" id="s-fait" style="width:18px;height:18px;flex:none;accent-color:var(--accent)">Déjà fait</label><button type="button" class="btn sm" data-act="soin-add">Ajouter</button></div></div>'+
       '<p class="sub" style="margin:0">« Déjà fait » range le soin dans l\'historique (vermifuge donné, vaccin fait…). Un montant indiqué est ajouté à la facture du mois de la visite.</p></div>';
-    h+='<div class="field"><span class="lbl">Historique des soins</span><div class="panel items">'+(sfa.length?sfa.slice(0,15).map(function(s){return '<div class="item" style="cursor:default"><span class="x"><b>✓ '+esc(s.type)+'</b><span>'+fdate(s.date,{day:'numeric',month:'long',year:'numeric'})+(s.note?' · '+esc(s.note):'')+(s.par==='client'?' · noté par le propriétaire':'')+'</span></span>'+(+s.montant>0?'<span class="end"><b>'+money(s.montant)+'</b></span>':'')+'<button type="button" class="del-x" data-act="soin-del" data-id="'+s.id+'" aria-label="Supprimer '+esc(s.type)+'">✕</button></div>'}).join(''):'<div class="empty">Aucun soin fait enregistré.</div>')+'</div></div>';
+    h+='<div class="field"><span class="lbl">Historique des soins</span><div class="panel items">'+(sfa.length?sfa.slice(0,15).map(function(s){return '<div class="item" style="cursor:default"><span class="x"><b>✓ '+esc(soinNom(s))+'</b><span>'+fdate(s.date,{day:'numeric',month:'long',year:'numeric'})+(s.note?' · '+esc(s.note):'')+(s.par==='client'?' · noté par le propriétaire':'')+'</span></span>'+(+s.montant>0?'<span class="end"><b>'+money(s.montant)+'</b></span>':'')+'<button type="button" class="del-x" data-act="soin-del" data-id="'+s.id+'" aria-label="Supprimer '+esc(s.type)+'">✕</button></div>'}).join(''):'<div class="empty">Aucun soin fait enregistré.</div>')+'</div></div>';
     var fr=d.frais.slice().sort(function(a,b){return b.date.localeCompare(a.date)}),mt=d.frais.filter(function(f){return f.date.slice(0,7)===t.slice(0,7)}).reduce(function(s,f){return s+(+f.montant||0)},0);
     h+='<div class="field"><div class="sh"><span class="lbl">Frais à refacturer</span><span class="sub">Ce mois : '+money(mt)+'</span></div><div class="panel items">'+(fr.length?fr.map(function(f){
       return '<div class="item" style="cursor:default"><span class="x"><b>'+esc(f.type)+(f.note?' — '+esc(f.note):'')+'</b><span>'+fdate(f.date,{day:'numeric',month:'long',year:'numeric'})+'</span><span class="chips">'+
@@ -1650,6 +1650,41 @@ function saveCoords(){
   else{Object.assign(o,n);saveLocal();done()}
 }
 
+/* ---------- vermifuges et soins groupés ---------- */
+var VERMIFUGES=['Ivermectine (Eqvalan, Furexel…)','Ivermectine + praziquantel (Eqvalan Duo, Equimax…)','Moxidectine (Equest)','Moxidectine + praziquantel (Equest Pramox)','Pyrantel (Strongid…)','Fenbendazole (Panacur…)','Autre vermifuge'];
+function soinNom(s){return s.type+(s.produit?' · '+s.produit:'')}
+function produitField(id,val,hidden){return '<div class="field" id="'+id+'-wrap"'+(hidden?' hidden':'')+'><label for="'+id+'">Vermifuge utilisé</label><select id="'+id+'">'+VERMIFUGES.map(function(x){return '<option'+(x===val?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select></div>'}
+var RAPPELS=[['0','Pas de rappel'],['1','Dans 1 mois'],['2','Dans 2 mois'],['3','Dans 3 mois'],['6','Dans 6 mois'],['12','Dans 1 an']];
+function addMois(d,n){var x=toD(d);x.setMonth(x.getMonth()+n);return iso(x)}
+function groupeModal(){
+  var hs=db.chevaux.slice().sort(function(a,b){return String(a.box||'~').localeCompare(String(b.box||'~'),'fr',{numeric:true})||a.nom.localeCompare(b.nom)});
+  M={kind:'groupe',draft:{sel:{}},read:function(){var d=M.draft;d.sel={};[].slice.call(document.querySelectorAll('#fgroupe input[name="g-ch"]:checked')).forEach(function(i){d.sel[i.value]=1});if(document.getElementById('g-type')){d.type=v('g-type');d.date=v('g-date');d.produit=v('g-produit');d.etat=v('g-etat');d.rappel=v('g-rappel');d.montant=v('g-montant');d.note=v('g-note')}},focus:false,render:function(){
+    var d=M.draft,lieux=[];hs.forEach(function(c){if(c.box&&lieux.indexOf(c.box)<0)lieux.push(c.box)});
+    var nb=Object.keys(d.sel).length;
+    mb(head('Soin groupé')+'<form class="form" id="fgroupe">'+
+      '<div class="field"><span class="lbl">Chevaux ('+nb+' sur '+hs.length+')</span><div class="chips" style="margin:0"><button type="button" class="btn sm" data-act="g-tous">Tous</button><button type="button" class="btn sm" data-act="g-aucun">Aucun</button>'+lieux.filter(function(l){return /pr[ée]|paddock/i.test(l)}).map(function(l){return '<button type="button" class="btn sm" data-act="g-lieu" data-id="'+esc(l)+'">'+esc(l)+'</button>'}).join('')+'</div>'+
+      '<div class="checks">'+hs.map(function(c){return '<label><input type="checkbox" name="g-ch" value="'+c.id+'"'+(d.sel[c.id]?' checked':'')+'><span style="flex:1">'+esc(c.nom)+'</span><span class="sub" style="font-size:12px">'+esc([c.box,ownerLabel(c)].filter(Boolean).join(' · '))+'</span></label>'}).join('')+'</div></div>'+
+      '<div class="grid2">'+sel('g-type','Soin',SOINS.map(function(x){return[x,x]}),d.type||'Vermifuge')+fld('g-date','Date',d.date||today(),'date')+'</div>'+
+      produitField('g-produit',d.produit,(d.type||'Vermifuge')!=='Vermifuge')+
+      '<div class="grid2">'+sel('g-etat','État',[['fait','Fait (historique)'],['prevu','Prévu (rappel)']],d.etat||'fait')+sel('g-rappel','Rappel suivant',RAPPELS,d.rappel||'0')+'</div>'+
+      fld('g-montant','Montant par cheval à facturer (€, facultatif)',d.montant||'','number',' min="0" step="0.01" inputmode="decimal"')+
+      fld('g-note','Précision (facultatif)',d.note||'','text',' placeholder="ex. lot n°, vétérinaire, dose"')+
+      '<p class="sub" style="margin:0">Le soin est ajouté à chaque cheval coché. Les propriétaires sont prévenus. Un montant est ajouté à leur facture du mois (pas pour les chevaux de l\'écurie).</p>'+
+      '<button class="btn primary block" type="submit">Enregistrer pour '+nb+' '+(nb>1?'chevaux':'cheval')+'</button></form>')}};
+  openModal();
+}
+function saveGroupe(){
+  M.read();var d=M.draft,ids=Object.keys(d.sel);if(!ids.length){toast('Cochez au moins un cheval.');return}
+  var type=v('g-type'),date=v('g-date')||today(),fait=v('g-etat')!=='prevu',rap=+v('g-rappel')||0,prod=type==='Vermifuge'?v('g-produit'):'',note=v('g-note'),mt=parseFloat(String(v('g-montant')).replace(',','.'));
+  var parProp={};
+  ids.forEach(function(id){var c=horse(id);if(!c)return;c.soins=c.soins||[];
+    var s={id:uid(),type:type,date:date,note:note,groupe:true};if(prod)s.produit=prod;if(fait)s.fait=true;if(mt>0&&c.proprietaireId)s.montant=r2(mt);c.soins.push(s);
+    if(rap)c.soins.push({id:uid(),type:type,date:addMois(date,rap),note:'Rappel'});
+    put('chevaux',c);if(c.proprietaireId)(parProp[c.proprietaireId]=parProp[c.proprietaireId]||[]).push(c.nom)});
+  Object.keys(parProp).forEach(function(p){notifier({type:'proprios',ids:[p]},(fait?'Soin fait : ':'Soin prévu : ')+parProp[p].join(', '),type+(prod?' · '+prod:'')+' · '+fdate(date,{day:'numeric',month:'long'}),'cheval')});
+  closeModal();render();toast(soinNom({type:type,produit:prod})+' enregistré pour '+ids.length+' '+(ids.length>1?'chevaux':'cheval')+(rap?', rappel ajouté':''));
+}
+
 /* ---------- chevaux : âge, soins faits, vues prés et rations ---------- */
 function ageOf(c){if(c.naissance){var b=toD(c.naissance),n=new Date(),a=n.getFullYear()-b.getFullYear();if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))a--;return a>=0?a:''}return c.age||''}
 function soinsAVenir(c){return (c.soins||[]).filter(function(s){return !s.fait}).sort(function(a,b){return a.date.localeCompare(b.date)})}
@@ -1658,7 +1693,7 @@ function ownerLabel(c){var o=owner(c.proprietaireId);return o?o.nom:"L'écurie"}
 function hViewToggle(){var m=S.hView||'liste';return '<div class="seg" role="group" aria-label="Affichage des chevaux">'+[['liste','Liste'],['pres','Prés et boxes'],['rations','Rations']].map(function(x){return '<button class="'+(m===x[0]?'on':'')+'" data-act="h-view" data-id="'+x[0]+'" aria-pressed="'+(m===x[0])+'">'+x[1]+'</button>'}).join('')+'</div>'}
 function vPres(){
   var groups={},order=(db.lieux||[]).slice();db.chevaux.forEach(function(c){var k=c.box||'';if(!groups[k])groups[k]=[];groups[k].push(c);if(k&&order.indexOf(k)<0)order.push(k)});
-  var h='<div class="presgrid">'+order.map(function(l){var hs=groups[l]||[];return '<div class="panel" style="padding:12px 14px;display:flex;flex-direction:column;gap:6px'+(hs.length?'':';opacity:.6')+'"><div style="display:flex;justify-content:space-between;align-items:center"><b>'+esc(l)+'</b><span class="pill'+(hs.length?'':' muted')+'">'+(hs.length?hs.length+' cheval'+(hs.length>1?'x':''):'Libre')+'</span></div>'+
+  var h='<div class="presgrid">'+order.map(function(l){var hs=groups[l]||[];return '<div class="panel" style="padding:12px 14px;display:flex;flex-direction:column;gap:6px'+(hs.length?'':';opacity:.6')+'"><div style="display:flex;justify-content:space-between;align-items:center"><b>'+esc(l)+'</b><span class="pill'+(hs.length?'':' muted')+'">'+(hs.length?hs.length+' '+(hs.length>1?'chevaux':'cheval'):'Libre')+'</span></div>'+
     (hs.length?'<div class="chips" style="margin:0">'+hs.map(function(c){return '<button class="chip" style="border:0;cursor:pointer" data-act="horse" data-id="'+c.id+'">'+esc(c.nom)+'</button>'}).join('')+'</div>':'')+'</div>'}).join('')+'</div>';
   if(groups['']&&groups[''].length)h+='<section><div class="sh"><h2>Sans emplacement</h2></div><div class="chips">'+groups[''].map(function(c){return '<button class="chip" style="border:0;cursor:pointer" data-act="horse" data-id="'+c.id+'">'+esc(c.nom)+'</button>'}).join('')+'</div></section>';
   return h+'<p class="sub" style="margin:0">L\'emplacement se choisit dans la fiche du cheval (Box ou pré). La liste des boxes et prés se modifie dans Réglages.</p>';
@@ -1673,20 +1708,20 @@ function rationsText(){return db.chevaux.slice().sort(function(a,b){return Strin
 /* soin noté par le client sur son cheval (ou un cheval qui lui est confié) */
 function soinClientForm(c){
   return '<form class="panel form" data-cheval="'+c.id+'" id="fsoincli-'+c.id+'" style="padding:12px 14px"><span class="lbl">Noter un soin ou une action</span><div class="grid2">'+
-    sel('sc-type-'+c.id,'Type',SOINS.map(function(x){return[x,x]}),SOINS[0])+fld('sc-date-'+c.id,'Date',today(),'date')+'</div>'+
+    sel('sc-type-'+c.id,'Type',SOINS.map(function(x){return[x,x]}),SOINS[0])+fld('sc-date-'+c.id,'Date',today(),'date')+'</div>'+produitField('sc-produit-'+c.id,'',SOINS[0]!=='Vermifuge')+
     fld('sc-note-'+c.id,'Précision (facultatif)','','text',' placeholder="ex. Equest Pramox, 1 seringue"')+
     '<button class="btn primary" type="submit">Enregistrer</button><p class="sub" style="margin:0">Une date passée = soin fait ; une date à venir = rappel. L\'écurie est prévenue.</p></form>';
 }
 function soinsClientHtml(c){
   var t=today(),av=soinsAVenir(c).slice(0,8),fa=soinsFaits(c).slice(0,10);
   return '<section><div class="sh"><h2>Soins à venir</h2></div><div class="panel items">'+(av.length?av.map(function(s){var n=diff(s.date,t);
-      return '<div class="item" style="cursor:default"><span class="x"><b>'+esc(s.type)+'</b><span>'+fdl(s.date)+' · '+whenTxt(n)+(s.note?' · '+esc(s.note):'')+'</span></span>'+(+s.montant>0?'<span class="end">'+money(s.montant)+'</span>':'')+'</div>'}).join(''):'<div class="empty">Aucun soin prévu.</div>')+'</div></section>'+
+      return '<div class="item" style="cursor:default"><span class="x"><b>'+esc(soinNom(s))+'</b><span>'+fdl(s.date)+' · '+whenTxt(n)+(s.note?' · '+esc(s.note):'')+'</span></span>'+(+s.montant>0?'<span class="end">'+money(s.montant)+'</span>':'')+'</div>'}).join(''):'<div class="empty">Aucun soin prévu.</div>')+'</div></section>'+
     '<section><div class="sh"><h2>Historique des soins</h2></div><div class="panel items">'+(fa.length?fa.map(function(s){
-      return '<div class="item" style="cursor:default"><span class="x"><b>✓ '+esc(s.type)+'</b><span>'+fdl(s.date)+(s.note?' · '+esc(s.note):'')+(s.par==='client'?' · noté par le propriétaire':'')+'</span></span></div>'}).join(''):'<div class="empty">Rien d\'enregistré pour l\'instant.</div>')+'</div></section>'+soinClientForm(c);
+      return '<div class="item" style="cursor:default"><span class="x"><b>✓ '+esc(soinNom(s))+'</b><span>'+fdl(s.date)+(s.note?' · '+esc(s.note):'')+(s.par==='client'?' · noté par le propriétaire':'')+'</span></span></div>'}).join(''):'<div class="empty">Rien d\'enregistré pour l\'instant.</div>')+'</div></section>'+soinClientForm(c);
 }
 function saveSoinClient(cid){
-  var c=horse(cid);if(!c)return;var s={id:uid(),type:v('sc-type-'+cid),date:v('sc-date-'+cid)||today(),note:v('sc-note-'+cid),par:'client'};s.fait=s.date<=today();
-  function done(){render();toast(s.fait?'Soin enregistré dans l\'historique':'Rappel ajouté');notifier({type:'gerant'},(s.fait?'Soin noté : ':'Rappel : ')+c.nom,((owner(me.prop)||{}).nom||'Le propriétaire')+' · '+s.type+' · '+fdate(s.date,{day:'numeric',month:'short'})+(s.note?' · '+s.note:''),'chevaux')}
+  var c=horse(cid);if(!c)return;var s={id:uid(),type:v('sc-type-'+cid),date:v('sc-date-'+cid)||today(),note:v('sc-note-'+cid),par:'client'};if(s.type==='Vermifuge')s.produit=v('sc-produit-'+cid);s.fait=s.date<=today();
+  function done(){render();toast(s.fait?'Soin enregistré dans l\'historique':'Rappel ajouté');notifier({type:'gerant'},(s.fait?'Soin noté : ':'Rappel : ')+c.nom,((owner(me.prop)||{}).nom||'Le propriétaire')+' · '+soinNom(s)+' · '+fdate(s.date,{day:'numeric',month:'short'})+(s.note?' · '+s.note:''),'chevaux')}
   if(mode==='cloud'){sb.rpc('ajouter_soin',{p_cheval:cid,p_soin:s}).then(function(r){if(r.error){toast(r.error.message);return}c.soins=(r.data&&r.data.soins)||(c.soins||[]).concat([s]);done()},function(){toast('Pas de connexion : réessayez.')});return}
   c.soins=(c.soins||[]).concat([s]);saveLocal();done();
 }
@@ -1955,7 +1990,7 @@ var ACT={
   gen:function(){generate(S.mois)},
   clear:function(){S.confirmClear=true;render()},'clear-no':function(){S.confirmClear=false;render()},
   'clear-ok':function(){S.confirmClear=false;replaceAll(emptyDb(),'Exemples effacés. Pensez à saisir vos tarifs dans Réglages.')},
-  'soin-add':function(){M.read();var d=v('s-date');if(!d){toast('Choisissez une date.');return}var s={id:uid(),type:v('s-type'),date:d},mt=parseFloat(v('s-montant').replace(',','.'));if((document.getElementById('s-fait')||{}).checked)s.fait=true;if(mt>0)s.montant=Math.round(mt*100)/100;M.draft.soins.push(s);M.render()},
+  'soin-add':function(){M.read();var d=v('s-date');if(!d){toast('Choisissez une date.');return}var s={id:uid(),type:v('s-type'),date:d},mt=parseFloat(v('s-montant').replace(',','.'));if((document.getElementById('s-fait')||{}).checked)s.fait=true;if(s.type==='Vermifuge')s.produit=v('s-produit');if(mt>0)s.montant=Math.round(mt*100)/100;M.draft.soins.push(s);M.render()},
   'frais-add':function(){M.read();var d=v('f-date'),mt=parseFloat(v('f-montant').replace(',','.'));if(!d){toast('Choisissez une date.');return}if(!(mt>0)){toast('Indiquez un montant.');var e=document.getElementById('f-montant');if(e)e.focus();return}
     var fr={id:uid(),type:v('f-type'),date:d,montant:Math.round(mt*100)/100,note:v('f-note')},fi=document.getElementById('f-piece'),file=fi&&fi.files&&fi.files[0],dr=M.draft;
     function done(){dr.frais.push(fr);if(M&&M.draft===dr)M.render();toast('Frais ajouté. Pensez à enregistrer la fiche.')}
@@ -1969,6 +2004,9 @@ var ACT={
     if(a[1]==='non'&&(c.presences||{})[me.prop]!=='non'&&(coursStart(c)-new Date())/36e5>=(+db.annulHeures||0)){S.confirmAnnul=c.id;if(S.tab!=='cours'){S.tab='cours';S.coursDate=c.date}render();toast('Vous pouvez encore annuler : touchez « Confirmer » pour libérer votre place.');return}
     setPresence(c,a[1])},
   'tva-usuels':function(){[['e-tp',5.5],['e-tpn',20],['e-tc',5.5],['e-tf',20],['e-ta',20]].forEach(function(x){var e=document.getElementById(x[0]);if(e)e.value=x[1]});toast('Taux usuels remplis : enregistrez pour les appliquer')},
+  groupe:function(){groupeModal()},
+  'g-tous':function(){M.read();db.chevaux.forEach(function(c){M.draft.sel[c.id]=1});M.render()},'g-aucun':function(){M.read();M.draft.sel={};M.render()},
+  'g-lieu':function(l){M.read();db.chevaux.forEach(function(c){if(c.box===l)M.draft.sel[c.id]=1});M.render()},
   'h-view':function(v2){S.hView=v2;render()},'c-view':function(v2){S.cView=v2;render()},'cartes-filtre':function(v2){S.cartesFiltre=v2;render()},
   'rations-copy':function(){copyText(rationsText(),'Liste des rations copiée')},
   'soin-fait':function(id){M.read();var s=(M.draft.soins||[]).find(function(x){return x.id===id});if(!s)return;s.fait=true;if(s.date>today())s.date=today();M.render();toast('Soin rangé dans l\'historique. Pensez à enregistrer la fiche.')},
@@ -2078,6 +2116,10 @@ document.addEventListener('input',function(e){if(e.target.id==='msg-texte'){S.ms
 document.addEventListener('change',function(e){
   if(e.target.id==='fmois'&&e.target.value){S.mois=e.target.value;render()}
   if(e.target.id==='k-nb'||e.target.id==='k-type')carnetPrixAuto();
+  if(e.target.id==='s-type'){var sp=document.getElementById('s-produit');if(sp)sp.hidden=e.target.value!=='Vermifuge'}
+  if(/^sc-type-/.test(e.target.id)){var pw=document.getElementById(e.target.id.replace('sc-type-','sc-produit-')+'-wrap');if(pw)pw.hidden=e.target.value!=='Vermifuge'}
+  if(e.target.id==='g-type'){var gw=document.getElementById('g-produit-wrap');if(gw)gw.hidden=e.target.value!=='Vermifuge'}
+  if(M&&M.kind==='groupe'&&e.target.name==='g-ch'){var dg=M.draft;dg.type=v('g-type');dg.date=v('g-date');dg.produit=v('g-produit');dg.etat=v('g-etat');dg.rappel=v('g-rappel');dg.montant=v('g-montant');dg.note=v('g-note');M.read();var bt=document.querySelector('#fgroupe button[type=submit]'),n=Object.keys(dg.sel).length;if(bt)bt.textContent='Enregistrer pour '+n+' '+(n>1?'chevaux':'cheval');var lb=document.querySelector('#fgroupe .lbl');if(lb)lb.textContent='Chevaux ('+n+' sur '+db.chevaux.length+')'}
   if(M&&M.kind==='proprietaires'&&(e.target.id==='o-mineur'||e.target.id==='o-naiss')){M.read();M.render()}
   if(M&&M.kind==='cours'&&(e.target.name==='ins'||e.target.id==='c-rep'||e.target.id==='c-date'||e.target.id==='c-heure'||e.target.id==='c-duree')){M.read();M.render()}
   if(e.target.id==='push-meteo'&&pushState.sub){var on=e.target.checked;pushState.meteo=on;sb.from('push_subs').update({meteo:on}).eq('endpoint',pushState.sub.endpoint).then(function(r){toast(r.error?'Réglage impossible pour le moment.':on?'Météo du matin activée sur ce téléphone':'Météo du matin désactivée sur ce téléphone')},function(){toast('Pas de connexion : réessayez.')})}
@@ -2102,6 +2144,7 @@ document.addEventListener('submit',function(e){
   if(id==='fmsg'){sendMsg();return}
   if(id==='fcoords'){saveCoords();return}
   if(id==='fmonte'){saveMonte();return}
+  if(id==='fgroupe'){saveGroupe();return}
   if(id.indexOf('fsoincli-')===0){saveSoinClient(e.target.dataset.cheval);return}
   if(id==='fcarnetdem'){var nb=v('kd-nb'),ty=v('kd-type'),ms=v('kd-msg');envoyerMessageClient('Je souhaite prendre un carnet de '+nb+' cours '+(ty==='particulier'?'particuliers':'collectifs')+'.'+(ms?' '+ms:''),'Demande de carnet');closeModal();render();toast('Demande envoyée à l\'écurie');return}
   if(id==='fannuljour'){var dy=M.draft.day,lst=db.cours.filter(function(c){return c.date===dy&&!c.annule}),nb=annulerCours(lst,v('aj-motif')),pers={};lst.forEach(function(c){c.inscrits.forEach(function(p){pers[p]=1})});closeModal();render();toast(nb+' cours annulé'+(nb>1?'s':'')+(Object.keys(pers).length?' · '+Object.keys(pers).length+' cavalier'+(Object.keys(pers).length>1?'s':'')+' prévenu'+(Object.keys(pers).length>1?'s':''):''));return}

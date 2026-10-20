@@ -79,6 +79,8 @@ Réglages › Mon écurie › TVA › « Assujetti à la TVA ». Bouton « Appli
 
 - **Vos propres chevaux** : dans la fiche d'un cheval, Propriétaire › « L'écurie (mes chevaux) » (pas de client à créer, pas de facture).
 - **Fiche cheval** : date de naissance (l'âge se calcule), n° SIRE, n° de puce, « Disponible pour les cours (cheval de club) ». Soins : case « Déjà fait » et bouton « Fait » ; un historique des soins s'affiche (vaccin TG ajouté à la liste).
+- **Soin groupé** (onglet Chevaux) : cocher plusieurs chevaux (tous, ou un pré entier), le soin, la date, fait ou prévu, un rappel automatique (1 à 12 mois), un montant par cheval facturé aux propriétaires, qui sont prévenus.
+- **Type de vermifuge** : ivermectine, ivermectine + praziquantel, moxidectine, moxidectine + praziquantel, pyrantel, fenbendazole — choisi à chaque vermifuge (fiche cheval, soin groupé, espace propriétaire).
 - **Le propriétaire note lui-même** un soin fait ou un rappel depuis « Mon cheval » ; vous êtes prévenu.
 - **Onglet Chevaux** : vues « Prés et boxes » (qui est où) et « Rations » (liste à copier).
 - **Clients** : rôles (propriétaire, cavalier, demi-pensionnaire, cumulables), date de naissance, cavalier mineur avec responsable légal (les factures sont à son nom). Vue « Cartes de cours » : toutes les cartes, cours restants, correction +1 / −1.
