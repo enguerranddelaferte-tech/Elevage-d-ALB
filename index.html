@@ -1576,16 +1576,16 @@ function qteSel(name,val,lab){var v0=val===''||val==null?'':+val,opts=QTES.slice
   return '<select class="search" name="'+name+'" aria-label="'+lab+'"><option value="">—</option>'+opts.map(function(q){return '<option value="'+q+'"'+(q===v0?' selected':'')+'>'+litres(q)+'</option>'}).join('')+'</select>'}
 function grainsField(d){
   var gs=db.grains||[];
-  if(!gs.length)return '<div class="field"><span class="lbl">Grain</span><p class="sub" style="margin:0">Créez d\'abord vos grains dans l\'onglet Silo, puis choisissez-les ici avec la quantité en litres.</p></div>';
-  var l=(d.grains||[]).length?d.grains:[{grainId:'',matin:'',midi:'',soir:''}];
-  return '<div class="field"><span class="lbl">Grain et quantité par repas (en litres)</span><div class="panel items">'+l.map(function(x,i){
-    return '<div class="item gline" style="cursor:default;flex-wrap:wrap"><label class="qty" style="flex:1 1 100%"><span>Type de grain</span><select class="search" name="gl-g" aria-label="Type de grain"><option value="">— Choisir —</option>'+gs.map(function(g){return '<option value="'+g.id+'"'+(g.id===x.grainId?' selected':'')+'>'+esc(g.nom)+'</option>'}).join('')+'</select></label>'+
+  var l=(d.grains||[]).length?d.grains:[{grainId:gs.length?'':'__new',matin:'',midi:'',soir:''}];
+  return '<div class="field"><span class="lbl">Grain et quantité par repas (en litres)</span><div class="panel items">'+l.map(function(x,i){var neuf=x.grainId==='__new';
+    return '<div class="item gline" style="cursor:default;flex-wrap:wrap"><label class="qty" style="flex:1 1 100%"><span>Type de grain</span><select class="search" name="gl-g" aria-label="Type de grain"><option value="">— Choisir —</option>'+gs.map(function(g){return '<option value="'+g.id+'"'+(g.id===x.grainId?' selected':'')+'>'+esc(g.nom)+'</option>'}).join('')+'<option value="__new"'+(neuf?' selected':'')+'>+ Nouveau grain…</option></select></label>'+
+      (neuf?'<label class="qty" style="flex:1 1 100%"><span>Nom du nouveau grain (ajouté au silo)</span><input class="search" name="gl-new" value="'+esc(x.nouveau||'')+'" placeholder="ex. Granulés sport, orge aplatie" aria-label="Nom du nouveau grain"></label>':'')+
       ['matin','midi','soir'].map(function(r){return '<label class="qty"><span>'+r.charAt(0).toUpperCase()+r.slice(1)+'</span>'+qteSel('gl-'+r,x[r],'Quantité le '+r)+'</label>'}).join('')+
       '<button type="button" class="del-x" data-act="gl-del" data-id="'+i+'" aria-label="Retirer ce grain" style="align-self:flex-end">✕</button></div>'}).join('')+
     '<div class="item" style="cursor:default"><button type="button" class="btn sm" data-act="gl-add">+ Ajouter un autre grain</button></div></div></div>';
 }
 function readGrains(){return [].slice.call(document.querySelectorAll('#fhorse .gline')).map(function(r){function q(n){var e=r.querySelector('[name="'+n+'"]');return e?e.value:''}function num(n){var x=parseFloat(String(q(n)).replace(',','.'));return x>0?r2(x):''}
-  return{grainId:q('gl-g'),matin:num('gl-matin'),midi:num('gl-midi'),soir:num('gl-soir')}})}
+  var o={grainId:q('gl-g'),matin:num('gl-matin'),midi:num('gl-midi'),soir:num('gl-soir')};if(o.grainId==='__new')o.nouveau=q('gl-new');return o})}
 
 /* ---------- registre d'élevage ---------- */
 function registreChevaux(){return db.chevaux.slice().sort(function(a,b){return String(a.arrivee||'0000').localeCompare(String(b.arrivee||'0000'))||a.nom.localeCompare(b.nom)})}
@@ -1822,7 +1822,7 @@ var ACT={
   'task-vis':function(id){var k=db.taches.find(function(x){return x.id===id});if(!k)return;k.visible=!k.visible;put('taches',k);render();toast(k.visible?'Tâche visible par les cavaliers':'Tâche privée : vous seul la voyez')},
   'grain-edit':function(id){grainModal(id)},'grain-del-ask':function(){M.confirmDel=true;M.render()},'grain-del-no':function(){M.confirmDel=false;M.render()},
   'grain-del':function(id){var used=actifs().filter(function(c){return (c.grains||[]).some(function(x){return x.grainId===id})});db.grains=(db.grains||[]).filter(function(g){return g.id!==id});used.forEach(function(c){c.grains=c.grains.filter(function(x){return x.grainId!==id});put('chevaux',c)});putConfig();closeModal();render();toast('Grain supprimé'+(used.length?' et retiré de '+used.length+' fiche'+(used.length>1?'s':''):''))},
-  'gl-add':function(){M.read();if(!M.draft.grains.length)M.draft.grains.push({grainId:'',matin:'',midi:'',soir:''});M.draft.grains.push({grainId:'',matin:'',midi:'',soir:''});M.render()},
+  'gl-add':function(){M.read();M.draft.grains.push({grainId:(db.grains||[]).length?'':'__new',matin:'',midi:'',soir:''});M.render()},
   'gl-del':function(i){M.read();M.draft.grains.splice(+i,1);M.render()},
   depart:function(){M.read();var d=M.draft;if(!d.depart){d.depart=today();var e=document.getElementById('h-dep');if(e)e.value=d.depart}if(!d.departMotif){toast('Choisissez le motif du départ.');var m=document.getElementById('h-motif');if(m)m.focus();return}var f=document.getElementById('fhorse');if(f.requestSubmit)f.requestSubmit();else f.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}))},
   retour:function(){M.read();var d=M.draft;d.depart='';d.departMotif='';d.departDest='';d.arrivee=today();M.render();toast('Départ annulé, nouvelle arrivée aujourd\'hui : enregistrez la fiche')},
@@ -1885,6 +1885,7 @@ document.addEventListener('change',function(e){
   if(/^sc-type-/.test(e.target.id)){var pw=document.getElementById(e.target.id.replace('sc-type-','sc-produit-')+'-wrap');if(pw)pw.hidden=e.target.value!=='Vermifuge'}
   if(e.target.id==='g-type'){var gw=document.getElementById('g-produit-wrap');if(gw)gw.hidden=e.target.value!=='Vermifuge'}
   if(M&&M.kind==='groupe'&&e.target.name==='g-ch'){var dg=M.draft;dg.type=v('g-type');dg.date=v('g-date');dg.produit=v('g-produit');dg.etat=v('g-etat');dg.rappel=v('g-rappel');dg.note=v('g-note');M.read();var bt=document.querySelector('#fgroupe button[type=submit]'),n=Object.keys(dg.sel).length;if(bt)bt.textContent='Enregistrer pour '+n+' '+(n>1?'chevaux':'cheval');var lb=document.querySelector('#fgroupe .lbl');if(lb)lb.textContent='Chevaux ('+n+' sur '+actifs().length+')'}
+  if(M&&M.kind==='chevaux'&&e.target.name==='gl-g'){var wasNew=!!e.target.closest('.gline').querySelector('[name="gl-new"]');if(wasNew!==(e.target.value==='__new')){var gi=[].indexOf.call(document.querySelectorAll('#fhorse .gline'),e.target.closest('.gline'));M.read();M.render();var ni=document.querySelectorAll('#fhorse .gline')[gi];ni=ni&&ni.querySelector('[name="gl-new"]');if(ni)ni.focus()}}
   if(M&&M.kind==='proprietaires'&&(e.target.id==='o-mineur'||e.target.id==='o-naiss')){M.read();M.render()}
   if(M&&M.kind==='cours'&&(e.target.name==='ins'||e.target.id==='c-rep'||e.target.id==='c-date'||e.target.id==='c-heure'||e.target.id==='c-duree')){M.read();M.render()}
   if(e.target.id==='push-meteo'&&pushState.sub){var on=e.target.checked;pushState.meteo=on;sb.from('push_subs').update({meteo:on}).eq('endpoint',pushState.sub.endpoint).then(function(r){toast(r.error?'Réglage impossible pour le moment.':on?'Météo du matin activée sur ce téléphone':'Météo du matin désactivée sur ce téléphone')},function(){toast('Pas de connexion : réessayez.')})}
@@ -1916,7 +1917,10 @@ document.addEventListener('submit',function(e){
   if(id==='fecurie'){var ec=db.ecurie;ec.nom=v('e-nom');ec.adresse=v('e-adr');ec.detenteur=v('e-det');ec.siret=v('e-siret');ec.tel=v('e-tel');ec.email=v('e-email');putConfig();toast('Écurie enregistrée');if(M)M.render();render();return}
   if(id==='freglages'){db.annulHeures=Math.max(0,+v('t-annul')||0);var li=v('t-lieux').split('\n').map(function(x){return x.trim()}).filter(Boolean);db.lieux=li.length?li:LIEUX_DEF.slice();putConfig();toast('Réglages enregistrés');render();return}
   if(!M)return;M.read();var d=M.draft;
-  if(id==='fhorse'){if(!d.nom){toast('Indiquez le nom du cheval.');return}d.grains=(d.grains||[]).filter(function(x){return x.grainId&&(x.matin||x.midi||x.soir)})}
+  if(id==='fhorse'){if(!d.nom){toast('Indiquez le nom du cheval.');return}var ajout=[];(d.grains||[]).forEach(function(x){if(x.grainId!=='__new')return;var n=String(x.nouveau||'').trim();delete x.nouveau;if(!n){x.grainId='';return}
+      var g=(db.grains||[]).find(function(y){return y.nom.toLowerCase()===n.toLowerCase()});if(!g){g={id:'g-'+uid(),nom:n,stock:'',note:''};db.grains=(db.grains||[]).concat([g]);ajout.push(n)}x.grainId=g.id});
+    if(ajout.length){putConfig();setTimeout(function(){toast('Ajouté au silo : '+ajout.join(', '))},1500)}
+    d.grains=(d.grains||[]).filter(function(x){return x.grainId&&(x.matin||x.midi||x.soir)})}
   if(id==='fowner'&&!d.nom){toast('Indiquez le nom du cavalier.');return}
   if(id==='fcours'){if(!d.titre){M.err='Indiquez un intitulé pour le cours.';M.render();return}if(d.inscrits.length>d.places){M.err=d.inscrits.length+' inscrits pour '+d.places+' place'+(d.places>1?'s':'')+' : augmentez le nombre de places ou retirez un cavalier.';M.render();return}}
   delete M.err;var k=M.kind;
