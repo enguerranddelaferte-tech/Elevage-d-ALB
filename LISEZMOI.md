@@ -96,6 +96,14 @@ Onglet **Registre** : tous les équidés passés par l'écurie (identification, 
 - **Tâches du jour** : chaque tâche est **visible** (les cavaliers et propriétaires la voient dans « À l'écurie aujourd'hui », avec son état fait / à faire) ou **privée** (vous seul). Touchez « Visible » ou « Privée » pour changer.
 - Rôles (propriétaire, cavalier, demi-pensionnaire), date de naissance, cavalier mineur avec responsable légal, chevaux confiés (demi-pension, location, prêt).
 
+## Statistiques
+
+Onglet **Stats** (gérant) : par mois, trimestre, année ou 12 mois glissants, avec les flèches pour changer de période.
+- Cours donnés, participations, cavaliers venus, remplissage des cours collectifs, absences signalées, cours annulés.
+- **Cours par cavalier** : nombre de cours (collectifs, particuliers), moyenne par semaine comparée aux cours compris dans sa pension, absences, cours restants sur son carnet. Export Excel.
+- Graphiques : cours par mois, jours et créneaux les plus fréquentés, chevaux de club les plus montés, soins faits (vermifuges par molécule), chevaux par pension, arrivées et départs, consommation de grain estimée, problèmes signalés.
+- Seuls les cours passés et non annulés comptent ; un cavalier signalé absent n'est pas compté. Imprimable en PDF.
+
 ## Alertes
 
 La case « alertes » de l'accueil s'ouvre d'un toucher : chaque alerte dit ce qu'il faut faire. Soin à faire : « C'est fait », « Reporter d'une semaine » ou « Fiche du cheval ». Assurance qui expire : « Fiche du cavalier ». Problème signalé : « Marquer réglé » ou « Répondre ».

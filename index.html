@@ -227,6 +227,22 @@ table.reg td:first-child{font-weight:600}table.reg{min-width:640px}table.reg td:
 .actions .search{min-width:0;flex:1 1 220px}
 .item .end{max-width:55%}.item .end .pill{white-space:normal;text-align:center}
 .alert .actions{gap:8px}.alert .btn.sm{background:var(--surface);color:var(--fg)}.alert .btn.sm.primary{background:var(--accent);color:var(--on-accent)}
+.stats6{grid-template-columns:repeat(3,minmax(0,1fr))}@media (min-width:1000px){.stats6{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.chartp{padding:14px}
+.vbars{display:grid;gap:4px;align-items:end;height:170px;border-bottom:1px solid var(--line);padding-top:4px}
+.vb{position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;min-width:0;cursor:default;outline:none}
+.vb-bar{display:block;width:70%;max-width:28px;background:var(--c1);border-radius:4px 4px 0 0;transition:filter .15s}
+.vb small{position:absolute;bottom:-20px;font-size:11px;color:var(--muted);white-space:nowrap}
+.vb-val{font-size:12px;font-weight:700;color:var(--fg);min-height:16px}
+.chartp .vbars{margin-bottom:22px}
+.vb:hover .vb-bar,.vb:focus .vb-bar,.hb:hover .hb-f,.hb:focus .hb-f{filter:brightness(1.15)}
+[data-tip]:hover::after,[data-tip]:focus::after{content:attr(data-tip);position:absolute;z-index:4;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);background:var(--fg);color:var(--bg);font-size:12px;font-weight:500;padding:5px 8px;border-radius:8px;white-space:nowrap;pointer-events:none}
+.hbars{display:flex;flex-direction:column;gap:8px}
+.hb{position:relative;display:grid;grid-template-columns:minmax(80px,38%) 1fr 34px;gap:10px;align-items:center;font-size:13px;outline:none}
+.hb-l{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hb-t{height:12px;border-radius:0 4px 4px 0;background:var(--surface-2);overflow:hidden}.hb-f{display:block;height:100%;background:var(--c1);border-radius:0 4px 4px 0}.hb-v{text-align:right;font-variant-numeric:tabular-nums}
+.cellbar{display:flex;align-items:center;gap:8px}.cellbar b{min-width:22px;font-variant-numeric:tabular-nums}.cb{flex:1;min-width:50px;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}.cb span{display:block;height:100%;background:var(--c1)}
+table.stat-t{min-width:520px}table.stat-t td{vertical-align:middle}table.stat-t td:nth-child(n+3){font-variant-numeric:tabular-nums}
+@media print{#print .seg,#print .weeknav,#print .actions,#print .btn{display:none!important}#print .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}#print .stat,#print .panel{border:1px solid #bbb;border-radius:6px;padding:6px}#print .vb-bar,#print .hb-f,#print .cb span{background:#555!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}#print section{break-inside:avoid;margin-bottom:10px}#print .vbars{height:110px}}
 #print{display:none}
 .hero .btn{color:var(--fg)}.hero .btn.primary{background:var(--surface);color:var(--fg);border-color:var(--surface)}.hero .btn.danger{background:var(--danger-soft);color:var(--danger)}
 @media print{body>*:not(#print){display:none!important}html,body{background:#fff!important;height:auto}#print{display:block!important;color:#000;font:10.5px/1.35 Arial,sans-serif}#print h1{font-size:19px;margin:0 0 6px}#print h2{font-size:14px;margin:14px 0 6px}#print p{margin:0 0 8px}#print table{width:100%;border-collapse:collapse}#print th,#print td{border:1px solid #888;padding:3px 5px;text-align:left;vertical-align:top}#print th{background:#eee}#print tr{break-inside:avoid}@page{size:A4 landscape;margin:10mm}}
@@ -263,7 +279,7 @@ var PENSIONS_DEF=[{id:'complete',nom:'Pension complète',cours:''},{id:'pre',nom
 var SOINS=['Vaccin tétanos-grippe (TG)','Vaccin grippe','Vaccin tétanos','Vaccin rhinopneumonie','Vermifuge','Maréchal','Dentiste','Ostéopathe','Visite vétérinaire','Autre'];
 var RACES=['Selle Français','Pur-sang','Trotteur Français','Anglo-Arabe','Arabe','Demi-sang arabe','KWPN','Hanovrien','Holsteiner','Oldenbourg','Zangersheide','BWP','Lusitanien','Pure Race Espagnole (PRE)','Frison','Quarter Horse','Appaloosa','Paint Horse','Camargue','Mérens','Barbe','Irish Cob','Fjord','Haflinger','Islandais','Cheval de trait','Connemara','Welsh','New Forest','Poney Français de Selle','Shetland','Origine non constatée (ONC)'];
 var LIEUX_DEF=['Box 1','Box 2','Box 3','Box 4','Box 5','Box 6','Box 7','Box 8','Box 9','Box 10','Box 11','Box 12','Pré n°1','Pré n°2','Pré n°3','Pré n°4','Paddock 1','Paddock 2'];
-var TITLES={meteo:'Météo',accueil:'Accueil',cheval:'Mon cheval',messages:'Messages',jour:"Aujourd'hui",chevaux:'Chevaux',cours:'Planning des cours',proprios:'Cavaliers',registre:'Registre d\'élevage'};
+var TITLES={meteo:'Météo',accueil:'Accueil',cheval:'Mon cheval',messages:'Messages',jour:"Aujourd'hui",chevaux:'Chevaux',cours:'Planning des cours',proprios:'Cavaliers',stats:'Statistiques',registre:'Registre d\'élevage'};
 var canSave=true;
 
 /* ---------- dates & formats ---------- */
@@ -306,6 +322,13 @@ function seed(){
     {id:uid(),date:addDays(t,1),heure:'10:00',duree:60,titre:'Dressage · Galop 3–4',type:'collectif',lieu:'Manège',places:5,inscrits:[o[2].id]},
     {id:uid(),date:addDays(t,3),heure:'14:00',duree:60,titre:'Travail sur le plat',type:'collectif',lieu:'Carrière',places:6,inscrits:[o[0].id,o[2].id]},
     {id:uid(),date:addDays(t,4),heure:'18:00',duree:60,titre:'Obstacle · Galop 5+',type:'collectif',lieu:'Carrière',places:5,inscrits:[o[1].id]}];
+  /* historique : 12 semaines de cours passés pour que les statistiques aient quelque chose à montrer */
+  var lun=addDays(t,-((toD(t).getDay()+6)%7));
+  for(var w=1;w<=12;w++){var b=addDays(lun,-7*w),mt={};mt[o[2].id]=c[3].id;
+    cr.push({id:uid(),date:addDays(b,1),heure:'17:00',duree:60,titre:'Obstacle · Galop 5+',type:'collectif',lieu:'Carrière',places:5,inscrits:w%3?[o[0].id,o[1].id,o[2].id]:[o[0].id,o[2].id],montures:mt,presences:w===4?(function(){var x={};x[o[1].id]='non';return x})():{}});
+    cr.push({id:uid(),date:addDays(b,5),heure:'10:00',duree:60,titre:'Dressage · Galop 3–4',type:'collectif',lieu:'Manège',places:5,inscrits:w%2?[o[2].id,o[1].id]:[o[2].id],montures:mt});
+    if(w%2)cr.push({id:uid(),date:addDays(b,2),heure:'18:30',duree:45,titre:'Dressage',type:'particulier',lieu:'Manège',places:1,inscrits:[o[0].id]});
+    if(w===6)cr.push({id:uid(),date:addDays(b,3),heure:'14:00',duree:60,titre:'Travail sur le plat',type:'collectif',lieu:'Carrière',places:6,inscrits:[o[0].id],annule:true,motif:'Piste gelée'})}
   var tk=[['Repas du matin',true],['Sorties au pré',true],['Curage des boxes',true],['Repas du soir',true],['Commander le foin',false],['Relevé des compteurs d\'eau',false]].map(function(l){return{id:uid(),label:l[0],visible:l[1],doneOn:null}});
   var an=[{id:uid(),titre:'Passage du maréchal',texte:'Le maréchal passe le '+fdate(addDays(t,21),{day:'numeric',month:'long'})+'. Prévenez-moi si votre cheval doit être ferré.',date:new Date(now-864e5).toISOString()}];
   var ms=[{id:uid(),proprietaireId:o[0].id,de:'client',texte:'Bonjour, Tornade boitait un peu hier soir en sortant du pré.',lu:true,date:new Date(now-7200e3).toISOString()},
@@ -463,7 +486,7 @@ async function doAuth(id){
     if(id==='fnewpass'){var r3=await sb.auth.updateUser({password:document.getElementById('np-pass').value});if(r3.error)throw r3.error;authView='login';toast('Mot de passe modifié');var s2=(await sb.auth.getSession()).data.session;if(s2)await afterLogin(s2);else render();return}
   }catch(e){authMsg=frErr(e);render()}
 }
-var TABS_G=['jour','chevaux','cours','proprios','registre','meteo'],TABS_C=['accueil','cours','cheval','chevaux','messages','meteo'];
+var TABS_G=['jour','chevaux','cours','proprios','stats','registre','meteo'],TABS_C=['accueil','cours','cheval','chevaux','messages','meteo'];
 function fixTab(){hashTab();var ok=isG()?TABS_G.concat(['messages']):TABS_C;if(ok.indexOf(S.tab)<0)S.tab=ok[0]}
 function closeViewer(){document.getElementById('viewer').hidden=true}
 
@@ -758,20 +781,20 @@ function appUrl(){return location.origin+location.pathname}
 function inviteText(p){return 'Bonjour '+firstName(p.nom)+',\n\nVoici votre accès à l\'espace cavalier de '+(db.ecurie.nom||'l\'écurie')+' : réservation des cours, chevaux de l\'écurie, suivi de votre cheval et messages.\n\n1. Ouvrez '+appUrl()+'\n2. Touchez « Première connexion : créer mon compte »\n3. Saisissez votre e-mail, un mot de passe et ce code d\'activation : '+p._code+'\n\nÀ bientôt !'}
 function copyText(t,okMsg){var p=navigator.clipboard&&navigator.clipboard.writeText(t);if(p)p.then(function(){toast(okMsg)},function(){toast('Copie impossible : sélectionnez le texte affiché')});else toast('Copie impossible : sélectionnez le texte affiché')}
 
-var VIEWS_G={meteo:vMeteo,jour:vJour,chevaux:vChevaux,cours:vCours,proprios:vProprios,registre:vRegistre,messages:vMessagesG};
+var VIEWS_G={meteo:vMeteo,jour:vJour,chevaux:vChevaux,cours:vCours,proprios:vProprios,stats:vStats,registre:vRegistre,messages:vMessagesG};
 var VIEWS_C={meteo:vMeteo,accueil:cAccueil,cours:cCours,cheval:cCheval,chevaux:cChevaux,messages:cMessages};
 function titleFor(){if(authState!=='ok')return 'Connexion';if(!isG()){if(S.tab==='cours')return 'Réserver un cours';if(S.tab==='chevaux')return 'Chevaux de l\'écurie';if(S.tab==='cheval'&&myHorses().length>1)return 'Mes chevaux'}return TITLES[S.tab]||''}
 var ICONS={sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   doc:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
   eur:'<path d="M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9"/>',people:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>',
   wx:'<path d="M7 3v1.5M2.8 4.8l1 1M1.5 9H3M11.2 4.8l-1 1"/><path d="M4.6 11.5A3 3 0 0 1 9.5 7.6"/><path d="M8 20h9a4 4 0 0 0 0-8 5 5 0 0 0-9.6 1.6A3.2 3.2 0 0 0 8 20z"/>',
-  book:'<path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h11M8 8h6"/>',horse:'<path d="M5 20l2-6-2-3 3-6 3 2h4l4 4-2 2-3-1v8"/><circle cx="14" cy="9" r=".6"/>',
+  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',book:'<path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h11M8 8h6"/>',horse:'<path d="M5 20l2-6-2-3 3-6 3 2h4l4 4-2 2-3-1v8"/><circle cx="14" cy="9" r=".6"/>',
   home:'<path d="M3 11l9-7 9 7v9H3z"/><path d="M10 20v-5h4v5"/>',chat:'<path d="M4 5h16v11H8l-4 4z"/>'};
 function renderNav(){
   var nav=document.querySelector('nav.tabs'),inn=nav.querySelector('.in'),ok=authState==='ok';
   nav.hidden=!ok;document.getElementById('hset').hidden=!ok;document.getElementById('hmsg').hidden=!(ok&&isG());document.getElementById('hnotif').hidden=!ok;
   if(!ok)return;
-  var items=isG()?[['jour',"Accueil",'sun'],['chevaux','Chevaux','horse'],['cours','Cours','cal'],['proprios','Cavaliers','people'],['registre','Registre','book'],['meteo','Météo','wx']]
+  var items=isG()?[['jour',"Accueil",'sun'],['chevaux','Chevaux','horse'],['cours','Cours','cal'],['proprios','Cavaliers','people'],['stats','Stats','chart'],['registre','Registre','book'],['meteo','Météo','wx']]
     :[['accueil','Accueil','home'],['cours','Cours','cal']].concat(myHorses().length?[['cheval',myHorses().length>1?'Mes chevaux':'Mon cheval','doc']]:[]).concat([['chevaux','Chevaux','horse'],['messages','Messages','chat'],['meteo','Météo','wx']]);
   inn.innerHTML='<div class="brand" aria-hidden="true">Élevage d\'<span>ALB</span></div>'+items.map(function(x){return '<button data-act="tab" data-id="'+x[0]+'"'+(S.tab===x[0]?' aria-current="page"':'')+'><span style="position:relative;display:inline-flex"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[x[2]]+'</svg>'+(x[0]==='messages'?'<span class="nbadge" id="nav-msg-badge" hidden></span>':'')+'</span><span>'+x[1]+'</span></button>'}).join('');
   updateBadge();
@@ -1643,6 +1666,67 @@ function tachesClientHtml(){var l=tachesVisibles(),t=today();if(!l.length)return
   return '<section><div class="sh"><h2>À l\'écurie aujourd\'hui</h2><span class="sub">'+d+' / '+l.length+' fait'+(d>1?'es':'e')+'</span></div><div class="panel items">'+l.map(function(k){var f=k.doneOn===t;
     return '<div class="item task'+(f?' done':'')+'"><span class="tick'+(f?' on':'')+'" aria-hidden="true">'+(f?'✓':'')+'</span><span class="x"><b>'+esc(k.label)+'</b></span><span class="end">'+(f?'<span class="pill">Fait</span>':'<span class="pill muted">À faire</span>')+'</span></div>'}).join('')+'</div></section>'}
 
+/* ---------- statistiques ---------- */
+var JOURS_L=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+function statPer(){var k=S.stK||'mois',ref=S.stRef||today().slice(0,7),y=+ref.slice(0,4),m=+ref.slice(5,7),d0,d1,lab;
+  function md(yy,mm){var dd=new Date(yy,mm-1,1);return iso(dd)}
+  if(k==='mois'){d0=md(y,m);d1=addDays(md(y,m+1),-1);lab=monthLabel(ref)}
+  else if(k==='trim'){var q=Math.floor((m-1)/3);d0=md(y,q*3+1);d1=addDays(md(y,q*3+4),-1);lab=(q+1)+(q?'e':'er')+' trimestre '+y}
+  else if(k==='annee'){d0=y+'-01-01';d1=y+'-12-31';lab='Année '+y}
+  else{d1=addDays(md(y,m+1),-1);d0=md(y,m-11);lab='12 mois jusqu\'à '+monthLabel(ref).toLowerCase()}
+  return{k:k,d0:d0,d1:d1,lab:lab}}
+function statShift(n){var k=S.stK||'mois',ref=S.stRef||today().slice(0,7),step=k==='trim'?3:k==='annee'?12:1;S.stRef=addMonths(ref+'-15',n*step).slice(0,7)}
+function estCours(c){return c.type==='collectif'||c.type==='particulier'||c.type==='concours'}
+function absent(c,pid){return (c.presences||{})[pid]==='non'}
+function statsData(p){
+  var t=today(),cs=db.cours.filter(function(c){return c.date>=p.d0&&c.date<=p.d1}),faits=cs.filter(function(c){return estCours(c)&&!c.annule&&c.date<=t});
+  var r={faits:faits,annules:cs.filter(function(c){return estCours(c)&&c.annule}).length,avenir:cs.filter(function(c){return estCours(c)&&!c.annule&&c.date>t}).length,montes:cs.filter(function(c){return c.type==='monte'&&!c.annule&&c.date<=t}).length,part:0,abs:0,places:0,occ:0,cav:{},jour:[0,0,0,0,0,0,0],heure:{},club:{}};
+  faits.forEach(function(c){var n=0;c.inscrits.forEach(function(pid){if(absent(c,pid)){r.abs++;var a=r.cav[pid]=r.cav[pid]||{n:0,col:0,par:0,con:0,abs:0};a.abs++;return}n++;var x=r.cav[pid]=r.cav[pid]||{n:0,col:0,par:0,con:0,abs:0};x.n++;x[c.type==='collectif'?'col':c.type==='particulier'?'par':'con']++;
+      var h=(c.montures||{})[pid];if(h&&horse(h)&&!horse(h).proprietaireId){var k=r.club[h]=r.club[h]||{n:0,min:0};k.n++;k.min+=+c.duree||60}});
+    r.part+=n;if(c.type==='collectif'){r.places+=+c.places||0;r.occ+=n}
+    var wd=(toD(c.date).getDay()+6)%7;r.jour[wd]+=n;var hh=String(c.heure||'').slice(0,2);if(hh)r.heure[hh]=(r.heure[hh]||0)+n});
+  r.nbCav=Object.keys(r.cav).filter(function(k){return r.cav[k].n>0}).length;
+  var prem=db.cours.reduce(function(m,c){return estCours(c)&&c.date<m?c.date:m},'9999'),deb=prem>p.d0?prem:p.d0;r.semaines=Math.max(1,Math.round((diff(p.d1<t?p.d1:t,deb)+1)/7));
+  /* soins faits, chevaux, signalements */
+  r.soins={};r.vermi={};db.chevaux.forEach(function(c){(c.soins||[]).forEach(function(s){if(!s.fait||s.date<p.d0||s.date>p.d1)return;r.soins[s.type]=(r.soins[s.type]||0)+1;if(s.type==='Vermifuge'){var k=(s.produit||'Non précisé').replace(/ \(.*\)$/,'');r.vermi[k]=(r.vermi[k]||0)+1}})});
+  r.arrivees=db.chevaux.filter(function(c){return c.arrivee&&c.arrivee>=p.d0&&c.arrivee<=p.d1});
+  r.departs=db.chevaux.filter(function(c){return c.depart&&c.depart>=p.d0&&c.depart<=p.d1&&c.depart<=t});
+  r.pensions={};actifs().forEach(function(c){var n=pensionNom(c.pension)||'Sans pension';r.pensions[n]=(r.pensions[n]||0)+1});
+  var sg=db.messages.filter(function(m){return m.signal&&String(m.date).slice(0,10)>=p.d0&&String(m.date).slice(0,10)<=p.d1});r.sig={total:sg.length,regles:sg.filter(function(m){return m.regle}).length,types:{}};sg.forEach(function(m){var k=m.typeSignal||'Autre';r.sig.types[k]=(r.sig.types[k]||0)+1});
+  return r}
+function moisSerie(p){var out=[],end=p.d1.slice(0,7),t=today();for(var i=11;i>=0;i--){var m=addMonths(end+'-15',-i).slice(0,7),n=0,part=0;db.cours.forEach(function(c){if(c.date.slice(0,7)===m&&estCours(c)&&!c.annule&&c.date<=t){n++;part+=c.inscrits.filter(function(pid){return !absent(c,pid)}).length}});out.push({m:m,n:n,part:part})}return out}
+function vbars(items,lab){var mx=Math.max.apply(null,items.map(function(x){return x.v}).concat([1])),best=items.reduce(function(a,x,i){return x.v>items[a].v?i:a},0);
+  return '<div class="vbars" role="img" aria-label="'+esc(lab)+'" style="grid-template-columns:repeat('+items.length+',minmax(0,1fr))">'+items.map(function(x,i){var h=Math.round(100*x.v/mx);
+    return '<div class="vb" tabindex="0" data-tip="'+esc(x.tip||(x.l+' : '+x.v))+'"><span class="vb-val">'+(i===best&&x.v?x.v:'')+'</span><span class="vb-bar" style="height:'+(x.v?Math.max(h,3):0)+'%"></span><small>'+esc(x.l)+'</small></div>'}).join('')+'</div>'}
+function hbars(obj,unit){var l=Object.keys(obj).map(function(k){return[k,obj[k]]}).sort(function(a,b){return b[1]-a[1]});if(!l.length)return '<div class="empty">Rien sur cette période.</div>';var mx=l[0][1]||1;
+  return '<div class="hbars">'+l.map(function(x){return '<div class="hb" data-tip="'+esc(x[0]+' : '+x[1]+(unit?' '+unit:''))+'" tabindex="0"><span class="hb-l">'+esc(x[0])+'</span><span class="hb-t"><span class="hb-f" style="width:'+Math.max(2,Math.round(100*x[1]/mx))+'%"></span></span><b class="hb-v">'+x[1]+'</b></div>'}).join('')+'</div>'}
+function cavRows(p,r){return Object.keys(r.cav).map(function(pid){var o=owner(pid),x=r.cav[pid];return{pid:pid,nom:o?o.nom:'Cavalier supprimé',x:x,moy:Math.round(10*x.n/r.semaines)/10,ks:carnetSolde(pid),ff:forfait(pid)}}).sort(function(a,b){return b.x.n-a.x.n||a.nom.localeCompare(b.nom)})}
+function vStats(){
+  var p=statPer(),r=statsData(p),ms=moisSerie(p),rows=cavRows(p,r),k=p.k;
+  var h='<div class="seg" role="group" aria-label="Période">'+[['mois','Mois'],['trim','Trimestre'],['annee','Année'],['12m','12 mois']].map(function(x){return '<button class="'+(k===x[0]?'on':'')+'" data-act="st-k" data-id="'+x[0]+'" aria-pressed="'+(k===x[0])+'">'+x[1]+'</button>'}).join('')+'</div>'+
+    '<div class="weeknav"><button class="icon-btn" data-act="st-shift" data-id="-1" aria-label="Période précédente">‹</button><span class="sub" style="font-weight:600;color:var(--fg)">'+esc(p.lab)+'</span><button class="icon-btn" data-act="st-shift" data-id="1" aria-label="Période suivante">›</button></div>';
+  var rem=r.places?Math.round(100*r.occ/r.places):null;
+  h+='<div class="stats stats6">'+[[r.faits.length,'cours donnés'],[r.part,'participations'],[r.nbCav,'cavaliers venus'],[rem===null?'—':rem+' %','remplissage des collectifs'],[r.abs,'absences signalées'],[r.annules,'cours annulés']].map(function(x){return '<div class="stat"><b>'+x[0]+'</b><span>'+x[1]+'</span></div>'}).join('')+'</div>';
+  if(r.avenir||r.montes)h+='<p class="sub" style="margin:0">'+[r.avenir?r.avenir+' cours encore à venir sur la période':'',r.montes?r.montes+' monte'+(r.montes>1?'s':'')+' libre'+(r.montes>1?'s':''):''].filter(Boolean).join(' · ')+'. Seuls les cours passés et non annulés sont comptés ; un cavalier signalé absent n\'est pas compté.</p>';
+  h+='<section><div class="sh"><h2>Cours par cavalier</h2><button class="btn sm" data-act="st-csv">Exporter (Excel)</button></div>'+(rows.length?'<div class="panel tscroll"><table class="reg stat-t"><thead><tr><th>Cavalier</th><th>Cours</th><th>Collectifs</th><th>Particuliers</th><th>Par semaine</th><th>Absences</th><th>Carnet</th></tr></thead><tbody>'+rows.map(function(x){var mx=rows[0].x.n||1;
+      return '<tr><td><button class="linkbtn" data-act="owner" data-id="'+x.pid+'">'+esc(x.nom)+'</button></td><td><span class="cellbar"><b>'+x.x.n+'</b><span class="cb"><span style="width:'+Math.round(100*x.x.n/mx)+'%"></span></span></span></td><td>'+x.x.col+'</td><td>'+x.x.par+'</td><td>'+String(x.moy).replace('.',',')+(x.ff?' / '+x.ff:'')+'</td><td>'+(x.x.abs||'')+'</td><td>'+(x.ks.actif?Math.max(0,x.ks.restant)+' restant'+(x.ks.restant>1?'s':''):'—')+'</td></tr>'}).join('')+'</tbody></table></div><p class="sub" style="margin:0">« Par semaine » : moyenne sur la période'+(rows.some(function(x){return x.ff})?' / cours compris dans la pension':'')+'.</p>':'<div class="panel empty">Aucun cours donné sur cette période.</div>')+'</section>';
+  h+='<section><div class="sh"><h2>Cours donnés par mois</h2><span class="sub">12 derniers mois</span></div><div class="panel chartp">'+vbars(ms.map(function(x){return{l:toD(x.m+'-15').toLocaleDateString('fr-FR',{month:'short'}).replace('.',''),v:x.n,tip:monthLabel(x.m)+' : '+x.n+' cours, '+x.part+' participation'+(x.part>1?'s':'')}}),'Cours donnés par mois')+'</div>'+
+    '<details class="panel" style="padding:10px 14px"><summary style="cursor:pointer;font-weight:600">Voir le tableau</summary><div class="tscroll" style="margin-top:8px"><table class="reg"><thead><tr><th>Mois</th><th>Cours</th><th>Participations</th></tr></thead><tbody>'+ms.slice().reverse().map(function(x){return '<tr><td>'+esc(monthLabel(x.m))+'</td><td>'+x.n+'</td><td>'+x.part+'</td></tr>'}).join('')+'</tbody></table></div></details></section>';
+  h+='<section><div class="sh"><h2>Jours les plus fréquentés</h2><span class="sub">participations</span></div><div class="panel chartp">'+vbars(r.jour.map(function(v,i){return{l:JOURS[i],v:v,tip:JOURS_L[i]+' : '+v+' participation'+(v>1?'s':'')}}),'Participations par jour de la semaine')+'</div></section>';
+  var hs=Object.keys(r.heure).sort();
+  h+='<section><div class="sh"><h2>Créneaux horaires</h2><span class="sub">participations</span></div><div class="panel chartp">'+(hs.length?vbars(hs.map(function(x){return{l:(+x)+'h',v:r.heure[x],tip:'Cours de '+(+x)+' h : '+r.heure[x]+' participation'+(r.heure[x]>1?'s':'')}}),'Participations par heure de début'):'<div class="empty">Rien sur cette période.</div>')+'</div></section>';
+  var club={};Object.keys(r.club).forEach(function(id){club[horse(id).nom]=r.club[id].n});
+  h+='<section><div class="sh"><h2>Chevaux de club</h2><span class="sub">cours montés</span></div><div class="panel chartp">'+hbars(club,'cours')+'</div></section>';
+  h+='<section><div class="sh"><h2>Soins faits</h2><span class="sub">'+Object.keys(r.soins).reduce(function(s,k){return s+r.soins[k]},0)+' sur la période</span></div><div class="panel chartp">'+hbars(r.soins)+(Object.keys(r.vermi).length?'<div class="lbl" style="margin:14px 0 6px">Vermifuges par molécule</div>'+hbars(r.vermi):'')+'</div></section>';
+  h+='<section><div class="sh"><h2>Chevaux</h2><span class="sub">'+actifs().length+' présents aujourd\'hui</span></div><div class="panel chartp"><div class="kpis" style="margin-bottom:12px"><div class="panel"><b>'+r.arrivees.length+'</b><span>arrivée'+(r.arrivees.length>1?'s':'')+'</span></div><div class="panel"><b>'+r.departs.length+'</b><span>départ'+(r.departs.length>1?'s':'')+'</span></div><div class="panel"><b>'+actifs().filter(function(c){return c.club}).length+'</b><span>de club</span></div></div>'+
+    (r.departs.length?'<p class="sub" style="margin:0 0 10px">Départs : '+r.departs.map(function(c){return esc(c.nom)+(c.departMotif?' ('+esc(c.departMotif.toLowerCase())+')':'')}).join(', ')+'</p>':'')+'<div class="lbl" style="margin-bottom:6px">Par pension</div>'+hbars(r.pensions,'chevaux')+'</div></section>';
+  var gs=(db.grains||[]).map(function(g){return[g,grainConso(g)]}).filter(function(x){return x[1].jour>0}),nj=Math.max(0,diff(p.d1<today()?p.d1:today(),p.d0)+1);
+  if(gs.length){var o={};gs.forEach(function(x){o[x[0].nom]=Math.round(x[1].jour*nj)});h+='<section><div class="sh"><h2>Grain</h2><span class="sub">litres sur la période</span></div><div class="panel chartp">'+hbars(o,'litres')+'<p class="sub" style="margin:10px 0 0">Estimation d\'après les rations actuelles : '+gs.map(function(x){return esc(x[0].nom)+' '+litres(x[1].jour)+'/jour'}).join(', ')+'.</p></div></section>'}
+  h+='<section><div class="sh"><h2>Problèmes signalés</h2><span class="sub">'+r.sig.total+' · '+r.sig.regles+' réglé'+(r.sig.regles>1?'s':'')+'</span></div><div class="panel chartp">'+hbars(r.sig.types)+'</div></section>';
+  return h+'<div class="actions"><button class="btn" data-act="st-print">Imprimer ou enregistrer en PDF</button></div>';
+}
+function statsCsv(){var p=statPer(),r=statsData(p);return csv([['Cavalier','Cours','Collectifs','Particuliers','Concours','Moyenne par semaine','Cours compris par semaine','Absences signalées','Cours restants sur carnet','Période']].concat(cavRows(p,r).map(function(x){return [x.nom,x.x.n,x.x.col,x.x.par,x.x.con,String(x.moy).replace('.',','),x.ff===null?'':x.ff,x.x.abs,x.ks.actif?Math.max(0,x.ks.restant):'',p.lab]})))}
+
 /* ---------- actions ---------- */
 var ACT={
   tab:function(id){var te=document.getElementById('toast');if(te)te.hidden=true;S.tab=id;S.confirmClear=false;S.confirmAnnul=null;if(id!=='messages')S.thread=null;try{localStorage.setItem(KEY+'-tab',id)}catch(e){}render();window.scrollTo(0,0)},
@@ -1721,6 +1805,9 @@ var ACT={
   
   
   'viewer-close':closeViewer,
+  'st-k':function(k){S.stK=k;render()},'st-shift':function(n){statShift(+n);render()},
+  'st-csv':function(){saveText(statsCsv(),'statistiques-cavaliers-'+slug(statPer().lab)+'.csv');toast('Statistiques exportées')},
+  'st-print':function(){var p=document.getElementById('print'),vw=document.getElementById('view');p.innerHTML='<h1>Statistiques · '+esc(db.ecurie.nom||'')+'</h1><p>'+esc(statPer().lab)+' · édité le '+fdl(today())+'</p>'+vw.innerHTML;setTimeout(function(){window.print()},50)},
   alertes:function(){if(M)closeModal();alertsModal()},
   'alert-fait':function(id){var a=id.split('|'),c=horse(a[0]),s=c&&(c.soins||[]).find(function(x){return x.id===a[1]});if(!s)return;s.fait=true;if(s.date>today())s.date=today();put('chevaux',c);if(c.proprietaireId)notifier({type:'proprios',ids:[c.proprietaireId]},'Soin fait : '+c.nom,soinNom(s)+' · '+fdate(s.date,{day:'numeric',month:'long'}),'cheval');if(M&&M.kind==='alertes')M.render();render();toast(soinNom(s)+' rangé dans l\'historique')},
   'alert-report':function(id){var a=id.split('|'),c=horse(a[0]),s=c&&(c.soins||[]).find(function(x){return x.id===a[1]});if(!s)return;s.date=addDays(s.date<today()?today():s.date,7);put('chevaux',c);if(M&&M.kind==='alertes')M.render();render();toast('Reporté au '+fdate(s.date,{day:'numeric',month:'long'}))},
