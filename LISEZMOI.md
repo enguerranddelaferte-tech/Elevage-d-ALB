@@ -117,7 +117,7 @@ La case « alertes » de l'accueil s'ouvre d'un toucher : chaque alerte dit ce q
 
 ## Écrans
 
-L'appli s'adapte au téléphone (barre d'onglets en bas), à la tablette (contenu sur deux colonnes) et à l'ordinateur (menu à gauche).
+L'appli s'adapte au téléphone, à la tablette (contenu sur deux colonnes) et à l'ordinateur (menu à gauche, rangé en Au quotidien, Suivi, Infos). Sur téléphone, la barre du bas garde Accueil, Chevaux, Cours, Cavaliers ; « Plus » ouvre Silo, Stats, Registre, Météo, Messages et Réglages. Le bouton + en haut ajoute selon l'écran (cheval, cours, cavalier, grain). La fiche d'un cheval est rangée en onglets : Fiche, Ration, Soins, Cavaliers.
 
 ## Météo
 

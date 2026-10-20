@@ -216,7 +216,7 @@ svg .cl{fill:none;stroke:var(--c1);stroke-width:2;stroke-linejoin:round}svg .ca{
 button.stat{font:inherit;color:inherit;text-align:left;cursor:pointer;display:block;width:100%}button.stat:hover{border-color:var(--accent)}
 .vis-btn{min-height:32px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;flex:none}.vis-btn.on{background:var(--accent-soft);color:var(--accent-ink);border-color:transparent}
 .tgroup{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:10px 14px 4px;border-top:1px solid var(--line)}.items>.tgroup:first-child{border-top:0}
-.tick{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:none}.tick.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.tick{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:none}.tick.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .qty{display:flex;flex-direction:column;gap:2px;flex:1 1 60px;min-width:52px}.gline{column-gap:8px}.gline .del-x{flex:none}.qty span{font-size:11px;font-weight:700;color:var(--muted)}.qty input{min-height:40px}
 .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table.reg{width:100%;border-collapse:collapse;font-size:13px}table.reg th{text-align:left;font-size:12px;color:var(--muted);padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}table.reg td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}table.reg tr:last-child td{border-bottom:0}
@@ -244,6 +244,52 @@ table.reg td:first-child{font-weight:600}table.reg{min-width:640px}table.reg td:
 table.stat-t{min-width:520px}table.stat-t td{vertical-align:middle}table.stat-t td:nth-child(n+3){font-variant-numeric:tabular-nums}
 @media print{#print .seg,#print .weeknav,#print .actions,#print .btn{display:none!important}#print .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}#print .stat,#print .panel{border:1px solid #bbb;border-radius:6px;padding:6px}#print .vb-bar,#print .hb-f,#print .cb span{background:#555!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}#print section{break-inside:avoid;margin-bottom:10px}#print .vbars{height:110px}}
 .modal form>button.btn.primary.block[type=submit]{position:sticky;bottom:calc(-24px - env(safe-area-inset-bottom,0px));z-index:3;box-shadow:0 10px 0 10px var(--surface),0 -10px 14px var(--surface)}
+/* ---- design 2026 : même identité, plus de relief et de lisibilité ---- */
+:root{--shadow:0 1px 2px rgba(16,24,40,.05),0 2px 6px rgba(16,24,40,.04);--r:16px}
+:root[data-theme="dark"]{--shadow:none}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--shadow:none}}
+.panel,.stat,.tile{box-shadow:var(--shadow)}
+header.top{background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:saturate(1.5) blur(12px);backdrop-filter:saturate(1.5) blur(12px)}
+header.top h1{font-size:23px}
+.sh h2{font-size:17px;font-weight:650}
+.btn{border-radius:12px;transition:background .15s,border-color .15s,box-shadow .15s}
+.btn.primary{box-shadow:0 1px 2px rgba(16,24,40,.12)}
+.btn.ghost{background:none;border-color:transparent;box-shadow:none}.btn.ghost:hover{background:var(--surface-2)}
+.danger-t{color:var(--danger)}
+.hadd{min-height:44px;border-radius:999px;padding:0 16px 0 12px;flex:none}
+@media (max-width:560px){.hadd{width:44px;padding:0}.hadd span{display:none}}
+.field input:focus,.field select:focus,.field textarea:focus,.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+@media (pointer:fine){button.item:hover{background:var(--surface-2)}.items>button.item:first-child:hover{border-radius:var(--r) var(--r) 0 0}}
+.toast{border-radius:999px;padding:11px 18px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.empty{padding:26px 16px}
+/* avatars : une couleur douce par nom */
+.avatar.av0{background:#E2E8F6;color:#24345C}.avatar.av1{background:#F4EAD7;color:#6B4E16}.avatar.av2{background:#E1EFE6;color:#235238}.avatar.av3{background:#F6E3E6;color:#7A2233}.avatar.av4{background:#ECE6F5;color:#4B3473}.avatar.av5{background:#DDEFF0;color:#1F5559}
+:root[data-theme="dark"] .avatar.av0{background:#24345C;color:#DCE4F7}:root[data-theme="dark"] .avatar.av1{background:#4A3814;color:#F2E2C2}:root[data-theme="dark"] .avatar.av2{background:#1E4230;color:#D3EBDC}:root[data-theme="dark"] .avatar.av3{background:#5A1C29;color:#F5D7DD}:root[data-theme="dark"] .avatar.av4{background:#3A2A5A;color:#E4DBF3}:root[data-theme="dark"] .avatar.av5{background:#1A4447;color:#CFEBEC}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .avatar.av0{background:#24345C;color:#DCE4F7}:root:not([data-theme="light"]) .avatar.av1{background:#4A3814;color:#F2E2C2}:root:not([data-theme="light"]) .avatar.av2{background:#1E4230;color:#D3EBDC}:root:not([data-theme="light"]) .avatar.av3{background:#5A1C29;color:#F5D7DD}:root:not([data-theme="light"]) .avatar.av4{background:#3A2A5A;color:#E4DBF3}:root:not([data-theme="light"]) .avatar.av5{background:#1A4447;color:#CFEBEC}}
+/* barre d'onglets : pastille derrière l'icône active */
+nav.tabs .ic{position:relative;display:inline-flex;align-items:center;justify-content:center;padding:4px 18px;border-radius:999px;transition:background .15s}
+nav.tabs button[aria-current="page"] .ic{background:var(--accent-soft);color:var(--accent-ink)}
+nav.tabs .ic .nbadge{top:-2px;right:8px}
+nav.tabs button{font-size:11.5px}
+.ngroup{display:none}
+@media (min-width:1000px){nav.tabs button{font-size:14px}nav.tabs .ic{padding:0;background:none!important}.ngroup{display:block;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);padding:16px 12px 4px}nav.tabs .ic .nbadge{right:-8px}}
+/* feuille « Plus » */
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;min-height:112px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);color:var(--fg);font:inherit;text-align:left;cursor:pointer}
+.tile b{font-size:15px}.tile small{font-size:12.5px;color:var(--muted)}.tile.on{border-color:var(--accent)}
+.tile-ic{width:44px;height:44px;border-radius:14px;background:var(--accent-soft);color:var(--accent-ink);display:inline-flex;align-items:center;justify-content:center}
+/* tuiles de l'accueil */
+.stats4{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:700px){.stats4{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.stat{display:flex!important;flex-direction:column;gap:2px;padding:12px 14px}
+.stat .st-ic{width:30px;height:30px;border-radius:10px;background:var(--accent-soft);color:var(--accent-ink);display:inline-flex;align-items:center;justify-content:center;margin-bottom:4px}
+.stat.hot .st-ic{background:rgba(255,255,255,.16);color:var(--on-accent)}
+.stat b{font-size:24px;line-height:1.1}
+/* onglets dans les fiches */
+.mtabs{position:sticky;top:-20px;z-index:4;align-self:stretch;background:var(--surface);box-shadow:0 0 0 8px var(--surface);margin-bottom:2px}
+.mtabs button{flex:1 0 auto}
+.mtabs .cnt{display:inline-flex;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--danger);color:#fff;font-size:11px;align-items:center;justify-content:center;margin-left:4px}
+.msec[hidden]{display:none!important}
 #print{display:none}
 .hero .btn{color:var(--fg)}.hero .btn.primary{background:var(--surface);color:var(--fg);border-color:var(--surface)}.hero .btn.danger{background:var(--danger-soft);color:var(--danger)}
 @media print{body>*:not(#print){display:none!important}html,body{background:#fff!important;height:auto}#print{display:block!important;color:#000;font:10.5px/1.35 Arial,sans-serif}#print h1{font-size:19px;margin:0 0 6px}#print h2{font-size:14px;margin:14px 0 6px}#print p{margin:0 0 8px}#print table{width:100%;border-collapse:collapse}#print th,#print td{border:1px solid #888;padding:3px 5px;text-align:left;vertical-align:top}#print th{background:#eee}#print tr{break-inside:avoid}@page{size:A4 landscape;margin:10mm}}
@@ -256,6 +302,7 @@ table.stat-t{min-width:520px}table.stat-t td{vertical-align:middle}table.stat-t 
 <body>
 <header class="top"><div class="wrap">
   <div class="t"><div class="d" id="hdate"></div><h1 id="htitle">Aujourd'hui</h1></div>
+  <button class="btn primary hadd" id="hadd" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span id="hadd-l"></span></button>
   <button class="icon-btn" id="hnotif" data-act="notifs" aria-label="Notifications" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="nbadge" id="hnotif-badge" hidden></span></button>
   <button class="icon-btn" id="hmsg" data-act="tab" data-id="messages" aria-label="Messages des cavaliers" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg><span class="nbadge" id="hmsg-badge" hidden></span></button>
   <button class="icon-btn" id="hset" data-act="settings" aria-label="Réglages et compte">
@@ -292,6 +339,7 @@ function diff(a,b){return Math.round((toD(a)-toD(b))/86400000)}
 function fdate(s,o){return s?toD(s).toLocaleDateString('fr-FR',o||{day:'numeric',month:'short'}):''}
 function uid(){return Math.random().toString(36).slice(2,10)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function avc(n){var s=String(n||''),h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return 'av'+(h%6)}
 function initials(n){return String(n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(function(w){return w[0].toUpperCase()}).join('')}
 function monthLabel(m){var s=toD(m+'-01').toLocaleDateString('fr-FR',{month:'long',year:'numeric'});return s.charAt(0).toUpperCase()+s.slice(1)}
 
@@ -574,10 +622,10 @@ function vJour(){
   if(db.exemple)h+='<div class="banner"><div class="x">Ces fiches sont des <b>exemples</b> pour découvrir l\'appli.</div>'+
     (S.confirmClear?'<button class="btn sm danger" data-act="clear-ok">Confirmer : tout effacer</button><button class="btn sm" data-act="clear-no">Annuler</button>'
     :'<button class="btn sm" data-act="clear">Effacer les exemples</button>')+'</div>';
-  h+='<div class="stats"><button class="stat" data-act="tab" data-id="chevaux"><b>'+actifs().length+'</b><span>chevaux</span></button><button class="stat" data-act="tab" data-id="cours"><b>'+cj.filter(function(c){return !c.annule}).length+'</b><span>cours aujourd\'hui</span></button>'+
-    '<button class="stat '+(al.length?'hot':'')+'" data-act="alertes" aria-label="'+al.length+' alerte'+(al.length>1?'s':'')+' : voir le détail"><b>'+al.length+'</b><span>alerte'+(al.length>1?'s':'')+(al.length?' · voir':'')+'</span></button></div>';
+  var tr=db.taches.filter(function(k){return k.doneOn!==t}).length;
+  function tile(act,id,ic,n,lab,cls,aria){return '<button class="stat'+(cls?' '+cls:'')+'" data-act="'+act+'"'+(id?' data-id="'+id+'"':'')+(aria?' aria-label="'+aria+'"':'')+'><span class="st-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[ic]+'</svg></span><b>'+n+'</b><span>'+lab+'</span></button>'}
+  h+='<div class="stats stats4">'+tile('alertes','','bell',al.length,'alerte'+(al.length>1?'s':'')+(al.length?' · voir':''),al.length?'hot':'',al.length+' alerte'+(al.length>1?'s':'')+' : voir le détail')+tile('scroll','taches','check',tr,'tâche'+(tr>1?'s':'')+' à faire')+tile('tab','cours','cal',cj.filter(function(c){return !c.annule}).length,'cours aujourd\'hui')+tile('tab','chevaux','horse',actifs().length,'chevaux')+'</div>';
   if(sg.length)h+='<section><div class="sh"><h2>Problèmes signalés</h2><span class="sub">par les cavaliers</span></div>'+signalItems(sg)+'</section>';
-  h+=weatherSection();
   var als=al.filter(function(a){return a.type!=='signal'});
   h+='<section><div class="sh"><h2>À surveiller</h2><span class="sub">14 prochains jours</span></div>';
   h+=als.length?als.slice(0,6).map(function(a){return '<button class="alert '+(a.n<0?'late':'')+'" style="border:0;text-align:left;cursor:pointer;width:100%" data-act="alertes"><div class="x"><b>'+esc(a.title)+'</b><br>'+(a.type==='rc'?(a.n<0?'Expirée':'Expire')+' · ':'')+whenTxt(a.n)+'</div><span aria-hidden="true">›</span></button>'}).join('')+(als.length>6?'<button class="btn sm" data-act="alertes">Voir les '+als.length+' alertes</button>':'')
@@ -586,14 +634,14 @@ function vJour(){
   h+=tachesSection();
   h+='<section><div class="sh"><h2>Cours du jour</h2><button class="btn sm" data-act="tab" data-id="cours">Planning</button></div>';
   h+=cj.length?'<div class="panel items">'+cj.map(coursItem).join('')+'</div>':'<div class="panel empty">Pas de cours aujourd\'hui.</div>';
-  if(cj.some(function(c){return !c.annule}))h+='<button class="btn sm danger" data-act="day-annul" data-id="'+t+'">Annuler les cours du jour (piste gelée…)</button>';
-  return h+'</section>'+annoncesSection();
+  if(cj.some(function(c){return !c.annule}))h+='<button class="btn sm ghost danger-t" data-act="day-annul" data-id="'+t+'">Annuler les cours du jour (piste gelée…)</button>';
+  return h+'</section>'+weatherSection()+annoncesSection();
 }
 function tachesSection(){
   var t=today(),done=db.taches.filter(function(k){return k.doneOn===t}).length;
   function row(k){var d=k.doneOn===t;return '<div class="item task'+(d?' done':'')+'"><input type="checkbox" id="tk-'+k.id+'" data-act="task" data-id="'+k.id+'"'+(d?' checked':'')+'><label class="x" for="tk-'+k.id+'"><b>'+esc(k.label)+'</b></label><button class="vis-btn'+(k.visible?' on':'')+'" data-act="task-vis" data-id="'+k.id+'" aria-pressed="'+!!k.visible+'" title="'+(k.visible?'Visible par les cavaliers et propriétaires':'Privée : vous seul la voyez')+'">'+(k.visible?'Visible':'Privée')+'</button><button class="del-x" data-act="task-del" data-id="'+k.id+'" aria-label="Supprimer la tâche '+esc(k.label)+'">✕</button></div>'}
   var vis=db.taches.filter(function(k){return k.visible}),pri=db.taches.filter(function(k){return !k.visible});
-  var h='<section><div class="sh"><h2>Tâches du jour</h2><span class="sub">'+done+' / '+db.taches.length+' faites</span></div><div class="panel items">';
+  var h='<section id="taches"><div class="sh"><h2>Tâches du jour</h2><span class="sub">'+done+' / '+db.taches.length+' faites</span></div><div class="panel items">';
   if(vis.length)h+='<div class="tgroup">Visibles par les cavaliers</div>'+vis.map(row).join('');
   if(pri.length)h+='<div class="tgroup">Privées (vous seul)</div>'+pri.map(row).join('');
   if(!db.taches.length)h+='<div class="empty">Aucune tâche. Ajoutez vos tâches de tous les jours : repas, sorties, curage…</div>';
@@ -607,15 +655,15 @@ function coursItem(c){
 }
 function vChevaux(){
   var hv=S.hView||'liste';if(hv==='pres')return hViewToggle()+vPres();if(hv==='rations')return hViewToggle()+vRations();
-  return hViewToggle()+'<div class="actions"><input class="search grow" id="q" type="search" placeholder="Rechercher un cheval ou un propriétaire" aria-label="Rechercher" value="'+esc(S.q)+'"><button class="btn" data-act="groupe">Soin groupé</button><button class="btn primary" data-act="horse">+ Cheval</button></div><div id="hlist">'+hList()+'</div>';
+  return hViewToggle()+'<div class="actions"><input class="search grow" id="q" type="search" placeholder="Rechercher un cheval ou un propriétaire" aria-label="Rechercher" value="'+esc(S.q)+'"><button class="btn" data-act="groupe">Soin groupé</button></div><div id="hlist">'+hList()+'</div>';
 }
 function hList(){
   var q=S.q.trim().toLowerCase(),m=function(c){var o=owner(c.proprietaireId);return !q||(c.nom+' '+(o?o.nom:'')+' '+(c.race||'')+' '+(c.box||'')).toLowerCase().indexOf(q)>-1};
   var l=actifs().filter(m).sort(function(a,b){return a.nom.localeCompare(b.nom)}),pt=partis().filter(m);
   if(!db.chevaux.length)return '<div class="panel empty">Aucun cheval. Ajoutez le premier avec « + Cheval ».</div>';
-  function it(c){var o=owner(c.proprietaireId),sg=signalements(c.id).length;return '<button class="item" data-act="horse" data-id="'+c.id+'"><span class="avatar">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>'+esc([c.box,pensionNom(c.pension),o?o.nom:"L'écurie",c.club?'club':''].filter(Boolean).join(' · '))+'</span></span><span class="end">'+(sg?'<span class="pill late">Signalé</span> ':'')+nextSoin(c)+'</span></button>'}
+  function it(c){var o=owner(c.proprietaireId),sg=signalements(c.id).length;return '<button class="item" data-act="horse" data-id="'+c.id+'"><span class="avatar '+avc(c.nom)+'">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>'+esc([c.box,pensionNom(c.pension),o?o.nom:"L'écurie",c.club?'club':''].filter(Boolean).join(' · '))+'</span></span><span class="end">'+(sg?'<span class="pill late">Signalé</span> ':'')+nextSoin(c)+'</span></button>'}
   var h=l.length?'<div class="panel items">'+l.map(it).join('')+'</div>':'<div class="panel empty">Aucun résultat.</div>';
-  if(pt.length)h+='<details class="panel" style="margin-top:12px"><summary style="cursor:pointer;font-weight:600;padding:12px 14px">Chevaux partis ('+pt.length+')</summary><div class="items">'+pt.map(function(c){return '<button class="item" data-act="horse" data-id="'+c.id+'"><span class="avatar" style="opacity:.6">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>Parti le '+fdate(c.depart,{day:'numeric',month:'short',year:'numeric'})+(c.departMotif?' · '+esc(c.departMotif):'')+'</span></span></button>'}).join('')+'</div></details>';
+  if(pt.length)h+='<details class="panel" style="margin-top:12px"><summary style="cursor:pointer;font-weight:600;padding:12px 14px">Chevaux partis ('+pt.length+')</summary><div class="items">'+pt.map(function(c){return '<button class="item" data-act="horse" data-id="'+c.id+'"><span class="avatar '+avc(c.nom)+'" style="opacity:.6">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>Parti le '+fdate(c.depart,{day:'numeric',month:'short',year:'numeric'})+(c.departMotif?' · '+esc(c.departMotif):'')+'</span></span></button>'}).join('')+'</div></details>';
   return h;
 }
 function vCours(){
@@ -623,20 +671,20 @@ function vCours(){
   var days=[];for(var i=0;i<7;i++)days.push(addDays(start,i));
   h+=calToggle()+(calMode()==='mois'?monthGrid():weekStrip());
   var l=db.cours.filter(function(c){return c.date===S.coursDate}).sort(byTime);
-  h+='<section><div class="sh"><h2>'+fdate(S.coursDate,{weekday:'long',day:'numeric',month:'long'})+'</h2><button class="btn sm primary" data-act="cours">+ Cours</button></div>';
+  h+='<section><div class="sh"><h2>'+fdate(S.coursDate,{weekday:'long',day:'numeric',month:'long'})+'</h2><span class="sub">'+l.filter(function(c){return !c.annule}).length+' cours</span></div>';
   h+=l.length?'<div class="panel items">'+l.map(coursItem).join('')+'</div>':'<div class="panel empty">Aucun cours ce jour-là.</div>';
-  if(l.some(function(c){return !c.annule})&&S.coursDate>=today())h+='<button class="btn danger" data-act="day-annul" data-id="'+S.coursDate+'">Annuler les cours de ce jour…</button>';
+  if(l.some(function(c){return !c.annule})&&S.coursDate>=today())h+='<button class="btn sm ghost danger-t" data-act="day-annul" data-id="'+S.coursDate+'">Annuler les cours de ce jour (piste gelée…)</button>';
   var lieux={};l.forEach(function(c){(lieux[c.lieu]=lieux[c.lieu]||[]).push(c.heure.replace(':','h'))});
   if(l.length)h+='<p class="sub" style="margin:0">Occupation : '+Object.keys(lieux).map(function(k){return esc(k)+' à '+lieux[k].join(', ')}).join(' · ')+'</p>';
   return h+'</section>';
 }
 function vProprios(){
   if((S.cView||'clients')==='cartes')return clientsToggle()+vCartes();
-  var h=clientsToggle()+'<div class="actions"><span class="grow sub" style="align-self:center">'+db.proprietaires.length+' cavalier'+(db.proprietaires.length>1?'s':'')+'</span><button class="btn primary" data-act="owner">+ Cavalier</button></div>';
+  var h=clientsToggle()+'<div class="actions"><span class="grow sub" style="align-self:center">'+db.proprietaires.length+' cavalier'+(db.proprietaires.length>1?'s':'')+'</span></div>';
   if(!db.proprietaires.length)return h+'<div class="panel empty">Aucun cavalier. Ajoutez le premier avec « + Cavalier » (propriétaire, demi-pensionnaire ou cavalier).</div>';
   return h+'<div class="panel items">'+db.proprietaires.slice().sort(function(a,b){return a.nom.localeCompare(b.nom)}).map(function(p){
     var hs=actifs().filter(function(c){return c.proprietaireId===p.id}).map(function(c){return c.nom}).concat(confiesA(p.id).map(function(c){return c.nom+' ('+(CONF_TYPES[confDe(c,p.id).type]||'').toLowerCase()+')'})),n=p.rcFin?diff(p.rcFin,today()):999,ks=carnetSolde(p.id),ff=forfait(p.id);
-    return '<button class="item" data-act="owner" data-id="'+p.id+'"><span class="avatar">'+esc(initials(p.nom))+'</span><span class="x"><b>'+esc(p.nom)+'</b><span>'+esc(hs.join(', ')||'Aucun cheval')+(ff?' · '+ff+' cours/sem.':'')+(ks.actif?' · carnet : '+Math.max(0,ks.restant)+' cours':'')+'</span>'+((p.roles||[]).length||estMineur(p)?'<span class="chips">'+(p.roles||[]).map(function(r){return '<span class="chip">'+esc(ROLES[r]||r)+'</span>'}).join('')+(estMineur(p)?'<span class="chip">Mineur</span>':'')+'</span>':'')+'</span><span class="end">'+(ks.actif&&ks.restant<=1?'<span class="pill '+(ks.restant<=0?'late':'warn')+'">Carnet '+(ks.restant<=0?'épuisé':'presque fini')+'</span>':n<0?'<span class="pill late">RC expirée</span>':n<=30?'<span class="pill warn">RC bientôt</span>':esc(p.tel||''))+'</span></button>'}).join('')+'</div>';
+    return '<button class="item" data-act="owner" data-id="'+p.id+'"><span class="avatar '+avc(p.nom)+'">'+esc(initials(p.nom))+'</span><span class="x"><b>'+esc(p.nom)+'</b><span>'+esc(hs.join(', ')||'Aucun cheval')+(ff?' · '+ff+' cours/sem.':'')+(ks.actif?' · carnet : '+Math.max(0,ks.restant)+' cours':'')+'</span>'+((p.roles||[]).length||estMineur(p)?'<span class="chips">'+(p.roles||[]).map(function(r){return '<span class="chip">'+esc(ROLES[r]||r)+'</span>'}).join('')+(estMineur(p)?'<span class="chip">Mineur</span>':'')+'</span>':'')+'</span><span class="end">'+(ks.actif&&ks.restant<=1?'<span class="pill '+(ks.restant<=0?'late':'warn')+'">Carnet '+(ks.restant<=0?'épuisé':'presque fini')+'</span>':n<0?'<span class="pill late">RC expirée</span>':n<=30?'<span class="pill warn">RC bientôt</span>':esc(p.tel||''))+'</span></button>'}).join('')+'</div>';
 }
 /* ---------- espace cavalier ---------- */
 function myHorses(){return actifs().filter(function(c){return c.proprietaireId===me.prop||!!confDe(c,me.prop)})}
@@ -669,7 +717,7 @@ function cAccueil(){
   h+='</section>';
   var hs=myHorses();
   if(hs.length){h+='<section><div class="sh"><h2>'+(hs.length>1?'Mes chevaux':'Mon cheval')+'</h2></div><div class="panel items">'+hs.map(function(c){
-    return '<button class="item" data-act="tab" data-id="cheval"><span class="avatar">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>'+esc([c.box,c.proprietaireId===me.prop?pensionNom(c.pension):confLabel(confDe(c,me.prop))].filter(Boolean).join(' · '))+'</span></span><span class="end">'+nextSoin(c)+'</span></button>'}).join('')+'</div></section>'}
+    return '<button class="item" data-act="tab" data-id="cheval"><span class="avatar '+avc(c.nom)+'">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>'+esc([c.box,c.proprietaireId===me.prop?pensionNom(c.pension):confLabel(confDe(c,me.prop))].filter(Boolean).join(' · '))+'</span></span><span class="end">'+nextSoin(c)+'</span></button>'}).join('')+'</div></section>'}
   h+=tachesClientHtml();
   var ks=carnetSolde(me.prop);
   if(ks.actif&&forfaitTxt(me.prop))h+='<p class="sub" style="margin:0">'+esc(forfaitTxt(me.prop))+'.</p>';
@@ -714,7 +762,7 @@ function cCheval(){
   if(!hs.length)return h+'<div class="panel empty">Aucun cheval enregistré à votre nom. Les chevaux de l\'écurie sont dans l\'onglet Chevaux.</div>';
   hs.forEach(function(c){var mine=c.proprietaireId===me.prop;
     var gt=grainTexte(c);
-    h+='<section><div class="panel" style="padding:16px;display:flex;flex-direction:column;gap:10px"><div style="display:flex;gap:12px;align-items:center"><span class="avatar">'+esc(initials(c.nom))+'</span><div class="x" style="flex:1;min-width:0"><h2 style="font-size:21px">'+esc(c.nom)+'</h2><span class="sub">'+esc([c.race,c.sexe,ageOf(c)!==''?ageOf(c)+' ans':'',c.sire?'SIRE '+c.sire:''].filter(Boolean).join(' · '))+'</span></div></div>'+
+    h+='<section><div class="panel" style="padding:16px;display:flex;flex-direction:column;gap:10px"><div style="display:flex;gap:12px;align-items:center"><span class="avatar '+avc(c.nom)+'">'+esc(initials(c.nom))+'</span><div class="x" style="flex:1;min-width:0"><h2 style="font-size:21px">'+esc(c.nom)+'</h2><span class="sub">'+esc([c.race,c.sexe,ageOf(c)!==''?ageOf(c)+' ans':'',c.sire?'SIRE '+c.sire:''].filter(Boolean).join(' · '))+'</span></div></div>'+
       '<div class="chips" style="margin:0">'+[c.box,mine?pensionNom(c.pension):confLabel(confDe(c,me.prop))].filter(Boolean).map(function(x){return '<span class="pill">'+esc(x)+'</span>'}).join('')+'</div>'+(mine?'':'<p class="sub" style="margin:0">'+(owner(c.proprietaireId)?'Cheval de '+esc(owner(c.proprietaireId).nom)+', qui vous est confié.':'Cheval qui vous est confié par l\'écurie.')+'</p>')+
       (gt||c.ration?'<div><span class="lbl">Ration</span><div style="white-space:pre-wrap">'+esc([gt,c.ration].filter(Boolean).join('\n'))+'</div></div>':'')+(c.consignes?'<div><span class="lbl">Consignes</span><div style="white-space:pre-wrap">'+esc(c.consignes)+'</div></div>':'')+
       '<div class="actions"><button class="btn primary grow" data-act="signal" data-id="'+c.id+'">Signaler un problème</button><button class="btn grow" data-act="ask-horse" data-id="'+c.id+'">Poser une question</button></div></div></section>';
@@ -741,7 +789,7 @@ function vMessagesG(){
   var ps=db.proprietaires.map(function(p){var l=db.messages.filter(function(m){return m.proprietaireId===p.id}).sort(function(a,b){return String(b.date).localeCompare(String(a.date))});return{p:p,last:l[0],un:unreadFor(p.id)}})
     .sort(function(a,b){return String(b.last?b.last.date:'').localeCompare(String(a.last?a.last.date:''))||a.p.nom.localeCompare(b.p.nom)});
   if(!ps.length)return '<div class="panel empty">Aucun cavalier enregistré.</div>';
-  return '<div class="panel items">'+ps.map(function(x){return '<button class="item" data-act="thread" data-id="'+x.p.id+'"><span class="avatar">'+esc(initials(x.p.nom))+'</span><span class="x"><b>'+esc(x.p.nom)+'</b><span>'+(x.last?esc((x.last.de==='gerant'?'Vous : ':'')+x.last.texte.slice(0,70)):'Aucun message')+'</span></span><span class="end">'+(x.un?'<span class="pill warn">'+x.un+' nouveau'+(x.un>1?'x':'')+'</span>':(x.last?'<span class="sub">'+esc(fdateTime(x.last.date))+'</span>':''))+'</span></button>'}).join('')+'</div>';
+  return '<div class="panel items">'+ps.map(function(x){return '<button class="item" data-act="thread" data-id="'+x.p.id+'"><span class="avatar '+avc(x.p.nom)+'">'+esc(initials(x.p.nom))+'</span><span class="x"><b>'+esc(x.p.nom)+'</b><span>'+(x.last?esc((x.last.de==='gerant'?'Vous : ':'')+x.last.texte.slice(0,70)):'Aucun message')+'</span></span><span class="end">'+(x.un?'<span class="pill warn">'+x.un+' nouveau'+(x.un>1?'x':'')+'</span>':(x.last?'<span class="sub">'+esc(fdateTime(x.last.date))+'</span>':''))+'</span></button>'}).join('')+'</div>';
 }
 function markRead(pid){
   var side=isG()?'client':'gerant',l=db.messages.filter(function(m){return m.proprietaireId===pid&&m.de===side&&!m.lu});
@@ -759,8 +807,9 @@ function sendMsg(){
 }
 function annoncesSection(){
   var an=db.annonces.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))});
-  return '<section><div class="sh"><h2>Annonces aux cavaliers</h2><span class="sub">visibles dans leur espace</span></div>'+an.slice(0,5).map(function(a){return annonceCard(a,true)}).join('')+
-    '<form class="form panel" id="fannonce" style="padding:14px">'+fld('an-titre','Titre','','text',' placeholder="ex. Manège fermé samedi"')+'<div class="field"><label for="an-texte">Message</label><textarea id="an-texte"></textarea></div><button class="btn primary" type="submit">Publier l\'annonce</button></form></section>';
+  return '<section><div class="sh"><h2>Annonces aux cavaliers</h2><button class="btn sm" data-act="an-new" aria-expanded="'+!!S.anOpen+'">'+(S.anOpen?'Fermer':'+ Nouvelle annonce')+'</button></div>'+
+    (S.anOpen?'<form class="form panel" id="fannonce" style="padding:14px">'+fld('an-titre','Titre','','text',' placeholder="ex. Manège fermé samedi"')+'<div class="field"><label for="an-texte">Message</label><textarea id="an-texte"></textarea></div><button class="btn primary" type="submit">Publier l\'annonce</button><p class="sub" style="margin:0">Tous les cavaliers la voient et reçoivent une notification.</p></form>':'')+
+    (an.length?an.slice(0,4).map(function(a){return annonceCard(a,true)}).join(''):(S.anOpen?'':'<div class="panel empty">Aucune annonce publiée.</div>'))+'</section>';
 }
 function reserver(id){
   var c=db.cours.find(function(x){return x.id===id});if(!c)return;
@@ -784,21 +833,34 @@ function copyText(t,okMsg){var p=navigator.clipboard&&navigator.clipboard.writeT
 
 var VIEWS_G={meteo:vMeteo,jour:vJour,chevaux:vChevaux,cours:vCours,proprios:vProprios,silo:vSilo,stats:vStats,registre:vRegistre,messages:vMessagesG};
 var VIEWS_C={meteo:vMeteo,accueil:cAccueil,cours:cCours,cheval:cCheval,chevaux:cChevaux,messages:cMessages};
-function titleFor(){if(authState!=='ok')return 'Connexion';if(!isG()){if(S.tab==='cours')return 'Réserver un cours';if(S.tab==='chevaux')return 'Chevaux de l\'écurie';if(S.tab==='cheval'&&myHorses().length>1)return 'Mes chevaux'}return TITLES[S.tab]||''}
+function titleFor(){if(authState!=='ok')return 'Connexion';if(!isG()){if(S.tab==='cours')return 'Cours';if(S.tab==='chevaux')return 'Chevaux de l\'écurie';if(S.tab==='cheval'&&myHorses().length>1)return 'Mes chevaux'}return TITLES[S.tab]||''}
 var ICONS={sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   doc:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
   eur:'<path d="M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9"/>',people:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>',
   wx:'<path d="M7 3v1.5M2.8 4.8l1 1M1.5 9H3M11.2 4.8l-1 1"/><path d="M4.6 11.5A3 3 0 0 1 9.5 7.6"/><path d="M8 20h9a4 4 0 0 0 0-8 5 5 0 0 0-9.6 1.6A3.2 3.2 0 0 0 8 20z"/>',
-  silo:'<path d="M6 21V8a6 4 0 0 1 12 0v13"/><path d="M4 21h16M6 12h12M6 16h12"/>',chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',book:'<path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h11M8 8h6"/>',horse:'<path d="M5 20l2-6-2-3 3-6 3 2h4l4 4-2 2-3-1v8"/><circle cx="14" cy="9" r=".6"/>',
+  silo:'<path d="M6 21V8a6 4 0 0 1 12 0v13"/><path d="M4 21h16M6 12h12M6 16h12"/>',bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',check:'<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.5l2.8 2.8L16.5 9"/>',grid:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',book:'<path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h11M8 8h6"/>',horse:'<path d="M5 20l2-6-2-3 3-6 3 2h4l4 4-2 2-3-1v8"/><circle cx="14" cy="9" r=".6"/>',
   home:'<path d="M3 11l9-7 9 7v9H3z"/><path d="M10 20v-5h4v5"/>',chat:'<path d="M4 5h16v11H8l-4 4z"/>'};
+var NAV_G=[['jour',"Accueil",'sun','Au quotidien'],['chevaux','Chevaux','horse'],['cours','Cours','cal'],['proprios','Cavaliers','people'],['silo','Silo','silo','Suivi'],['stats','Stats','chart'],['registre','Registre','book'],['meteo','Météo','wx','Infos']];
+function navItems(){return isG()?NAV_G:[['accueil','Accueil','home'],['cours','Cours','cal']].concat(myHorses().length?[['cheval',myHorses().length>1?'Mes chevaux':'Mon cheval','doc']]:[]).concat([['chevaux','Chevaux','horse'],['messages','Messages','chat'],['meteo','Météo','wx']])}
+function navBtn(x,cur){return '<button data-act="tab" data-id="'+x[0]+'"'+(cur?' aria-current="page"':'')+'><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[x[2]]+'</svg>'+(x[0]==='messages'?'<span class="nbadge" id="nav-msg-badge" hidden></span>':'')+'</span><span>'+x[1]+'</span></button>'}
+var NAV_MAIN=4;
 function renderNav(){
   var nav=document.querySelector('nav.tabs'),inn=nav.querySelector('.in'),ok=authState==='ok';
   nav.hidden=!ok;document.getElementById('hset').hidden=!ok;document.getElementById('hmsg').hidden=!(ok&&isG());document.getElementById('hnotif').hidden=!ok;
   if(!ok)return;
-  var items=isG()?[['jour',"Accueil",'sun'],['chevaux','Chevaux','horse'],['cours','Cours','cal'],['proprios','Cavaliers','people'],['silo','Silo','silo'],['stats','Stats','chart'],['registre','Registre','book'],['meteo','Météo','wx']]
-    :[['accueil','Accueil','home'],['cours','Cours','cal']].concat(myHorses().length?[['cheval',myHorses().length>1?'Mes chevaux':'Mon cheval','doc']]:[]).concat([['chevaux','Chevaux','horse'],['messages','Messages','chat'],['meteo','Météo','wx']]);
-  inn.innerHTML='<div class="brand" aria-hidden="true">Élevage d\'<span>ALB</span></div>'+items.map(function(x){return '<button data-act="tab" data-id="'+x[0]+'"'+(S.tab===x[0]?' aria-current="page"':'')+'><span style="position:relative;display:inline-flex"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[x[2]]+'</svg>'+(x[0]==='messages'?'<span class="nbadge" id="nav-msg-badge" hidden></span>':'')+'</span><span>'+x[1]+'</span></button>'}).join('');
+  var items=navItems(),large=window.innerWidth>=1000,h='<div class="brand" aria-hidden="true">Élevage d\'<span>ALB</span></div>';
+  if(isG()&&!large){var main=items.slice(0,NAV_MAIN),rest=items.slice(NAV_MAIN),inRest=rest.some(function(x){return x[0]===S.tab})||S.tab==='messages';
+    h+=main.map(function(x){return navBtn(x,S.tab===x[0])}).join('')+'<button data-act="nav-plus"'+(inRest?' aria-current="page"':'')+' aria-label="Plus : silo, statistiques, registre, météo, messages"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">'+ICONS.grid+'</svg><span class="nbadge" id="nav-msg-badge" hidden></span></span><span>'+(inRest?esc((rest.find(function(x){return x[0]===S.tab})||['','Messages'])[1]):'Plus')+'</span></button>'}
+  else h+=items.map(function(x){return (large&&x[3]?'<div class="ngroup">'+x[3]+'</div>':'')+navBtn(x,S.tab===x[0])}).join('');
+  inn.innerHTML=h;
   updateBadge();
+}
+function plusModal(){
+  var rest=NAV_G.slice(NAV_MAIN).concat([['messages','Messages','chat']]),un=unreadTotal();
+  M={kind:'plus',draft:{},read:function(){},focus:false,render:function(){
+    mb(head('Plus')+'<div class="tiles">'+rest.map(function(x){return '<button class="tile'+(S.tab===x[0]?' on':'')+'" data-act="tab" data-id="'+x[0]+'"><span class="tile-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[x[2]]+'</svg></span><b>'+x[1]+'</b>'+(x[0]==='messages'&&un?'<span class="pill late">'+un+' non lu'+(un>1?'s':'')+'</span>':'<small>'+({silo:'Grains et stock',stats:'Cours, fréquentation',registre:'Entrées, sorties, soins',meteo:'Prévisions et conseils',messages:'Discussions'}[x[0]]||'')+'</small>')+'</button>'}).join('')+
+      '<button class="tile" data-act="settings"><span class="tile-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></span><b>Réglages</b><small>Écurie, pensions, compte</small></button></div>')}};
+  openModal();
 }
 function updateBadge(){var nb=document.getElementById('hnotif-badge'),nu=authState==='ok'?unreadNotifs():0;if(nb){nb.textContent=nu>9?'9+':nu;nb.hidden=!nu}var u=authState==='ok'?unreadTotal():0;['hmsg-badge','nav-msg-badge'].forEach(function(i){var b=document.getElementById(i);if(b){b.textContent=u;b.hidden=!u}})}
 function render(){
@@ -806,6 +868,8 @@ function render(){
   if(authState!=='ok')vw.innerHTML=vAuth();
   else{vw.innerHTML=(busy?'<div class="banner"><div class="x">Enregistrement en cours dans la base…</div></div>':'')+((isG()?VIEWS_G:VIEWS_C)[S.tab]||(isG()?vJour:cAccueil))();layoutCols(vw)}
   document.getElementById('htitle').textContent=titleFor();
+  var ad=authState==='ok'?(isG()?{chevaux:['horse','Cheval'],cours:['cours','Cours'],proprios:['owner','Cavalier'],silo:['grain-focus','Grain']}:{})[S.tab]:null,hb=document.getElementById('hadd');
+  hb.hidden=!ad;if(ad){hb.dataset.act=ad[0];document.getElementById('hadd-l').textContent=ad[1];hb.setAttribute('aria-label','Ajouter : '+ad[1])}
   var dt=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
   document.getElementById('hdate').textContent=dt.charAt(0).toUpperCase()+dt.slice(1);
   renderNav();
@@ -821,8 +885,8 @@ function layoutCols(vw){
   secs.forEach(function(s,i){if(ha<=hb){a.appendChild(s);ha+=hs[i]+22}else{b.appendChild(s);hb+=hs[i]+22}});
   rest.forEach(function(e){vw.appendChild(e)});
 }
-var lastLarge=window.innerWidth>=LARGE,rsT;
-window.addEventListener('resize',function(){clearTimeout(rsT);rsT=setTimeout(function(){var l=window.innerWidth>=LARGE;if(l!==lastLarge){lastLarge=l;var a=document.activeElement;if(!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)))render()}},200)});
+var lastLarge=window.innerWidth>=LARGE,lastDesk=window.innerWidth>=1000,rsT;
+window.addEventListener('resize',function(){clearTimeout(rsT);rsT=setTimeout(function(){var dk=window.innerWidth>=1000;if(dk!==lastDesk){lastDesk=dk;if(authState==='ok')renderNav()}var l=window.innerWidth>=LARGE;if(l!==lastLarge){lastLarge=l;var a=document.activeElement;if(!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)))render()}},200)});
 
 /* ---------- fenêtres ---------- */
 var FINE=window.matchMedia&&matchMedia('(pointer:fine)').matches;
@@ -851,7 +915,10 @@ function horseModal(id){
   if(!Array.isArray(c.soins))c.soins=[];if(!Array.isArray(c.grains))c.grains=[];
   M={kind:'chevaux',draft:c,read:readHorse,render:function(){
     var d=M.draft,t=today();
-    var h=head(d.id?d.nom:'Nouveau cheval')+'<form class="form" id="fhorse">';
+    var sec=M.sec||'fiche',tabs=[['fiche','Fiche'],['ration','Ration'],['soins','Soins'],['cavaliers','Cavaliers']];
+    function S0(k){return '<div class="msec form" data-sec="'+k+'"'+(sec===k?'':' hidden')+'>'}
+    var nsv=soinsAVenir(d).filter(function(s){return diff(s.date,t)<=14}).length;
+    var h=head(d.id?d.nom:'Nouveau cheval')+'<div class="seg mtabs" role="group" aria-label="Parties de la fiche">'+tabs.map(function(x){return '<button type="button" class="'+(sec===x[0]?'on':'')+'" data-act="msec" data-id="'+x[0]+'" aria-pressed="'+(sec===x[0])+'">'+x[1]+(x[0]==='soins'&&nsv?' <span class="cnt">'+nsv+'</span>':'')+'</button>'}).join('')+'</div><form class="form" id="fhorse">'+S0('fiche');
     if(d.id){var sg=signalements(d.id);if(sg.length)h+=signalItems(sg)}
     h+=fld('h-nom','Nom',d.nom,'text',' required')+'<div class="grid2">'+selOther('h-race','Race',RACES,d.race,M.oRace)+sel('h-sexe','Sexe',[['Jument','Jument'],['Hongre','Hongre'],['Étalon','Étalon']],d.sexe)+fld('h-naiss','Date de naissance',d.naissance||'','date')+fld('h-sire','N° SIRE / UELN',d.sire||'','text',' placeholder="ex. 25012345 X"')+fld('h-puce','N° de puce (transpondeur)',d.puce||'','text',' inputmode="numeric"')+
       selOther('h-box','Box ou pré',db.lieux,d.box,M.oBox,function(x){var o=actifs().filter(function(k){return k.box===x&&k.id!==d.id}).map(function(k){return k.nom});return x+(o.length?' · '+o.join(', '):'')})+'</div>';
@@ -859,15 +926,16 @@ function horseModal(id){
     var pl=pensions(),po=pl.map(function(p){return[p.id,p.nom+(aLimite(p)?' ('+coursSem(p.cours)+')':'')]});if(d.pension&&!pensionOf(d.pension))po.push([d.pension,d.pension]);
     h+='<div class="grid2">'+sel('h-pension','Pension',po,d.pension)+sel('h-prop','Propriétaire',[['',"L'écurie (mes chevaux)"]].concat(db.proprietaires.map(function(p){return[p.id,p.nom]})),d.proprietaireId||'')+'</div>';
     h+='<label class="checks" style="border:0"><span style="display:flex;gap:10px;align-items:center;font-weight:500;color:var(--fg)"><input type="checkbox" id="h-club"'+(d.club?' checked':'')+'>Disponible pour les cours (cheval de club)</span></label>';
-    h+=grainsField(d)+'<div class="field"><label for="h-ration">Fourrage et compléments</label><textarea id="h-ration" placeholder="ex. foin à volonté, 1 poignée de luzerne">'+esc(d.ration)+'</textarea></div><div class="field"><label for="h-cons">Consignes et soins particuliers</label><textarea id="h-cons">'+esc(d.consignes)+'</textarea></div>';
+    h+='<div class="field"><label for="h-cons">Consignes et soins particuliers</label><textarea id="h-cons">'+esc(d.consignes)+'</textarea></div>';
+    if(d.id)h+=departHtml(d);
+    h+='</div>'+S0('ration')+grainsField(d)+'<div class="field"><label for="h-ration">Fourrage et compléments</label><textarea id="h-ration" placeholder="ex. foin à volonté, 1 poignée de luzerne">'+esc(d.ration)+'</textarea></div><p class="sub" style="margin:0">'+(d.id?'Le grain est enregistré dès que vous le changez.':'')+' Les grains se gèrent dans l\'onglet Silo.</p></div>'+S0('soins');
     var sav=soinsAVenir(d),sfa=soinsFaits(d);
     h+='<div class="field"><span class="lbl">Soins et visites prévus</span><div class="panel items">'+(sav.length?sav.map(function(s){var n=diff(s.date,t);
       return '<div class="item" style="cursor:default;flex-wrap:wrap"><span class="x" style="flex:1 1 180px"><b>'+esc(soinNom(s))+'</b><span>'+fdate(s.date,{day:'numeric',month:'long',year:'numeric'})+' · '+whenTxt(n)+(s.note?' · '+esc(s.note):'')+'</span></span><button type="button" class="btn sm" data-act="soin-fait" data-id="'+s.id+'">Fait</button><button type="button" class="del-x" data-act="soin-del" data-id="'+s.id+'" aria-label="Supprimer '+esc(s.type)+'">✕</button></div>'}).join(''):'<div class="empty">Aucune échéance enregistrée.</div>')+
       '<div class="item" style="cursor:default;flex-wrap:wrap"><select class="search" id="s-type" aria-label="Type de soin" style="flex:1 1 130px;min-width:0">'+SOINS.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select><select class="search" id="s-produit" aria-label="Vermifuge utilisé" hidden style="flex:2 1 200px;min-width:0">'+VERMIFUGES.map(function(x){return '<option>'+esc(x)+'</option>'}).join('')+'</select><input class="search" type="date" id="s-date" aria-label="Date du soin" value="'+addDays(t,30)+'" style="flex:1 1 130px;min-width:0"><label style="display:flex;gap:6px;align-items:center;font-size:13px;flex:1 1 110px"><input type="checkbox" id="s-fait" style="width:18px;height:18px;flex:none;accent-color:var(--accent)">Déjà fait</label><button type="button" class="btn sm" data-act="soin-add">Ajouter</button></div></div>'+
       '<p class="sub" style="margin:0">« Déjà fait » range le soin dans l\'historique (vermifuge donné, vaccin fait…) et dans le registre d\'élevage.</p></div>';
     h+='<div class="field"><span class="lbl">Historique des soins</span><div class="panel items">'+(sfa.length?sfa.slice(0,15).map(function(s){return '<div class="item" style="cursor:default"><span class="x"><b>✓ '+esc(soinNom(s))+'</b><span>'+fdate(s.date,{day:'numeric',month:'long',year:'numeric'})+(s.note?' · '+esc(s.note):'')+(s.par==='client'?' · noté par le propriétaire':'')+'</span></span><button type="button" class="del-x" data-act="soin-del" data-id="'+s.id+'" aria-label="Supprimer '+esc(s.type)+'">✕</button></div>'}).join(''):'<div class="empty">Aucun soin fait enregistré.</div>')+'</div></div>';
-    h+=confSection(d);
-    if(d.id)h+=departHtml(d);
+    h+='</div>'+S0('cavaliers')+confSection(d)+'</div>';
     h+='<button class="btn primary block" type="submit">Enregistrer</button>'+delBar('Supprimer ce cheval')+(d.id?'<p class="sub" style="margin:0">Pour un cheval vendu ou parti, préférez « Le cheval quitte l\'écurie » : il reste dans le registre d\'élevage.</p>':'')+'</form>';
     mb(h);
   }};
@@ -1351,7 +1419,7 @@ function vCartes(){
   h+='<div class="kpis"><div class="panel"><b>'+actives.length+'</b><span>cartes en cours</span></div><div class="panel"><b>'+actives.reduce(function(s,r){return s+r.rest},0)+'</b><span>cours restants</span></div><div class="panel"><b>'+bientot+'</b><span>à renouveler bientôt</span></div></div>';
   if(!l.length)return h+'<div class="panel empty">Aucune carte '+(f==='actives'?'en cours':f==='epuisees'?'épuisée':'')+'. Ajoutez-en depuis la fiche d\'un cavalier.</div>';
   return h+'<div class="panel items">'+l.map(function(r){var pct=Math.round(100*Math.min(1,(r.x.passes+r.x.reserves)/Math.max(1,r.cap)));
-    return '<div class="item" style="cursor:default;flex-wrap:wrap"><button class="avatar" style="border:0;cursor:pointer" data-act="owner" data-id="'+r.p.id+'" aria-label="Fiche de '+esc(r.p.nom)+'">'+esc(initials(r.p.nom))+'</button><span class="x" style="flex:1 1 160px"><b>'+esc(r.p.nom)+'</b><span>'+esc(carnetLabel(r.k))+(+r.k.ajust?' ('+(r.k.ajust>0?'+':'')+r.k.ajust+' ajusté'+(Math.abs(r.k.ajust)>1?'s':'')+')':'')+' · '+r.x.passes+' fait'+(r.x.passes>1?'s':'')+(r.x.reserves?' · '+r.x.reserves+' réservé'+(r.x.reserves>1?'s':''):'')+'</span><span class="meter" aria-hidden="true"><span style="width:'+pct+'%"></span></span></span>'+
+    return '<div class="item" style="cursor:default;flex-wrap:wrap"><button class="avatar '+avc(r.p.nom)+'" style="border:0;cursor:pointer" data-act="owner" data-id="'+r.p.id+'" aria-label="Fiche de '+esc(r.p.nom)+'">'+esc(initials(r.p.nom))+'</button><span class="x" style="flex:1 1 160px"><b>'+esc(r.p.nom)+'</b><span>'+esc(carnetLabel(r.k))+(+r.k.ajust?' ('+(r.k.ajust>0?'+':'')+r.k.ajust+' ajusté'+(Math.abs(r.k.ajust)>1?'s':'')+')':'')+' · '+r.x.passes+' fait'+(r.x.passes>1?'s':'')+(r.x.reserves?' · '+r.x.reserves+' réservé'+(r.x.reserves>1?'s':''):'')+'</span><span class="meter" aria-hidden="true"><span style="width:'+pct+'%"></span></span></span>'+
       '<span class="end" style="display:flex;gap:6px;align-items:center"><span class="pill '+(r.rest<=0?'late':r.rest===1?'warn':'')+'">'+(r.rest<=0?'Épuisée':r.rest+' restant'+(r.rest>1?'s':''))+'</span><button class="btn sm" data-act="carte-adj" data-id="'+r.p.id+'|'+r.k.id+'|-1" aria-label="Retirer un cours">−1</button><button class="btn sm" data-act="carte-adj" data-id="'+r.p.id+'|'+r.k.id+'|1" aria-label="Ajouter un cours">+1</button></span></div>'}).join('')+'</div>'+
     '<p class="sub" style="margin:0">+1 / −1 corrige le nombre de cours d\'une carte (cours offert, séance rattrapée…). Les cours sont décomptés automatiquement quand le cavalier est inscrit.</p>';
 }
@@ -1413,7 +1481,7 @@ function confSection(d){
   if(!d.id)return t+'<p class="sub" style="margin:0">Enregistrez d\'abord le cheval pour le confier à un cavalier.</p></div>';
   var l=(d.cavaliers||[]),autres=db.proprietaires.filter(function(p){return p.id!==d.proprietaireId});
   t+='<div class="panel items">'+(l.length?l.map(function(a){var o=owner(a.proprietaireId),act=confActif(a);
-    return '<div class="item" style="cursor:default"><span class="avatar">'+esc(initials(o?o.nom:'?'))+'</span><span class="x"><b>'+esc(o?o.nom:'Cavalier supprimé')+'</b><span>'+esc(confLabel(a))+'</span><span class="sub" style="font-size:12px;display:block">'+(a.debut?'depuis le '+fdate(a.debut,{day:'numeric',month:'short',year:'numeric'}):'')+(a.fin?' · jusqu\'au '+fdate(a.fin,{day:'numeric',month:'short',year:'numeric'}):'')+'</span></span>'+
+    return '<div class="item" style="cursor:default"><span class="avatar '+avc(o?o.nom:'?')+'">'+esc(initials(o?o.nom:'?'))+'</span><span class="x"><b>'+esc(o?o.nom:'Cavalier supprimé')+'</b><span>'+esc(confLabel(a))+'</span><span class="sub" style="font-size:12px;display:block">'+(a.debut?'depuis le '+fdate(a.debut,{day:'numeric',month:'short',year:'numeric'}):'')+(a.fin?' · jusqu\'au '+fdate(a.fin,{day:'numeric',month:'short',year:'numeric'}):'')+'</span></span>'+
       '<span class="end">'+(act?'<span class="pill">En cours</span>':'<span class="pill muted">'+(a.debut>today()?'À venir':'Terminé')+'</span>')+'</span>'+
       (act&&!a.fin?'<button type="button" class="btn sm" data-act="conf-fin" data-id="'+a.id+'">Arrêter</button>':'<button type="button" class="del-x" data-act="conf-del" data-id="'+a.id+'" aria-label="Retirer">✕</button>')+'</div>'}).join(''):'<div class="empty">Ce cheval n\'est confié à personne.</div>')+'</div>';
   if(!autres.length)return t+'<p class="sub" style="margin:0">Ajoutez d\'abord le cavalier dans l\'onglet Cavaliers.</p></div>';
@@ -1619,7 +1687,7 @@ function imprimerRegistre(){var p=document.getElementById('print');p.innerHTML=r
 /* ---------- alertes ---------- */
 function alertesHtml(al){
   return al.map(function(a,i){var acts='';
-    if(a.type==='soin')acts='<button class="btn sm primary" data-act="alert-fait" data-id="'+a.horse+'|'+a.soin+'">C\'est fait</button><button class="btn sm" data-act="alert-report" data-id="'+a.horse+'|'+a.soin+'">Reporter d\'une semaine</button><button class="btn sm" data-act="horse" data-id="'+a.horse+'">Fiche du cheval</button>';
+    if(a.type==='soin')acts='<button class="btn sm primary" data-act="alert-fait" data-id="'+a.horse+'|'+a.soin+'">C\'est fait</button><button class="btn sm" data-act="alert-report" data-id="'+a.horse+'|'+a.soin+'">Reporter d\'une semaine</button><button class="btn sm" data-act="horse-soins" data-id="'+a.horse+'">Fiche du cheval</button>';
     else if(a.type==='rc')acts='<button class="btn sm" data-act="owner" data-id="'+a.owner+'">Fiche du cavalier</button>';
     else if(a.type==='signal')acts='<button class="btn sm primary" data-act="signal-ok" data-id="'+a.msg+'">Marquer réglé</button><button class="btn sm" data-act="alert-thread" data-id="'+a.owner+'">Répondre</button>'+(a.horse?'<button class="btn sm" data-act="horse" data-id="'+a.horse+'">Fiche du cheval</button>':'');
     return '<div class="alert '+(a.n<0||a.type==='signal'?'late':'')+'" style="flex-direction:column;align-items:stretch;gap:8px"><div class="x"><b>'+esc(a.title)+'</b><br>'+esc(a.detail)+'</div><div class="actions">'+acts+'</div></div>'}).join('');
@@ -1636,7 +1704,7 @@ function signalements(cid){return db.messages.filter(function(m){return m.signal
 function signalModal(cid){
   var c=horse(cid);if(!c)return;
   M={kind:'signal',draft:{cid:cid},read:function(){},render:function(){
-    mb(head('Signaler un problème')+'<form class="form" id="fsignal"><div class="panel" style="padding:12px 14px;display:flex;gap:10px;align-items:center"><span class="avatar">'+esc(initials(c.nom))+'</span><div><b>'+esc(c.nom)+'</b><div class="sub">'+esc(c.box||'')+'</div></div></div>'+
+    mb(head('Signaler un problème')+'<form class="form" id="fsignal"><div class="panel" style="padding:12px 14px;display:flex;gap:10px;align-items:center"><span class="avatar '+avc(c.nom)+'">'+esc(initials(c.nom))+'</span><div><b>'+esc(c.nom)+'</b><div class="sub">'+esc(c.box||'')+'</div></div></div>'+
       sel('sg-type','Problème',TYPES_SIGNAL.map(function(t){return[t,t]}),TYPES_SIGNAL[0])+'<div class="field"><label for="sg-texte">Ce que vous avez constaté</label><textarea id="sg-texte" required placeholder="ex. boite de l\'antérieur droit au pas, chaleur au boulet"></textarea></div>'+
       '<p class="sub" style="margin:0">Le gérant reçoit une notification tout de suite et vous répond dans Messages.</p><button class="btn primary block" type="submit">Envoyer le signalement</button></form>')}};
   openModal();
@@ -1657,7 +1725,7 @@ function cChevaux(){
   var h=demoBanner()+'<p class="sub" style="margin:0">Tous les chevaux de l\'écurie. Touchez un cheval pour voir sa fiche ou signaler un problème (blessure, matériel, box…).</p><input class="search" id="qc" type="search" placeholder="Rechercher un cheval" aria-label="Rechercher un cheval" value="'+esc(S.q||'')+'">';
   if(!l.length)return h+'<div class="panel empty">Aucun cheval.</div>';
   return h+'<div class="panel items" id="clist">'+l.map(function(c){var mine=c.proprietaireId===me.prop||!!confDe(c,me.prop),sg=signalements(c.id).length;
-    return '<button class="item" data-act="cheval-vue" data-id="'+c.id+'"><span class="avatar">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>'+esc([c.box,c.race,ageOf(c)!==''?ageOf(c)+' ans':''].filter(Boolean).join(' · '))+'</span></span><span class="end">'+(mine?'<span class="pill">'+(c.proprietaireId===me.prop?'Mon cheval':'Confié')+'</span>':c.club?'<span class="pill muted">Club</span>':'')+(sg?' <span class="pill late">Signalé</span>':'')+'</span></button>'}).join('')+'</div>';
+    return '<button class="item" data-act="cheval-vue" data-id="'+c.id+'"><span class="avatar '+avc(c.nom)+'">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>'+esc([c.box,c.race,ageOf(c)!==''?ageOf(c)+' ans':''].filter(Boolean).join(' · '))+'</span></span><span class="end">'+(mine?'<span class="pill">'+(c.proprietaireId===me.prop?'Mon cheval':'Confié')+'</span>':c.club?'<span class="pill muted">Club</span>':'')+(sg?' <span class="pill late">Signalé</span>':'')+'</span></button>'}).join('')+'</div>';
 }
 function chevalVue(id){
   var c=horse(id);if(!c)return;
@@ -1738,7 +1806,7 @@ function statsCsv(){var p=statPer(),r=statsData(p);return csv([['Cavalier','Cour
 
 /* ---------- actions ---------- */
 var ACT={
-  tab:function(id){var te=document.getElementById('toast');if(te)te.hidden=true;S.tab=id;S.confirmClear=false;S.confirmAnnul=null;if(id!=='messages')S.thread=null;try{localStorage.setItem(KEY+'-tab',id)}catch(e){}render();window.scrollTo(0,0)},
+  tab:function(id){if(M)closeModal();var te=document.getElementById('toast');if(te)te.hidden=true;S.tab=id;S.confirmClear=false;S.confirmAnnul=null;if(id!=='messages')S.thread=null;try{localStorage.setItem(KEY+'-tab',id)}catch(e){}render();window.scrollTo(0,0)},
   horse:function(id){horseModal(id)},owner:function(id){ownerModal(id)},cours:function(id){coursModal(id)},settings:function(){settingsModal()},
   close:function(){closeModal()},
   task:function(id,el){var k=db.taches.find(function(x){return x.id===id});if(!k)return;k.doneOn=el.checked?today():null;put('taches',k);render()},
@@ -1814,6 +1882,11 @@ var ACT={
   
   
   'viewer-close':closeViewer,
+  'horse-soins':function(id){horseModal(id);ACT.msec('soins')},
+  scroll:function(id){var e=document.getElementById(id);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},
+  'nav-plus':function(){if(M)closeModal();plusModal()},
+  msec:function(id){M.read();M.sec=id;[].forEach.call(document.querySelectorAll('#mbody .msec'),function(s){s.hidden=s.dataset.sec!==id});[].forEach.call(document.querySelectorAll('#mbody .mtabs button'),function(b){var on=b.dataset.id===id;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});document.getElementById('mbody').scrollTop=0},
+  'an-new':function(){S.anOpen=!S.anOpen;render();if(S.anOpen){var t=document.getElementById('an-titre');if(t)t.focus()}},
   'st-k':function(k){S.stK=k;render()},'st-shift':function(n){statShift(+n);render()},
   'st-csv':function(){saveText(statsCsv(),'statistiques-cavaliers-'+slug(statPer().lab)+'.csv');toast('Statistiques exportées')},
   'st-print':function(){var p=document.getElementById('print'),vw=document.getElementById('view');p.innerHTML='<h1>Statistiques · '+esc(db.ecurie.nom||'')+'</h1><p>'+esc(statPer().lab)+' · édité le '+fdl(today())+'</p>'+vw.innerHTML;setTimeout(function(){window.print()},50)},
@@ -1825,7 +1898,7 @@ var ACT={
   'signal-ok':function(id){var m=db.messages.find(function(x){return x.id===id});if(!m)return;m.regle=today();m.lu=true;put('messages',m);var c=horse(m.chevalId);notifier({type:'proprios',ids:[m.proprietaireId]},'Signalement pris en charge',(c?c.nom+' · ':'')+(m.typeSignal||'problème')+' : réglé par l\'écurie','messages');if(M&&M.kind==='alertes')M.render();else if(M&&M.kind==='chevaux')M.render();render();toast('Signalement marqué réglé, le cavalier est prévenu')},
   'cheval-vue':function(id){chevalVue(id)},
   'task-vis':function(id){var k=db.taches.find(function(x){return x.id===id});if(!k)return;k.visible=!k.visible;put('taches',k);render();toast(k.visible?'Tâche visible par les cavaliers':'Tâche privée : vous seul la voyez')},
-  'grain-edit':function(id){grainModal(id)},'grain-del-ask':function(){M.confirmDel=true;M.render()},'grain-del-no':function(){M.confirmDel=false;M.render()},
+  'grain-edit':function(id){grainModal(id)},'grain-focus':function(){var e=document.getElementById('gr-nom');if(e){e.scrollIntoView({block:'center'});e.focus()}},'grain-del-ask':function(){M.confirmDel=true;M.render()},'grain-del-no':function(){M.confirmDel=false;M.render()},
   'grain-del':function(id){var used=actifs().filter(function(c){return (c.grains||[]).some(function(x){return x.grainId===id})});db.grains=(db.grains||[]).filter(function(g){return g.id!==id});used.forEach(function(c){c.grains=c.grains.filter(function(x){return x.grainId!==id});put('chevaux',c)});putConfig();closeModal();render();toast('Grain supprimé'+(used.length?' et retiré de '+used.length+' fiche'+(used.length>1?'s':''):''))},
   'gl-add':function(){M.read();M.draft.grains.push({grainId:(db.grains||[]).length?'':'__new',matin:'',midi:'',soir:''});M.render()},
   'gl-del':function(i){M.read();var row=document.querySelectorAll('#fhorse .gline')[+i];if(row)row.remove();saveGrainsNow();M.render()},
@@ -1915,7 +1988,7 @@ document.addEventListener('submit',function(e){
   if(id==='fcarnetdem'){var nb=v('kd-nb'),ty=v('kd-type'),ms=v('kd-msg');envoyerMessageClient('Je souhaite prendre un carnet de '+nb+' cours '+(ty==='particulier'?'particuliers':'collectifs')+'.'+(ms?' '+ms:''),'Demande de carnet');closeModal();render();toast('Demande envoyée à l\'écurie');return}
   if(id==='fannuljour'){var dy=M.draft.day,lst=db.cours.filter(function(c){return c.date===dy&&!c.annule}),nb=annulerCours(lst,v('aj-motif')),pers={};lst.forEach(function(c){c.inscrits.forEach(function(p){pers[p]=1})});closeModal();render();toast(nb+' cours annulé'+(nb>1?'s':'')+(Object.keys(pers).length?' · '+Object.keys(pers).length+' cavalier'+(Object.keys(pers).length>1?'s':'')+' prévenu'+(Object.keys(pers).length>1?'s':''):''));return}
   if(id==='fsignal'){envoyerSignal();return}
-  if(id==='fannonce'){var ti=v('an-titre'),tx=v('an-texte');if(!ti&&!tx){toast('Écrivez un titre ou un message.');return}var an={id:uid(),titre:ti||'Information',texte:tx,date:new Date().toISOString()};db.annonces.push(an);put('annonces',an);notifier({type:'tous'},an.titre,(tx||'').slice(0,200),'accueil');render();toast('Annonce publiée, cavaliers prévenus');return}
+  if(id==='fannonce'){var ti=v('an-titre'),tx=v('an-texte');if(!ti&&!tx){toast('Écrivez un titre ou un message.');return}var an={id:uid(),titre:ti||'Information',texte:tx,date:new Date().toISOString()};db.annonces.push(an);put('annonces',an);notifier({type:'tous'},an.titre,(tx||'').slice(0,200),'accueil');S.anOpen=false;render();toast('Annonce publiée, cavaliers prévenus');return}
   if(readOnly){toast('Accès en lecture seule.');return}
   if(id==='fgrain'){var gn=v('gr-nom');if(!gn)return;var gst=parseFloat(String(v('gr-stock')).replace(',','.'));db.grains=(db.grains||[]).concat([{id:'g-'+uid(),nom:gn,stock:gst>0?r2(gst):'',note:v('gr-note')}]);putConfig();render();toast('« '+gn+' » ajouté au silo');return}
   if(id==='fgrainedit'){var gg=grain(M.draft.id);if(!gg)return;gg.nom=v('ge-nom')||gg.nom;var gs2=parseFloat(String(v('ge-stock')).replace(',','.'));gg.stock=gs2>0?r2(gs2):'';gg.note=v('ge-note');putConfig();closeModal();render();toast('Grain enregistré');return}
