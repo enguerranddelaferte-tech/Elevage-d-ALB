@@ -279,7 +279,7 @@ var PENSIONS_DEF=[{id:'complete',nom:'Pension complète',cours:''},{id:'pre',nom
 var SOINS=['Vaccin tétanos-grippe (TG)','Vaccin grippe','Vaccin tétanos','Vaccin rhinopneumonie','Vermifuge','Maréchal','Dentiste','Ostéopathe','Visite vétérinaire','Autre'];
 var RACES=['Selle Français','Pur-sang','Trotteur Français','Anglo-Arabe','Arabe','Demi-sang arabe','KWPN','Hanovrien','Holsteiner','Oldenbourg','Zangersheide','BWP','Lusitanien','Pure Race Espagnole (PRE)','Frison','Quarter Horse','Appaloosa','Paint Horse','Camargue','Mérens','Barbe','Irish Cob','Fjord','Haflinger','Islandais','Cheval de trait','Connemara','Welsh','New Forest','Poney Français de Selle','Shetland','Origine non constatée (ONC)'];
 var LIEUX_DEF=['Box 1','Box 2','Box 3','Box 4','Box 5','Box 6','Box 7','Box 8','Box 9','Box 10','Box 11','Box 12','Pré n°1','Pré n°2','Pré n°3','Pré n°4','Paddock 1','Paddock 2'];
-var TITLES={meteo:'Météo',accueil:'Accueil',cheval:'Mon cheval',messages:'Messages',jour:"Aujourd'hui",chevaux:'Chevaux',cours:'Planning des cours',proprios:'Cavaliers',stats:'Statistiques',registre:'Registre d\'élevage'};
+var TITLES={meteo:'Météo',accueil:'Accueil',cheval:'Mon cheval',messages:'Messages',jour:"Aujourd'hui",chevaux:'Chevaux',cours:'Planning des cours',proprios:'Cavaliers',silo:'Silo à grain',stats:'Statistiques',registre:'Registre d\'élevage'};
 var canSave=true;
 
 /* ---------- dates & formats ---------- */
@@ -486,7 +486,7 @@ async function doAuth(id){
     if(id==='fnewpass'){var r3=await sb.auth.updateUser({password:document.getElementById('np-pass').value});if(r3.error)throw r3.error;authView='login';toast('Mot de passe modifié');var s2=(await sb.auth.getSession()).data.session;if(s2)await afterLogin(s2);else render();return}
   }catch(e){authMsg=frErr(e);render()}
 }
-var TABS_G=['jour','chevaux','cours','proprios','stats','registre','meteo'],TABS_C=['accueil','cours','cheval','chevaux','messages','meteo'];
+var TABS_G=['jour','chevaux','cours','proprios','silo','stats','registre','meteo'],TABS_C=['accueil','cours','cheval','chevaux','messages','meteo'];
 function fixTab(){hashTab();var ok=isG()?TABS_G.concat(['messages']):TABS_C;if(ok.indexOf(S.tab)<0)S.tab=ok[0]}
 function closeViewer(){document.getElementById('viewer').hidden=true}
 
@@ -605,7 +605,7 @@ function coursItem(c){
     (n?'<span class="chips">'+c.inscrits.map(function(id){var mo=montureDe(c,id);return presChip(c,id).replace('</span>',(mo?' · '+esc(mo):'')+'</span>')}).join('')+'</span>':'')+'</span><span class="end">'+pill+'</span></button>';
 }
 function vChevaux(){
-  var hv=S.hView||'liste';if(hv==='pres')return hViewToggle()+vPres();if(hv==='rations')return hViewToggle()+vRations();if(hv==='silo')return hViewToggle()+vSilo();
+  var hv=S.hView||'liste';if(hv==='pres')return hViewToggle()+vPres();if(hv==='rations')return hViewToggle()+vRations();
   return hViewToggle()+'<div class="actions"><input class="search grow" id="q" type="search" placeholder="Rechercher un cheval ou un propriétaire" aria-label="Rechercher" value="'+esc(S.q)+'"><button class="btn" data-act="groupe">Soin groupé</button><button class="btn primary" data-act="horse">+ Cheval</button></div><div id="hlist">'+hList()+'</div>';
 }
 function hList(){
@@ -781,20 +781,20 @@ function appUrl(){return location.origin+location.pathname}
 function inviteText(p){return 'Bonjour '+firstName(p.nom)+',\n\nVoici votre accès à l\'espace cavalier de '+(db.ecurie.nom||'l\'écurie')+' : réservation des cours, chevaux de l\'écurie, suivi de votre cheval et messages.\n\n1. Ouvrez '+appUrl()+'\n2. Touchez « Première connexion : créer mon compte »\n3. Saisissez votre e-mail, un mot de passe et ce code d\'activation : '+p._code+'\n\nÀ bientôt !'}
 function copyText(t,okMsg){var p=navigator.clipboard&&navigator.clipboard.writeText(t);if(p)p.then(function(){toast(okMsg)},function(){toast('Copie impossible : sélectionnez le texte affiché')});else toast('Copie impossible : sélectionnez le texte affiché')}
 
-var VIEWS_G={meteo:vMeteo,jour:vJour,chevaux:vChevaux,cours:vCours,proprios:vProprios,stats:vStats,registre:vRegistre,messages:vMessagesG};
+var VIEWS_G={meteo:vMeteo,jour:vJour,chevaux:vChevaux,cours:vCours,proprios:vProprios,silo:vSilo,stats:vStats,registre:vRegistre,messages:vMessagesG};
 var VIEWS_C={meteo:vMeteo,accueil:cAccueil,cours:cCours,cheval:cCheval,chevaux:cChevaux,messages:cMessages};
 function titleFor(){if(authState!=='ok')return 'Connexion';if(!isG()){if(S.tab==='cours')return 'Réserver un cours';if(S.tab==='chevaux')return 'Chevaux de l\'écurie';if(S.tab==='cheval'&&myHorses().length>1)return 'Mes chevaux'}return TITLES[S.tab]||''}
 var ICONS={sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   doc:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
   eur:'<path d="M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9"/>',people:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>',
   wx:'<path d="M7 3v1.5M2.8 4.8l1 1M1.5 9H3M11.2 4.8l-1 1"/><path d="M4.6 11.5A3 3 0 0 1 9.5 7.6"/><path d="M8 20h9a4 4 0 0 0 0-8 5 5 0 0 0-9.6 1.6A3.2 3.2 0 0 0 8 20z"/>',
-  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',book:'<path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h11M8 8h6"/>',horse:'<path d="M5 20l2-6-2-3 3-6 3 2h4l4 4-2 2-3-1v8"/><circle cx="14" cy="9" r=".6"/>',
+  silo:'<path d="M6 21V8a6 4 0 0 1 12 0v13"/><path d="M4 21h16M6 12h12M6 16h12"/>',chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',book:'<path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h11M8 8h6"/>',horse:'<path d="M5 20l2-6-2-3 3-6 3 2h4l4 4-2 2-3-1v8"/><circle cx="14" cy="9" r=".6"/>',
   home:'<path d="M3 11l9-7 9 7v9H3z"/><path d="M10 20v-5h4v5"/>',chat:'<path d="M4 5h16v11H8l-4 4z"/>'};
 function renderNav(){
   var nav=document.querySelector('nav.tabs'),inn=nav.querySelector('.in'),ok=authState==='ok';
   nav.hidden=!ok;document.getElementById('hset').hidden=!ok;document.getElementById('hmsg').hidden=!(ok&&isG());document.getElementById('hnotif').hidden=!ok;
   if(!ok)return;
-  var items=isG()?[['jour',"Accueil",'sun'],['chevaux','Chevaux','horse'],['cours','Cours','cal'],['proprios','Cavaliers','people'],['stats','Stats','chart'],['registre','Registre','book'],['meteo','Météo','wx']]
+  var items=isG()?[['jour',"Accueil",'sun'],['chevaux','Chevaux','horse'],['cours','Cours','cal'],['proprios','Cavaliers','people'],['silo','Silo','silo'],['stats','Stats','chart'],['registre','Registre','book'],['meteo','Météo','wx']]
     :[['accueil','Accueil','home'],['cours','Cours','cal']].concat(myHorses().length?[['cheval',myHorses().length>1?'Mes chevaux':'Mon cheval','doc']]:[]).concat([['chevaux','Chevaux','horse'],['messages','Messages','chat'],['meteo','Météo','wx']]);
   inn.innerHTML='<div class="brand" aria-hidden="true">Élevage d\'<span>ALB</span></div>'+items.map(function(x){return '<button data-act="tab" data-id="'+x[0]+'"'+(S.tab===x[0]?' aria-current="page"':'')+'><span style="position:relative;display:inline-flex"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[x[2]]+'</svg>'+(x[0]==='messages'?'<span class="nbadge" id="nav-msg-badge" hidden></span>':'')+'</span><span>'+x[1]+'</span></button>'}).join('');
   updateBadge();
@@ -1256,7 +1256,7 @@ function ageOf(c){if(c.naissance){var b=toD(c.naissance),n=new Date(),a=n.getFul
 function soinsAVenir(c){return (c.soins||[]).filter(function(s){return !s.fait}).sort(function(a,b){return a.date.localeCompare(b.date)})}
 function soinsFaits(c){return (c.soins||[]).filter(function(s){return s.fait}).sort(function(a,b){return b.date.localeCompare(a.date)})}
 function ownerLabel(c){var o=owner(c.proprietaireId);return o?o.nom:"L'écurie"}
-function hViewToggle(){var m=S.hView||'liste';return '<div class="seg" role="group" aria-label="Affichage des chevaux">'+[['liste','Liste'],['pres','Prés et boxes'],['rations','Rations'],['silo','Silo']].map(function(x){return '<button class="'+(m===x[0]?'on':'')+'" data-act="h-view" data-id="'+x[0]+'" aria-pressed="'+(m===x[0])+'">'+x[1]+'</button>'}).join('')+'</div>'}
+function hViewToggle(){var m=S.hView||'liste';return '<div class="seg" role="group" aria-label="Affichage des chevaux">'+[['liste','Liste'],['pres','Prés et boxes'],['rations','Rations']].map(function(x){return '<button class="'+(m===x[0]?'on':'')+'" data-act="h-view" data-id="'+x[0]+'" aria-pressed="'+(m===x[0])+'">'+x[1]+'</button>'}).join('')+'</div>'}
 function vPres(){
   var groups={},order=(db.lieux||[]).slice();actifs().forEach(function(c){var k=c.box||'';if(!groups[k])groups[k]=[];groups[k].push(c);if(k&&order.indexOf(k)<0)order.push(k)});
   var h='<div class="presgrid">'+order.map(function(l){var hs=groups[l]||[];return '<div class="panel" style="padding:12px 14px;display:flex;flex-direction:column;gap:6px'+(hs.length?'':';opacity:.6')+'"><div style="display:flex;justify-content:space-between;align-items:center"><b>'+esc(l)+'</b><span class="pill'+(hs.length?'':' muted')+'">'+(hs.length?hs.length+' '+(hs.length>1?'chevaux':'cheval'):'Libre')+'</span></div>'+
@@ -1559,7 +1559,7 @@ function grainTexte(c){return grainLignes(c).map(function(x){var r=[];['matin','
 function grainConso(g){var j=0,n=0;actifs().forEach(function(c){var l=(c.grains||[]).filter(function(x){return x.grainId===g.id});if(l.length){n++;l.forEach(function(x){j+=grainJour(x)})}});return{jour:j,chevaux:n,jours:+g.stock>0&&j>0?Math.floor(g.stock/j):null}}
 function vSilo(){
   var gs=db.grains||[];
-  var h='<section><div class="sh"><h2>Silo à grain</h2><span class="sub">'+gs.length+' grain'+(gs.length>1?'s':'')+'</span></div><div class="panel items">'+(gs.length?gs.map(function(g){var k=grainConso(g);
+  var h='<section><div class="sh"><h2>Mes grains</h2><span class="sub">'+gs.length+' grain'+(gs.length>1?'s':'')+'</span></div><div class="panel items">'+(gs.length?gs.map(function(g){var k=grainConso(g);
     return '<div class="item" style="cursor:default;flex-wrap:wrap"><span class="x" style="flex:1 1 200px"><b>'+esc(g.nom)+'</b><span>'+k.chevaux+' cheva'+(k.chevaux>1?'ux':'l')+' · '+litres(k.jour)+' par jour'+(+g.stock>0?' · stock '+litres(g.stock)+(k.jours!==null?' · environ '+k.jours+' jour'+(k.jours>1?'s':''):''):'')+'</span>'+(g.note?'<span class="sub" style="display:block">'+esc(g.note)+'</span>':'')+'</span><span class="end" style="display:flex;gap:6px;align-items:center">'+(k.jours!==null&&k.jours<=7?'<span class="pill late">À commander</span>':'')+'<button class="btn sm" data-act="grain-edit" data-id="'+g.id+'">Modifier</button></span></div>'}).join(''):'<div class="empty">Aucun grain. Ajoutez les aliments de votre silo : granulés, orge, floconné, luzerne…</div>')+'</div>'+
     '<form class="panel form" id="fgrain" style="padding:14px"><span class="lbl">Ajouter un grain</span><div class="grid2">'+fld('gr-nom','Nom','','text',' placeholder="ex. Granulés sport" required')+fld('gr-stock','Stock en litres (facultatif)','','number',' min="0" step="1" inputmode="decimal"')+'</div>'+fld('gr-note','Note (facultatif)','','text',' placeholder="ex. fournisseur, marque"')+'<button class="btn primary" type="submit">Ajouter au silo</button></form></section>';
   return h+'<p class="sub" style="margin:0">Dans la fiche de chaque cheval, choisissez le grain et sa quantité en litres pour le matin, le midi et le soir. Le silo calcule la consommation par jour et l\'autonomie du stock.</p>';
@@ -1573,7 +1573,7 @@ function grainModal(id){
 }
 function grainsField(d){
   var gs=db.grains||[];
-  if(!gs.length)return '<div class="field"><span class="lbl">Grain</span><p class="sub" style="margin:0">Créez d\'abord vos grains dans Chevaux › Silo à grain, puis choisissez-les ici avec la quantité en litres.</p></div>';
+  if(!gs.length)return '<div class="field"><span class="lbl">Grain</span><p class="sub" style="margin:0">Créez d\'abord vos grains dans l\'onglet Silo, puis choisissez-les ici avec la quantité en litres.</p></div>';
   return '<div class="field"><span class="lbl">Grain (litres par repas)</span><div class="panel items">'+(d.grains||[]).map(function(x,i){
     return '<div class="item gline" style="cursor:default;flex-wrap:wrap"><select class="search" name="gl-g" aria-label="Grain" style="flex:2 1 160px;min-width:0">'+gs.map(function(g){return '<option value="'+g.id+'"'+(g.id===x.grainId?' selected':'')+'>'+esc(g.nom)+'</option>'}).join('')+'</select>'+
       ['matin','midi','soir'].map(function(r){return '<label class="qty"><span>'+r+' (L)</span><input class="search" type="number" name="gl-'+r+'" min="0" step="0.25" inputmode="decimal" value="'+esc(x[r]||'')+'" aria-label="Litres le '+r+'"></label>'}).join('')+

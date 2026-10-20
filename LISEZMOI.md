@@ -70,7 +70,7 @@ La clé « anon » est prévue pour être publique : ce sont les règles d'accè
 
 - **Fiche cheval** : race, sexe, date de naissance (l'âge se calcule), n° SIRE/UELN, n° de puce, box ou pré, arrivée et provenance, pension, propriétaire (ou « L'écurie » pour vos chevaux), « cheval de club ».
 - **Grain** : chaque cheval reçoit un ou plusieurs grains du silo, avec la quantité en litres le matin, le midi et le soir. Le fourrage et les compléments restent en texte libre.
-- **Silo à grain** (Chevaux › Silo) : la liste de vos grains, avec le stock en litres. Le silo calcule la consommation par jour et le nombre de jours de stock ; « À commander » s'affiche sous 7 jours.
+- **Silo à grain** (onglet Silo du menu) : la liste de vos grains, avec le stock en litres. Le silo calcule la consommation par jour et le nombre de jours de stock ; « À commander » s'affiche sous 7 jours.
 - **Rations** (Chevaux › Rations) : tableau grain, fourrage et consignes par box, à imprimer ou copier.
 - **Départ** : fiche du cheval › « Le cheval quitte l'écurie » : date, motif (vente, retour chez le propriétaire, changement d'écurie, retraite, prêt, décès, autre) et destination. Le cheval sort des listes, apparaît dans « Chevaux partis » et reste dans le registre. « Le cheval est revenu » annule le départ.
 - **Soins** : prévus ou faits, type de vermifuge (ivermectine, moxidectine, praziquantel, pyrantel, fenbendazole…), soin groupé pour plusieurs chevaux avec rappel automatique. Le propriétaire peut noter lui-même un soin.
