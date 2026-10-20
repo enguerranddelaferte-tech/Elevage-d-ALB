@@ -268,6 +268,11 @@ alter table public.push_subs add column if not exists meteo boolean not null def
 insert into public.secrets(k, v) values ('cron_key', encode(gen_random_bytes(24), 'hex')) on conflict (k) do nothing;
 alter table public.notifications enable row level security;
 alter table public.push_subs enable row level security;
+-- Les cavaliers voient tous les chevaux de l'écurie, et les tâches du jour rendues visibles par le gérant.
+drop policy if exists "membre lit tous les chevaux" on public.chevaux;
+create policy "membre lit tous les chevaux" on public.chevaux for select to authenticated using ((select public.est_membre()));
+drop policy if exists "membre lit les taches visibles" on public.taches;
+create policy "membre lit les taches visibles" on public.taches for select to authenticated using ((select public.est_membre()) and coalesce((data->>'visible')::boolean,false));
 drop policy if exists "lit ses notifications" on public.notifications;
 create policy "lit ses notifications" on public.notifications for select to authenticated using (user_id = (select auth.uid()));
 drop policy if exists "marque ses notifications" on public.notifications;

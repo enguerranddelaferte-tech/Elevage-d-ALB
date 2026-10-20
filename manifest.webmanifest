@@ -1,7 +1,7 @@
 {
   "name": "Élevage d'ALB",
   "short_name": "Élevage d'ALB",
-  "description": "Élevage d'ALB : chevaux, cours, factures et espace clients.",
+  "description": "Élevage d'ALB : chevaux, cours, registre d'élevage et espace cavaliers.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
