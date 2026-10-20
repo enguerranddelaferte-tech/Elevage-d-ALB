@@ -160,6 +160,59 @@ grant execute on function public.marquer_lus() to authenticated;
 drop policy if exists "lit son profil" on public.profils;
 create policy "lit son profil" on public.profils for select to authenticated using (user_id = (select auth.uid()) or (select public.est_gerant()));
 
+-- Le propriétaire (ou le cavalier à qui le cheval est confié) note un soin fait ou un rappel
+create or replace function public.ajouter_soin(p_cheval text, p_soin jsonb) returns jsonb
+  language plpgsql security definer set search_path = public as $$
+declare v_prop text := mon_proprio(); d jsonb; s jsonb; v_date text;
+begin
+  if v_prop is null then raise exception 'Compte client non activé.'; end if;
+  select data into d from chevaux c where c.id = p_cheval and (c.proprietaire_id = v_prop or exists (
+      select 1 from jsonb_array_elements(coalesce(c.data->'cavaliers','[]'::jsonb)) a
+      where a->>'proprietaireId' = v_prop and coalesce(nullif(a->>'fin',''),'9999-12-31') >= to_char(now() at time zone 'Europe/Paris','YYYY-MM-DD')))
+    for update;
+  if d is null then raise exception 'Ce cheval ne vous est pas rattaché.'; end if;
+  v_date := coalesce(nullif(p_soin->>'date',''), to_char(now() at time zone 'Europe/Paris','YYYY-MM-DD'));
+  if v_date !~ '^\d{4}-\d{2}-\d{2}$' then raise exception 'Date invalide.'; end if;
+  s := jsonb_build_object('id', left(coalesce(p_soin->>'id', md5(random()::text)), 20), 'type', left(coalesce(p_soin->>'type','Autre'), 60),
+        'date', v_date, 'note', left(coalesce(p_soin->>'note',''), 200), 'par', 'client',
+        'fait', v_date <= to_char(now() at time zone 'Europe/Paris','YYYY-MM-DD'));
+  d := jsonb_set(d, '{soins}', coalesce(d->'soins','[]'::jsonb) || jsonb_build_array(s));
+  update chevaux set data = d, updated_at = now() where id = p_cheval;
+  return d;
+end $$;
+
+-- Monte libre réservée par un cavalier (créneau visible dans le planning)
+create or replace function public.declarer_monte(p_date text, p_heure text, p_duree int, p_lieu text, p_cheval text) returns jsonb
+  language plpgsql security definer set search_path = public as $$
+declare v_prop text := mon_proprio(); v_id text := 'm' || substr(md5(random()::text || clock_timestamp()::text), 1, 9); v_nom text; d jsonb;
+begin
+  if v_prop is null then raise exception 'Compte client non activé.'; end if;
+  if p_date !~ '^\d{4}-\d{2}-\d{2}$' or p_heure !~ '^\d{2}:\d{2}$' then raise exception 'Date ou heure invalide.'; end if;
+  if (p_date || ' ' || p_heure)::timestamp < (now() at time zone 'Europe/Paris') then raise exception 'Choisissez un créneau à venir.'; end if;
+  select split_part(coalesce(data->>'nom','Cavalier'),' ',1) into v_nom from proprietaires where id = v_prop;
+  d := jsonb_build_object('type','monte','titre','Monte libre · ' || coalesce(v_nom,'Cavalier'),'date',p_date,'heure',p_heure,
+        'duree', least(greatest(coalesce(p_duree,60),15),240),'lieu', left(coalesce(p_lieu,'Carrière'),40),'places',1,'prix',0,
+        'inscrits', jsonb_build_array(v_prop),'par',v_prop,
+        'montures', case when coalesce(p_cheval,'') <> '' then jsonb_build_object(v_prop, left(p_cheval,40)) else '{}'::jsonb end);
+  insert into cours(id, data) values (v_id, d);
+  return jsonb_build_object('id', v_id, 'data', d || jsonb_build_object('id', v_id));
+end $$;
+
+-- Retrait d'une monte libre par son auteur (le créneau est marqué retiré)
+create or replace function public.supprimer_monte(p_id text) returns boolean
+  language plpgsql security definer set search_path = public as $$
+declare v_prop text := mon_proprio(); n int;
+begin
+  if v_prop is null then raise exception 'Compte client non activé.'; end if;
+  update cours set data = data || '{"retire":true,"inscrits":[]}'::jsonb, updated_at = now()
+    where id = p_id and data->>'type' = 'monte' and data->>'par' = v_prop;
+  get diagnostics n = row_count;
+  if n = 0 then raise exception 'Créneau introuvable.'; end if;
+  return true;
+end $$;
+revoke execute on function public.ajouter_soin(text,jsonb), public.declarer_monte(text,text,int,text,text), public.supprimer_monte(text) from public, anon;
+grant execute on function public.ajouter_soin(text,jsonb), public.declarer_monte(text,text,int,text,text), public.supprimer_monte(text) to authenticated;
+
 -- Le client indique s'il sera présent ou absent à un cours où il est inscrit
 create or replace function public.repondre_presence(p_id text, p_rep text) returns jsonb
   language plpgsql security definer set search_path = public as $$

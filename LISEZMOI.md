@@ -75,6 +75,16 @@ La clé « anon » est prévue pour être publique : ce sont les règles d'accè
 
 Réglages › Mon écurie › TVA › « Assujetti à la TVA ». Bouton « Appliquer les taux usuels » : 5,5 % pour la pension d'un cheval monté par son propriétaire, les cours, la demi-pension et la location (CGI art. 278-0 bis O, depuis le 1er janvier 2024) ; 20 % pour la pension sans pratique (case à cocher dans la fiche du cheval : retraite, valorisation) et les frais refacturés. Les prix saisis sont TTC ; chaque facture indique HT, TVA par taux et TTC, et le taux est figé sur la facture au moment de sa création. À faire valider par votre comptable.
 
+## Nouveautés d'octobre
+
+- **Vos propres chevaux** : dans la fiche d'un cheval, Propriétaire › « L'écurie (mes chevaux) » (pas de client à créer, pas de facture).
+- **Fiche cheval** : date de naissance (l'âge se calcule), n° SIRE, n° de puce, « Disponible pour les cours (cheval de club) ». Soins : case « Déjà fait » et bouton « Fait » ; un historique des soins s'affiche (vaccin TG ajouté à la liste).
+- **Le propriétaire note lui-même** un soin fait ou un rappel depuis « Mon cheval » ; vous êtes prévenu.
+- **Onglet Chevaux** : vues « Prés et boxes » (qui est où) et « Rations » (liste à copier).
+- **Clients** : rôles (propriétaire, cavalier, demi-pensionnaire, cumulables), date de naissance, cavalier mineur avec responsable légal (les factures sont à son nom). Vue « Cartes de cours » : toutes les cartes, cours restants, correction +1 / −1.
+- **Articles vendus** : catalogue dans Réglages (foin, copeaux…), puis « Articles vendus » dans la fiche client ; facturés le mois de la vente (TVA articles 20 % par défaut).
+- **Cours** : « Répéter chaque semaine jusqu'au… », choix du cheval de chaque cavalier (son cheval ou un cheval de club libre à cette heure), types Concours et Monte libre. Le cavalier peut réserver une monte libre depuis le planning (+ Monte libre) et la retirer.
+
 ## Carnets de cours et chevaux confiés
 
 - **Carnets** : le client touche « Demander un carnet » (Accueil ou Cours) ; vous recevez la demande dans Messages. Vous l'ajoutez dans la fiche du client › Carnets de cours › 5, 10 ou 20 cours (collectifs, particuliers ou tous types), prix proposé avec 10 % de remise et modifiable. Le carnet est facturé le mois de l'achat ; les cours suivants sont décomptés automatiquement (marqués « carnet » à 0 € sur la facture). Le client voit ses cours restants ; « Dernier » ou « Épuisé » s'affiche quand il faut le renouveler.
