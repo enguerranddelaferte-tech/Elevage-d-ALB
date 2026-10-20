@@ -243,6 +243,7 @@ table.reg td:first-child{font-weight:600}table.reg{min-width:640px}table.reg td:
 .cellbar{display:flex;align-items:center;gap:8px}.cellbar b{min-width:22px;font-variant-numeric:tabular-nums}.cb{flex:1;min-width:50px;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}.cb span{display:block;height:100%;background:var(--c1)}
 table.stat-t{min-width:520px}table.stat-t td{vertical-align:middle}table.stat-t td:nth-child(n+3){font-variant-numeric:tabular-nums}
 @media print{#print .seg,#print .weeknav,#print .actions,#print .btn{display:none!important}#print .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}#print .stat,#print .panel{border:1px solid #bbb;border-radius:6px;padding:6px}#print .vb-bar,#print .hb-f,#print .cb span{background:#555!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}#print section{break-inside:avoid;margin-bottom:10px}#print .vbars{height:110px}}
+.modal form>button.btn.primary.block[type=submit]{position:sticky;bottom:calc(-24px - env(safe-area-inset-bottom,0px));z-index:3;box-shadow:0 10px 0 10px var(--surface),0 -10px 14px var(--surface)}
 #print{display:none}
 .hero .btn{color:var(--fg)}.hero .btn.primary{background:var(--surface);color:var(--fg);border-color:var(--surface)}.hero .btn.danger{background:var(--danger-soft);color:var(--danger)}
 @media print{body>*:not(#print){display:none!important}html,body{background:#fff!important;height:auto}#print{display:block!important;color:#000;font:10.5px/1.35 Arial,sans-serif}#print h1{font-size:19px;margin:0 0 6px}#print h2{font-size:14px;margin:14px 0 6px}#print p{margin:0 0 8px}#print table{width:100%;border-collapse:collapse}#print th,#print td{border:1px solid #888;padding:3px 5px;text-align:left;vertical-align:top}#print th{background:#eee}#print tr{break-inside:avoid}@page{size:A4 landscape;margin:10mm}}
@@ -1584,6 +1585,10 @@ function grainsField(d){
       '<button type="button" class="del-x" data-act="gl-del" data-id="'+i+'" aria-label="Retirer ce grain" style="align-self:flex-end">✕</button></div>'}).join('')+
     '<div class="item" style="cursor:default"><button type="button" class="btn sm" data-act="gl-add">+ Ajouter un autre grain</button></div></div></div>';
 }
+/* Fiche d'un cheval déjà enregistré : le grain est enregistré dès qu'on le change, sans attendre « Enregistrer ». */
+function saveGrainsNow(){if(!M||M.kind!=='chevaux')return;var l=readGrains();M.draft.grains=l;if(!M.draft.id)return;var c=horse(M.draft.id);if(!c)return;
+  var ok=l.filter(function(x){return x.grainId&&x.grainId!=='__new'&&(x.matin||x.midi||x.soir)}).map(function(x){return{grainId:x.grainId,matin:x.matin,midi:x.midi,soir:x.soir}});
+  if(JSON.stringify(ok)===JSON.stringify(c.grains||[]))return;c.grains=clean(ok);put('chevaux',c);toast('Ration de '+c.nom+' enregistrée')}
 function readGrains(){return [].slice.call(document.querySelectorAll('#fhorse .gline')).map(function(r){function q(n){var e=r.querySelector('[name="'+n+'"]');return e?e.value:''}function num(n){var x=parseFloat(String(q(n)).replace(',','.'));return x>0?r2(x):''}
   var o={grainId:q('gl-g'),matin:num('gl-matin'),midi:num('gl-midi'),soir:num('gl-soir')};if(o.grainId==='__new')o.nouveau=q('gl-new');return o})}
 
@@ -1823,7 +1828,7 @@ var ACT={
   'grain-edit':function(id){grainModal(id)},'grain-del-ask':function(){M.confirmDel=true;M.render()},'grain-del-no':function(){M.confirmDel=false;M.render()},
   'grain-del':function(id){var used=actifs().filter(function(c){return (c.grains||[]).some(function(x){return x.grainId===id})});db.grains=(db.grains||[]).filter(function(g){return g.id!==id});used.forEach(function(c){c.grains=c.grains.filter(function(x){return x.grainId!==id});put('chevaux',c)});putConfig();closeModal();render();toast('Grain supprimé'+(used.length?' et retiré de '+used.length+' fiche'+(used.length>1?'s':''):''))},
   'gl-add':function(){M.read();M.draft.grains.push({grainId:(db.grains||[]).length?'':'__new',matin:'',midi:'',soir:''});M.render()},
-  'gl-del':function(i){M.read();M.draft.grains.splice(+i,1);M.render()},
+  'gl-del':function(i){M.read();var row=document.querySelectorAll('#fhorse .gline')[+i];if(row)row.remove();saveGrainsNow();M.render()},
   depart:function(){M.read();var d=M.draft;if(!d.depart){d.depart=today();var e=document.getElementById('h-dep');if(e)e.value=d.depart}if(!d.departMotif){toast('Choisissez le motif du départ.');var m=document.getElementById('h-motif');if(m)m.focus();return}var f=document.getElementById('fhorse');if(f.requestSubmit)f.requestSubmit();else f.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}))},
   retour:function(){M.read();var d=M.draft;d.depart='';d.departMotif='';d.departDest='';d.arrivee=today();M.render();toast('Départ annulé, nouvelle arrivée aujourd\'hui : enregistrez la fiche')},
   'pension-add':function(){var n=v('pn-nom');if(!n){toast('Indiquez le nom de la pension.');var e=document.getElementById('pn-nom');if(e)e.focus();return}var c=v('pn-cours');db.pensions=pensions().concat([{id:'p-'+uid(),nom:n,cours:c===''?'':+c}]);putConfig();if(M)M.render();toast('Pension « '+n+' » ajoutée')},
@@ -1885,6 +1890,7 @@ document.addEventListener('change',function(e){
   if(/^sc-type-/.test(e.target.id)){var pw=document.getElementById(e.target.id.replace('sc-type-','sc-produit-')+'-wrap');if(pw)pw.hidden=e.target.value!=='Vermifuge'}
   if(e.target.id==='g-type'){var gw=document.getElementById('g-produit-wrap');if(gw)gw.hidden=e.target.value!=='Vermifuge'}
   if(M&&M.kind==='groupe'&&e.target.name==='g-ch'){var dg=M.draft;dg.type=v('g-type');dg.date=v('g-date');dg.produit=v('g-produit');dg.etat=v('g-etat');dg.rappel=v('g-rappel');dg.note=v('g-note');M.read();var bt=document.querySelector('#fgroupe button[type=submit]'),n=Object.keys(dg.sel).length;if(bt)bt.textContent='Enregistrer pour '+n+' '+(n>1?'chevaux':'cheval');var lb=document.querySelector('#fgroupe .lbl');if(lb)lb.textContent='Chevaux ('+n+' sur '+actifs().length+')'}
+  if(M&&M.kind==='chevaux'&&/^gl-(g|matin|midi|soir)$/.test(e.target.name)&&e.target.value!=='__new')saveGrainsNow();
   if(M&&M.kind==='chevaux'&&e.target.name==='gl-g'){var wasNew=!!e.target.closest('.gline').querySelector('[name="gl-new"]');if(wasNew!==(e.target.value==='__new')){var gi=[].indexOf.call(document.querySelectorAll('#fhorse .gline'),e.target.closest('.gline'));M.read();M.render();var ni=document.querySelectorAll('#fhorse .gline')[gi];ni=ni&&ni.querySelector('[name="gl-new"]');if(ni)ni.focus()}}
   if(M&&M.kind==='proprietaires'&&(e.target.id==='o-mineur'||e.target.id==='o-naiss')){M.read();M.render()}
   if(M&&M.kind==='cours'&&(e.target.name==='ins'||e.target.id==='c-rep'||e.target.id==='c-date'||e.target.id==='c-heure'||e.target.id==='c-duree')){M.read();M.render()}
