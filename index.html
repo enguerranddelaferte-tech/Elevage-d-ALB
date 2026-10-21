@@ -290,6 +290,7 @@ nav.tabs button{font-size:11.5px}
 .mtabs button{flex:1 0 auto}
 .mtabs .cnt{display:inline-flex;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--danger);color:#fff;font-size:11px;align-items:center;justify-content:center;margin-left:4px}
 .msec[hidden]{display:none!important}
+.pw{position:relative}.pw input{padding-right:52px}.pw-eye{position:absolute;right:2px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;background:none;color:var(--muted);border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}.pw-eye:hover,.pw-eye[aria-pressed="true"]{color:var(--accent)}
 #print{display:none}
 .hero .btn{color:var(--fg)}.hero .btn.primary{background:var(--surface);color:var(--fg);border-color:var(--surface)}.hero .btn.danger{background:var(--danger-soft);color:var(--danger)}
 @media print{body>*:not(#print){display:none!important}html,body{background:#fff!important;height:auto}#print{display:block!important;color:#000;font:10.5px/1.35 Arial,sans-serif}#print h1{font-size:19px;margin:0 0 6px}#print h2{font-size:14px;margin:14px 0 6px}#print p{margin:0 0 8px}#print table{width:100%;border-collapse:collapse}#print th,#print td{border:1px solid #888;padding:3px 5px;text-align:left;vertical-align:top}#print th{background:#eee}#print tr{break-inside:avoid}@page{size:A4 landscape;margin:10mm}}
@@ -900,7 +901,10 @@ window.addEventListener('popstate',function(){
   if(!document.getElementById('viewer').hidden){closeViewer();if(M){try{history.pushState({fiche:1},'')}catch(e){}}return}
   if(M)closeModal(true)});
 function head(t){return '<div class="mhead"><h2 id="mtitle">'+esc(t)+'</h2><button class="icon-btn" data-act="close" aria-label="Fermer">✕</button></div>'}
-function fld(id,label,val,type,extra){return '<div class="field"><label for="'+id+'">'+label+'</label><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val)+'"'+(extra||'')+'></div>'}
+var EYE='<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',EYE_X='<path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7c1.7 0 3.2-.5 4.5-1.2"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>';
+function fld(id,label,val,type,extra){
+  if(type==='password')return '<div class="field"><label for="'+id+'">'+label+'</label><div class="pw"><input id="'+id+'" type="password" value="'+esc(val)+'"'+(extra||'')+'><button type="button" class="pw-eye" data-act="pw-toggle" data-id="'+id+'" aria-label="Afficher le mot de passe" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+EYE+'</svg></button></div></div>';
+  return '<div class="field"><label for="'+id+'">'+label+'</label><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val)+'"'+(extra||'')+'></div>'}
 function sel(id,label,opts,val){return '<div class="field"><label for="'+id+'">'+label+'</label><select id="'+id+'">'+opts.map(function(o){return '<option value="'+esc(o[0])+'"'+(o[0]===val?' selected':'')+'>'+esc(o[1])+'</option>'}).join('')+'</select></div>'}
 function delBar(label){
   if(!M.draft.id)return '';
@@ -1882,6 +1886,7 @@ var ACT={
   
   
   'viewer-close':closeViewer,
+  'pw-toggle':function(id,el){var i=document.getElementById(id);if(!i)return;var show=i.type==='password';i.type=show?'text':'password';el.setAttribute('aria-pressed',show);el.setAttribute('aria-label',show?'Masquer le mot de passe':'Afficher le mot de passe');el.querySelector('svg').innerHTML=show?EYE_X:EYE;i.focus();try{var n=i.value.length;i.setSelectionRange(n,n)}catch(e){}},
   'horse-soins':function(id){horseModal(id);ACT.msec('soins')},
   scroll:function(id){var e=document.getElementById(id);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},
   'nav-plus':function(){if(M)closeModal();plusModal()},
