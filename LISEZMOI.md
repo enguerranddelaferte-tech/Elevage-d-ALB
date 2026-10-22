@@ -68,7 +68,8 @@ La clé « anon » est prévue pour être publique : ce sont les règles d'accè
 
 ## Chevaux
 
-- **Fiche cheval** : race, sexe, date de naissance (l'âge se calcule), n° SIRE/UELN, n° de puce, box ou pré, arrivée et provenance, pension, propriétaire (ou « L'écurie » pour vos chevaux), « cheval de club ».
+- **Fiche cheval** : race, sexe, date de naissance (l'âge se calcule), n° SIRE/UELN, n° de puce, box ou pré, arrivée et provenance, propriétaire, « disponible pour les cours ».
+- **Statut** : votre cheval (propriétaire « L'écurie ») n'a pas de pension. Le cheval d'un propriétaire est soit **en pension** (on choisit la pension), soit **prêté à l'écurie** (pas de pension) ; dans les deux cas, la case « disponible pour les cours » en fait un cheval de club.
 - **Grain** : chaque cheval reçoit un ou plusieurs grains du silo, avec la quantité en litres le matin, le midi et le soir. Le fourrage et les compléments restent en texte libre.
 - **Silo à grain** (onglet Silo du menu) : la liste de vos grains, avec le stock en litres. Le silo calcule la consommation par jour et le nombre de jours de stock ; « À commander » s'affiche sous 7 jours.
 - **Rations** (Chevaux › Rations) : tableau grain, fourrage et consignes par box, à imprimer ou copier.
@@ -84,7 +85,7 @@ Onglet **Registre** : tous les équidés passés par l'écurie (identification, 
 ## Pensions et cours
 
 - **Pensions personnalisées** (Réglages › Pensions) : créez vos formules (« Pension complète + 2 cours »…) avec le nombre de cours autorisés par semaine : non limité, aucun, ou de 1 à 7.
-- Le nombre de cours s'applique au propriétaire du cheval. Le cavalier voit « Pension : 2 cours par semaine · 1 réservé ». Au-delà, il lui faut un carnet de cours pour réserver.
+- Le nombre de cours s'applique au propriétaire du cheval (chevaux en pension seulement). Une **demi-pension** (fiche du cheval › Cavaliers › Confier) peut aussi compter des cours par semaine : ils s'ajoutent à ceux du cavalier. Le cavalier voit « Pension : 2 cours par semaine · 1 réservé ». Au-delà, il lui faut un carnet de cours pour réserver.
 - **Carnets de cours** (sans prix) : fiche du cavalier › Carnets de cours › 5, 10 ou 20 cours. Les cours sont décomptés automatiquement, après ceux compris dans la pension. Vue Cavaliers › « Carnets de cours » : où en est chaque cavalier, correction +1 / −1.
 - **Planning** : semaine ou mois, cours répétés chaque semaine, concours, monte libre réservée par le cavalier, choix du cheval de chaque cavalier.
 - **Présence** : le cavalier indique « présent » ou « absent ». Avant le délai d'annulation, « absent » propose de libérer la place.

@@ -662,7 +662,7 @@ function hList(){
   var q=S.q.trim().toLowerCase(),m=function(c){var o=owner(c.proprietaireId);return !q||(c.nom+' '+(o?o.nom:'')+' '+(c.race||'')+' '+(c.box||'')).toLowerCase().indexOf(q)>-1};
   var l=actifs().filter(m).sort(function(a,b){return a.nom.localeCompare(b.nom)}),pt=partis().filter(m);
   if(!db.chevaux.length)return '<div class="panel empty">Aucun cheval. Ajoutez le premier avec « + Cheval ».</div>';
-  function it(c){var o=owner(c.proprietaireId),sg=signalements(c.id).length;return '<button class="item" data-act="horse" data-id="'+c.id+'"><span class="avatar '+avc(c.nom)+'">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>'+esc([c.box,pensionNom(c.pension),o?o.nom:"L'écurie",c.club?'club':''].filter(Boolean).join(' · '))+'</span></span><span class="end">'+(sg?'<span class="pill late">Signalé</span> ':'')+nextSoin(c)+'</span></button>'}
+  function it(c){var o=owner(c.proprietaireId),sg=signalements(c.id).length;return '<button class="item" data-act="horse" data-id="'+c.id+'"><span class="avatar '+avc(c.nom)+'">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>'+esc([c.box,(c.proprietaireId?statutCheval(c):''),o?o.nom:"L'écurie",c.club?'club':''].filter(Boolean).join(' · '))+'</span></span><span class="end">'+(sg?'<span class="pill late">Signalé</span> ':'')+nextSoin(c)+'</span></button>'}
   var h=l.length?'<div class="panel items">'+l.map(it).join('')+'</div>':'<div class="panel empty">Aucun résultat.</div>';
   if(pt.length)h+='<details class="panel" style="margin-top:12px"><summary style="cursor:pointer;font-weight:600;padding:12px 14px">Chevaux partis ('+pt.length+')</summary><div class="items">'+pt.map(function(c){return '<button class="item" data-act="horse" data-id="'+c.id+'"><span class="avatar '+avc(c.nom)+'" style="opacity:.6">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>Parti le '+fdate(c.depart,{day:'numeric',month:'short',year:'numeric'})+(c.departMotif?' · '+esc(c.departMotif):'')+'</span></span></button>'}).join('')+'</div></details>';
   return h;
@@ -718,7 +718,7 @@ function cAccueil(){
   h+='</section>';
   var hs=myHorses();
   if(hs.length){h+='<section><div class="sh"><h2>'+(hs.length>1?'Mes chevaux':'Mon cheval')+'</h2></div><div class="panel items">'+hs.map(function(c){
-    return '<button class="item" data-act="tab" data-id="cheval"><span class="avatar '+avc(c.nom)+'">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>'+esc([c.box,c.proprietaireId===me.prop?pensionNom(c.pension):confLabel(confDe(c,me.prop))].filter(Boolean).join(' · '))+'</span></span><span class="end">'+nextSoin(c)+'</span></button>'}).join('')+'</div></section>'}
+    return '<button class="item" data-act="tab" data-id="cheval"><span class="avatar '+avc(c.nom)+'">'+esc(initials(c.nom))+'</span><span class="x"><b>'+esc(c.nom)+'</b><span>'+esc([c.box,c.proprietaireId===me.prop?statutCheval(c):confLabel(confDe(c,me.prop))].filter(Boolean).join(' · '))+'</span></span><span class="end">'+nextSoin(c)+'</span></button>'}).join('')+'</div></section>'}
   h+=tachesClientHtml();
   var ks=carnetSolde(me.prop);
   if(ks.actif&&forfaitTxt(me.prop))h+='<p class="sub" style="margin:0">'+esc(forfaitTxt(me.prop))+'.</p>';
@@ -764,7 +764,7 @@ function cCheval(){
   hs.forEach(function(c){var mine=c.proprietaireId===me.prop;
     var gt=grainTexte(c);
     h+='<section><div class="panel" style="padding:16px;display:flex;flex-direction:column;gap:10px"><div style="display:flex;gap:12px;align-items:center"><span class="avatar '+avc(c.nom)+'">'+esc(initials(c.nom))+'</span><div class="x" style="flex:1;min-width:0"><h2 style="font-size:21px">'+esc(c.nom)+'</h2><span class="sub">'+esc([c.race,c.sexe,ageOf(c)!==''?ageOf(c)+' ans':'',c.sire?'SIRE '+c.sire:''].filter(Boolean).join(' · '))+'</span></div></div>'+
-      '<div class="chips" style="margin:0">'+[c.box,mine?pensionNom(c.pension):confLabel(confDe(c,me.prop))].filter(Boolean).map(function(x){return '<span class="pill">'+esc(x)+'</span>'}).join('')+'</div>'+(mine?'':'<p class="sub" style="margin:0">'+(owner(c.proprietaireId)?'Cheval de '+esc(owner(c.proprietaireId).nom)+', qui vous est confié.':'Cheval qui vous est confié par l\'écurie.')+'</p>')+
+      '<div class="chips" style="margin:0">'+[c.box,mine?statutCheval(c):confLabel(confDe(c,me.prop))].filter(Boolean).map(function(x){return '<span class="pill">'+esc(x)+'</span>'}).join('')+'</div>'+(mine?'':'<p class="sub" style="margin:0">'+(owner(c.proprietaireId)?'Cheval de '+esc(owner(c.proprietaireId).nom)+', qui vous est confié.':'Cheval qui vous est confié par l\'écurie.')+'</p>')+
       (gt||c.ration?'<div><span class="lbl">Ration</span><div style="white-space:pre-wrap">'+esc([gt,c.ration].filter(Boolean).join('\n'))+'</div></div>':'')+(c.consignes?'<div><span class="lbl">Consignes</span><div style="white-space:pre-wrap">'+esc(c.consignes)+'</div></div>':'')+
       '<div class="actions"><button class="btn primary grow" data-act="signal" data-id="'+c.id+'">Signaler un problème</button><button class="btn grow" data-act="ask-horse" data-id="'+c.id+'">Poser une question</button></div></div></section>';
     h+=soinsClientHtml(c);
@@ -928,7 +928,9 @@ function horseModal(id){
       selOther('h-box','Box ou pré',db.lieux,d.box,M.oBox,function(x){var o=actifs().filter(function(k){return k.box===x&&k.id!==d.id}).map(function(k){return k.nom});return x+(o.length?' · '+o.join(', '):'')})+'</div>';
     h+='<div class="grid2">'+fld('h-arr','Arrivée à l\'écurie',d.arrivee||'','date')+fld('h-prov','Provenance (lieu, éleveur…)',d.provenance||'','text')+'</div>';
     var pl=pensions(),po=pl.map(function(p){return[p.id,p.nom+(aLimite(p)?' ('+coursSem(p.cours)+')':'')]});if(d.pension&&!pensionOf(d.pension))po.push([d.pension,d.pension]);
-    h+='<div class="grid2">'+sel('h-pension','Pension',po,d.pension)+sel('h-prop','Propriétaire',[['',"L'écurie (mes chevaux)"]].concat(db.proprietaires.map(function(p){return[p.id,p.nom]})),d.proprietaireId||'')+'</div>';
+    h+='<div class="grid2">'+sel('h-prop','Propriétaire',[['',"L'écurie (mon cheval)"]].concat(db.proprietaires.map(function(p){return[p.id,p.nom]})),d.proprietaireId||'')+(d.proprietaireId?sel('h-accueil','À l\'écurie en',[['pension','Pension'],['pret','Prêt à l\'écurie']],d.accueil==='pret'?'pret':'pension'):'')+'</div>';
+    if(d.proprietaireId&&d.accueil!=='pret')h+=sel('h-pension','Pension',po,d.pension||(pl[0]||{}).id);
+    else h+='<p class="sub" style="margin:0">'+(d.proprietaireId?'Cheval prêté à l\'écurie : pas de pension.':'Votre cheval : pas de pension.')+' Cochez ci-dessous s\'il sert aux cours.</p>';
     h+='<label class="checks" style="border:0"><span style="display:flex;gap:10px;align-items:center;font-weight:500;color:var(--fg)"><input type="checkbox" id="h-club"'+(d.club?' checked':'')+'>Disponible pour les cours (cheval de club)</span></label>';
     h+='<div class="field"><label for="h-cons">Consignes et soins particuliers</label><textarea id="h-cons">'+esc(d.consignes)+'</textarea></div>';
     if(d.id)h+=departHtml(d);
@@ -951,7 +953,7 @@ function selOther(id,label,list,val,other,lab){
   return '<div class="field"><label for="'+id+'">'+label+'</label><select id="'+id+'">'+opts+'</select>'+(show?'<input id="'+id+'-autre" aria-label="'+label+' (préciser)" placeholder="Précisez" value="'+esc(known?'':val)+'">':'')+'</div>';
 }
 function readOther(id){var s=v(id);return s==='__autre'?v(id+'-autre'):s}
-function readHorse(){var d=M.draft;d.arrivee=v('h-arr');d.provenance=v('h-prov');if(document.getElementById('h-dep')){d.depart=v('h-dep');d.departMotif=v('h-motif');d.departDest=v('h-dest')}d.nom=v('h-nom');d.race=readOther('h-race');d.sexe=v('h-sexe');d.box=readOther('h-box');d.pension=v('h-pension')||d.pension;d.proprietaireId=v('h-prop');d.naissance=v('h-naiss');if(d.naissance)delete d.age;d.sire=v('h-sire');d.puce=v('h-puce');var hc=document.getElementById('h-club');if(hc)d.club=hc.checked;d.ration=v('h-ration');d.consignes=v('h-cons');if(document.getElementById('h-ration'))d.grains=readGrains();delete d.frais;delete d.tvaNormale}
+function readHorse(){var d=M.draft;d.arrivee=v('h-arr');d.provenance=v('h-prov');if(document.getElementById('h-dep')){d.depart=v('h-dep');d.departMotif=v('h-motif');d.departDest=v('h-dest')}d.nom=v('h-nom');d.race=readOther('h-race');d.sexe=v('h-sexe');d.box=readOther('h-box');d.proprietaireId=v('h-prop');if(document.getElementById('h-accueil'))d.accueil=v('h-accueil');if(!d.proprietaireId)delete d.accueil;else if(!d.accueil)d.accueil='pension';if(document.getElementById('h-pension'))d.pension=v('h-pension');if(!d.proprietaireId||d.accueil==='pret')d.pension='';d.naissance=v('h-naiss');if(d.naissance)delete d.age;d.sire=v('h-sire');d.puce=v('h-puce');var hc=document.getElementById('h-club');if(hc)d.club=hc.checked;d.ration=v('h-ration');d.consignes=v('h-cons');if(document.getElementById('h-ration'))d.grains=readGrains();delete d.frais;delete d.tvaNormale}
 function ownerModal(id){
   var p=id?JSON.parse(JSON.stringify(owner(id))):{id:null,nom:'',tel:'',email:'',licence:'',rcFin:''};
   M={kind:'proprietaires',draft:p,read:readOwner,render:function(){
@@ -1477,7 +1479,8 @@ function carnetForm(){
 var CONF_TYPES={demi:'Demi-pension',location:'Location',pret:'Prêt / travail',autre:'Autre'};
 var JOURS=['lun','mar','mer','jeu','ven','sam','dim'];
 function confActif(a,d){d=d||today();return(!a.debut||a.debut<=d)&&(!a.fin||a.fin>=d)}
-function confLabel(a){return (CONF_TYPES[a.type]||'Cavalier')+((a.jours||[]).length?' · '+a.jours.join(', '):'')}
+function confLabel(a){return (CONF_TYPES[a.type]||'Cavalier')+(a.cours!==''&&a.cours!=null&&a.cours!==undefined?' · '+coursSem(a.cours):'')+((a.jours||[]).length?' · '+a.jours.join(', '):'')}
+function coursOpts(val){return '<option value=""'+(val===''||val==null?' selected':'')+'>Cours non compris</option>'+[1,2,3,4,5,6,7].map(function(n){return '<option value="'+n+'"'+(String(val)===String(n)?' selected':'')+'>'+n+' cours par semaine</option>'}).join('')}
 function confiesA(pid){return db.chevaux.filter(function(c){return (c.cavaliers||[]).some(function(a){return a.proprietaireId===pid&&confActif(a)})})}
 function confDe(c,pid){return (c.cavaliers||[]).find(function(a){return a.proprietaireId===pid&&confActif(a)})}
 function confSection(d){
@@ -1485,15 +1488,15 @@ function confSection(d){
   if(!d.id)return t+'<p class="sub" style="margin:0">Enregistrez d\'abord le cheval pour le confier à un cavalier.</p></div>';
   var l=(d.cavaliers||[]),autres=db.proprietaires.filter(function(p){return p.id!==d.proprietaireId});
   t+='<div class="panel items">'+(l.length?l.map(function(a){var o=owner(a.proprietaireId),act=confActif(a);
-    return '<div class="item" style="cursor:default"><span class="avatar '+avc(o?o.nom:'?')+'">'+esc(initials(o?o.nom:'?'))+'</span><span class="x"><b>'+esc(o?o.nom:'Cavalier supprimé')+'</b><span>'+esc(confLabel(a))+'</span><span class="sub" style="font-size:12px;display:block">'+(a.debut?'depuis le '+fdate(a.debut,{day:'numeric',month:'short',year:'numeric'}):'')+(a.fin?' · jusqu\'au '+fdate(a.fin,{day:'numeric',month:'short',year:'numeric'}):'')+'</span></span>'+
-      '<span class="end">'+(act?'<span class="pill">En cours</span>':'<span class="pill muted">'+(a.debut>today()?'À venir':'Terminé')+'</span>')+'</span>'+
+    return '<div class="item" style="cursor:default;flex-wrap:wrap"><span class="avatar '+avc(o?o.nom:'?')+'">'+esc(initials(o?o.nom:'?'))+'</span><span class="x"><b>'+esc(o?o.nom:'Cavalier supprimé')+'</b><span>'+esc(confLabel(a))+'</span><span class="sub" style="font-size:12px;display:block">'+(a.debut?'depuis le '+fdate(a.debut,{day:'numeric',month:'short',year:'numeric'}):'')+(a.fin?' · jusqu\'au '+fdate(a.fin,{day:'numeric',month:'short',year:'numeric'}):'')+'</span></span>'+
+      '<span class="end">'+(act?'<span class="pill">En cours</span>':'<span class="pill muted">'+(a.debut>today()?'À venir':'Terminé')+'</span>')+'</span>'+(act?'<select class="search" name="cf-c" data-id="'+a.id+'" aria-label="Cours compris pour '+esc(o?o.nom:'')+'" style="flex:1 1 100%;min-width:0;margin-top:4px">'+coursOpts(a.cours)+'</select>':'')+
       (act&&!a.fin?'<button type="button" class="btn sm" data-act="conf-fin" data-id="'+a.id+'">Arrêter</button>':'<button type="button" class="del-x" data-act="conf-del" data-id="'+a.id+'" aria-label="Retirer">✕</button>')+'</div>'}).join(''):'<div class="empty">Ce cheval n\'est confié à personne.</div>')+'</div>';
   if(!autres.length)return t+'<p class="sub" style="margin:0">Ajoutez d\'abord le cavalier dans l\'onglet Cavaliers.</p></div>';
   t+='<div class="panel form" style="padding:12px"><span class="lbl">Confier ce cheval</span><div class="grid2">'+sel('a-prop','Cavalier',autres.map(function(p){return[p.id,p.nom]}),'')+sel('a-type','Formule',Object.keys(CONF_TYPES).map(function(k){return[k,CONF_TYPES[k]]}),'demi')+
-    fld('a-debut','À partir du',today(),'date')+'</div>'+
+    '<div class="field"><label for="a-cours">Cours compris</label><select id="a-cours">'+coursOpts('')+'</select></div>'+fld('a-debut','À partir du',today(),'date')+'</div>'+
     '<div class="field"><span class="lbl">Jours de monte</span><div class="daypick">'+JOURS.map(function(j){return '<label><input type="checkbox" name="a-jour" value="'+j+'">'+j+'</label>'}).join('')+'</div></div>'+
     '<button type="button" class="btn primary" data-act="conf-add">Confier le cheval</button>'+
-    '<p class="sub" style="margin:0">Le cavalier voit le cheval dans son espace (soins, consignes) et reçoit une notification.</p></div>';
+    '<p class="sub" style="margin:0">Le cavalier voit le cheval dans son espace et reçoit une notification. Les cours compris s\'ajoutent à ses cours autorisés par semaine ; au-delà, il lui faut un carnet.</p></div>';
   return t+'</div>';
 }
 
@@ -1598,14 +1601,18 @@ function pensionOf(id){return pensions().find(function(p){return p.id===id})}
 function aLimite(p){return !!p&&p.cours!==''&&p.cours!=null}
 function coursSem(n){n=+n;return n===0?'aucun cours':n+' cours par semaine'}
 function pensionNom(id){var p=pensionOf(id);return p?p.nom:''}
+/* statut d'un cheval : à l'écurie (pas de pension), prêté à l'écurie, ou en pension */
+function enPension(c){return !!c.proprietaireId&&c.accueil!=='pret'}
+function statutCheval(c){return !c.proprietaireId?'Cheval de l\'écurie':c.accueil==='pret'?'Prêt à l\'écurie':(pensionNom(c.pension)||'Pension')}
 /* Forfait d'un cavalier : total des cours par semaine compris dans les pensions de ses chevaux présents (null = pas de limite). */
-function forfait(pid){var t=null;actifs().forEach(function(c){if(c.proprietaireId!==pid)return;var p=pensionOf(c.pension);if(aLimite(p))t=(t||0)+(+p.cours||0)});return t}
+function forfait(pid){var t=null;actifs().forEach(function(c){if(c.proprietaireId===pid&&enPension(c)){var p=pensionOf(c.pension);if(aLimite(p))t=(t||0)+(+p.cours||0)}
+  var a=confDe(c,pid);if(a&&a.cours!==''&&a.cours!=null)t=(t||0)+(+a.cours||0)});return t}
 function semaine(d){var x=toD(d);return addDays(d,-((x.getDay()+6)%7))}
 function coursSemaine(pid,d){var s=semaine(d),e=addDays(s,6);return db.cours.filter(function(c){return !c.annule&&(c.type==='collectif'||c.type==='particulier')&&c.inscrits.indexOf(pid)>-1&&c.date>=s&&c.date<=e}).length}
-function forfaitTxt(pid,d){var ff=forfait(pid);if(ff===null)return '';var n=coursSemaine(pid,d||today());return ff?'Pension : '+coursSem(ff)+' · '+n+' réservé'+(n>1?'s':'')+' cette semaine':'Pension sans cours compris : les cours se prennent avec un carnet'}
+function forfaitTxt(pid,d){var ff=forfait(pid);if(ff===null)return '';var n=coursSemaine(pid,d||today());return ff?'Formule : '+coursSem(ff)+' · '+n+' réservé'+(n>1?'s':'')+' cette semaine':'Formule sans cours compris : les cours se prennent avec un carnet'}
 function pensionsSettings(){
   var l=pensions(),opts=function(val){return '<option value=""'+(val===''||val==null?' selected':'')+'>Cours non limités</option><option value="0"'+(String(val)==='0'?' selected':'')+'>Aucun cours compris</option>'+[1,2,3,4,5,6,7].map(function(n){return '<option value="'+n+'"'+(String(val)===String(n)?' selected':'')+'>'+n+' cours par semaine</option>'}).join('')};
-  return '<div class="form panel" style="padding:14px"><span class="lbl">Pensions</span><div class="panel items">'+l.map(function(p){var nb=actifs().filter(function(c){return c.pension===p.id}).length;
+  return '<div class="form panel" style="padding:14px"><span class="lbl">Pensions</span><div class="panel items">'+l.map(function(p){var nb=actifs().filter(function(c){return enPension(c)&&c.pension===p.id}).length;
     return '<div class="item" style="cursor:default;flex-wrap:wrap"><span class="x" style="flex:1 1 150px"><b>'+esc(p.nom)+'</b><span>'+nb+' cheva'+(nb>1?'ux':'l')+'</span></span><select class="search" name="pn-c" data-id="'+esc(p.id)+'" aria-label="Cours autorisés pour '+esc(p.nom)+'" style="flex:1 1 170px;min-width:0">'+opts(p.cours)+'</select><button type="button" class="del-x" data-act="pension-del" data-id="'+esc(p.id)+'" aria-label="Supprimer '+esc(p.nom)+'">✕</button></div>'}).join('')+
     '<div class="item" style="cursor:default;flex-wrap:wrap"><input class="search" id="pn-nom" placeholder="Nouvelle pension, ex. Pension complète + 2 cours" aria-label="Nom de la nouvelle pension" style="flex:2 1 200px;min-width:0"><select class="search" id="pn-cours" aria-label="Cours autorisés par semaine" style="flex:1 1 170px;min-width:0">'+opts('')+'</select><button type="button" class="btn sm primary" data-act="pension-add">Ajouter</button></div></div>'+
     '<p class="sub" style="margin:0">Les cours autorisés s\'appliquent au propriétaire du cheval. Au-delà, il lui faut un carnet de cours pour réserver.</p></div>';
@@ -1772,7 +1779,7 @@ function statsData(p){
   r.soins={};r.vermi={};db.chevaux.forEach(function(c){(c.soins||[]).forEach(function(s){if(!s.fait||s.date<p.d0||s.date>p.d1)return;r.soins[s.type]=(r.soins[s.type]||0)+1;if(s.type==='Vermifuge'){var k=(s.produit||'Non précisé').replace(/ \(.*\)$/,'');r.vermi[k]=(r.vermi[k]||0)+1}})});
   r.arrivees=db.chevaux.filter(function(c){return c.arrivee&&c.arrivee>=p.d0&&c.arrivee<=p.d1});
   r.departs=db.chevaux.filter(function(c){return c.depart&&c.depart>=p.d0&&c.depart<=p.d1&&c.depart<=t});
-  r.pensions={};actifs().forEach(function(c){var n=pensionNom(c.pension)||'Sans pension';r.pensions[n]=(r.pensions[n]||0)+1});
+  r.pensions={};actifs().forEach(function(c){var n=statutCheval(c);r.pensions[n]=(r.pensions[n]||0)+1});
   var sg=db.messages.filter(function(m){return m.signal&&String(m.date).slice(0,10)>=p.d0&&String(m.date).slice(0,10)<=p.d1});r.sig={total:sg.length,regles:sg.filter(function(m){return m.regle}).length,types:{}};sg.forEach(function(m){var k=m.typeSignal||'Autre';r.sig.types[k]=(r.sig.types[k]||0)+1});
   return r}
 function moisSerie(p){var out=[],end=p.d1.slice(0,7),t=today();for(var i=11;i>=0;i--){var m=addMonths(end+'-15',-i).slice(0,7),n=0,part=0;db.cours.forEach(function(c){if(c.date.slice(0,7)===m&&estCours(c)&&!c.annule&&c.date<=t){n++;part+=c.inscrits.filter(function(pid){return !absent(c,pid)}).length}});out.push({m:m,n:n,part:part})}return out}
@@ -1853,7 +1860,7 @@ var ACT={
     o.carnets=(o.carnets||[]).concat([k]);d.carnets=clean(o.carnets);put('proprietaires',o);notifier({type:'proprios',ids:[o.id]},'Carnet de cours ajouté',carnetLabel(k)+' · vos prochains cours seront décomptés','cours');M.render();toast(carnetLabel(k)+' ajouté')},
   'carnet-del':function(id){M.read();var d=M.draft,o=owner(d.id);if(!o)return;o.carnets=(o.carnets||[]).filter(function(k){return k.id!==id});d.carnets=clean(o.carnets);put('proprietaires',o);M.render();toast('Carnet supprimé')},
   'conf-add':function(){M.read();var d=M.draft,c=horse(d.id);if(!c)return;var pid=v('a-prop');if(!pid){toast('Choisissez le cavalier.');return}
-    var a={id:uid(),proprietaireId:pid,type:v('a-type')||'demi',debut:v('a-debut')||today(),fin:'',jours:[].slice.call(document.querySelectorAll('input[name="a-jour"]:checked')).map(function(i){return i.value})};
+    var a={id:uid(),proprietaireId:pid,type:v('a-type')||'demi',cours:v('a-cours')===''?'':+v('a-cours'),debut:v('a-debut')||today(),fin:'',jours:[].slice.call(document.querySelectorAll('input[name="a-jour"]:checked')).map(function(i){return i.value})};
     c.cavaliers=(c.cavaliers||[]).concat([a]);d.cavaliers=clean(c.cavaliers);put('chevaux',c);
     notifier({type:'proprios',ids:[pid]},c.nom+' vous est confié',confLabel(a)+(a.debut>today()?' · à partir du '+fdate(a.debut,{day:'numeric',month:'long'}):''),'cheval');
     if(c.proprietaireId)notifier({type:'proprios',ids:[c.proprietaireId]},c.nom+' : nouveau cavalier',((owner(pid)||{}).nom||'')+' · '+confLabel(a),'cheval');
@@ -1910,7 +1917,7 @@ var ACT={
   depart:function(){M.read();var d=M.draft;if(!d.depart){d.depart=today();var e=document.getElementById('h-dep');if(e)e.value=d.depart}if(!d.departMotif){toast('Choisissez le motif du départ.');var m=document.getElementById('h-motif');if(m)m.focus();return}var f=document.getElementById('fhorse');if(f.requestSubmit)f.requestSubmit();else f.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}))},
   retour:function(){M.read();var d=M.draft;d.depart='';d.departMotif='';d.departDest='';d.arrivee=today();M.render();toast('Départ annulé, nouvelle arrivée aujourd\'hui : enregistrez la fiche')},
   'pension-add':function(){var n=v('pn-nom');if(!n){toast('Indiquez le nom de la pension.');var e=document.getElementById('pn-nom');if(e)e.focus();return}var c=v('pn-cours');db.pensions=pensions().concat([{id:'p-'+uid(),nom:n,cours:c===''?'':+c}]);putConfig();if(M)M.render();toast('Pension « '+n+' » ajoutée')},
-  'pension-del':function(id){var n=db.chevaux.filter(function(c){return c.pension===id&&!parti(c)}).length;if(n){toast('Cette pension est utilisée par '+n+' cheva'+(n>1?'ux':'l')+' : changez-les d\'abord.');return}if(pensions().length<2){toast('Gardez au moins une pension.');return}db.pensions=pensions().filter(function(p){return p.id!==id});putConfig();if(M)M.render()},
+  'pension-del':function(id){var n=db.chevaux.filter(function(c){return enPension(c)&&c.pension===id&&!parti(c)}).length;if(n){toast('Cette pension est utilisée par '+n+' cheva'+(n>1?'ux':'l')+' : changez-les d\'abord.');return}if(pensions().length<2){toast('Gardez au moins une pension.');return}db.pensions=pensions().filter(function(p){return p.id!==id});putConfig();if(M)M.render()},
   'reg-print':function(){imprimerRegistre()},
   'reg-csv':function(){saveText(csv(registreRows()),'registre-elevage-'+slug(db.ecurie.nom||'ecurie')+'-'+today()+'.csv');toast('Registre exporté')},
   'reg-soins':function(){saveText(csv(soinsRows()),'registre-soins-'+slug(db.ecurie.nom||'ecurie')+'-'+today()+'.csv');toast('Soins exportés')},
@@ -1969,12 +1976,14 @@ document.addEventListener('change',function(e){
   if(e.target.id==='g-type'){var gw=document.getElementById('g-produit-wrap');if(gw)gw.hidden=e.target.value!=='Vermifuge'}
   if(M&&M.kind==='groupe'&&e.target.name==='g-ch'){var dg=M.draft;dg.type=v('g-type');dg.date=v('g-date');dg.produit=v('g-produit');dg.etat=v('g-etat');dg.rappel=v('g-rappel');dg.note=v('g-note');M.read();var bt=document.querySelector('#fgroupe button[type=submit]'),n=Object.keys(dg.sel).length;if(bt)bt.textContent='Enregistrer pour '+n+' '+(n>1?'chevaux':'cheval');var lb=document.querySelector('#fgroupe .lbl');if(lb)lb.textContent='Chevaux ('+n+' sur '+actifs().length+')'}
   if(M&&M.kind==='chevaux'&&/^gl-(g|matin|midi|soir)$/.test(e.target.name)&&e.target.value!=='__new')saveGrainsNow();
+  if(M&&M.kind==='chevaux'&&(e.target.id==='h-prop'||e.target.id==='h-accueil')){M.read();M.render();var fo=document.getElementById(e.target.id);if(fo)fo.focus()}
   if(M&&M.kind==='chevaux'&&e.target.name==='gl-g'){var wasNew=!!e.target.closest('.gline').querySelector('[name="gl-new"]');if(wasNew!==(e.target.value==='__new')){var gi=[].indexOf.call(document.querySelectorAll('#fhorse .gline'),e.target.closest('.gline'));M.read();M.render();var ni=document.querySelectorAll('#fhorse .gline')[gi];ni=ni&&ni.querySelector('[name="gl-new"]');if(ni)ni.focus()}}
   if(M&&M.kind==='proprietaires'&&(e.target.id==='o-mineur'||e.target.id==='o-naiss')){M.read();M.render()}
   if(M&&M.kind==='cours'&&(e.target.name==='ins'||e.target.id==='c-rep'||e.target.id==='c-date'||e.target.id==='c-heure'||e.target.id==='c-duree')){M.read();M.render()}
   if(e.target.id==='push-meteo'&&pushState.sub){var on=e.target.checked;pushState.meteo=on;sb.from('push_subs').update({meteo:on}).eq('endpoint',pushState.sub.endpoint).then(function(r){toast(r.error?'Réglage impossible pour le moment.':on?'Météo du matin activée sur ce téléphone':'Météo du matin désactivée sur ce téléphone')},function(){toast('Pas de connexion : réessayez.')})}
   if(e.target.id==='demo-role'){ACT['demo-role'](e.target.value)}
   if(e.target.id==='mode-pref'){try{localStorage.setItem(KEY+'-mode',e.target.value)}catch(er){}applyTheme(true)}
+  if(e.target.name==='cf-c'&&M&&M.kind==='chevaux'){var hc=horse(M.draft.id),ca=hc&&(hc.cavaliers||[]).find(function(x){return x.id===e.target.dataset.id});if(ca){M.read();ca.cours=e.target.value===''?'':+e.target.value;M.draft.cavaliers=clean(hc.cavaliers);put('chevaux',hc);M.render();toast('Cours compris : '+(ca.cours===''?'aucun':coursSem(ca.cours)))}}
   if(e.target.name==='pn-c'){var pp=pensionOf(e.target.dataset.id);if(pp){pp.cours=e.target.value===''?'':+e.target.value;putConfig();toast('Pension « '+pp.nom+' » : '+(pp.cours===''?'cours non limités':coursSem(pp.cours)))}}
   if((e.target.id==='h-race'||e.target.id==='h-box')&&M){var on=e.target.value==='__autre',key=e.target.id==='h-race'?'oRace':'oBox';
     if(on!==!!M[key]||on){M.read();M[key]=on;if(on)M.draft[e.target.id==='h-race'?'race':'box']='';M.render();if(on){var ip=document.getElementById(e.target.id+'-autre');if(ip)ip.focus()}}}
