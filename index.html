@@ -298,6 +298,7 @@ nav.tabs button{font-size:11.5px}
 input[type=date],input[type=time],input[type=month]{-webkit-appearance:none;appearance:none;display:block;width:100%;min-width:0;text-align:left;line-height:1.3}
 input::-webkit-date-and-time-value{text-align:left;margin:0}
 .grid2>*{min-width:0}
+body.enfant [data-act="c-reserver"],body.enfant [data-act="c-annuler-ask"],body.enfant [data-act="c-annuler"],body.enfant [data-act="carnet-demande"],body.enfant [data-act="monte-new"],body.enfant [data-act="monte-del"]{display:none!important}
 #print{display:none}
 .hero .btn{color:var(--fg)}.hero .btn.primary{background:var(--surface);color:var(--fg);border-color:var(--surface)}.hero .btn.danger{background:var(--danger-soft);color:var(--danger)}
 @media print{body>*:not(#print){display:none!important}html,body{background:#fff!important;height:auto}#print{display:block!important;color:#000;font:10.5px/1.35 Arial,sans-serif}#print h1{font-size:19px;margin:0 0 6px}#print h2{font-size:14px;margin:14px 0 6px}#print p{margin:0 0 8px}#print table{width:100%;border-collapse:collapse}#print th,#print td{border:1px solid #888;padding:3px 5px;text-align:left;vertical-align:top}#print th{background:#eee}#print tr{break-inside:avoid}@page{size:A4 landscape;margin:10mm}}
@@ -396,6 +397,9 @@ function seed(){
 var db=emptyDb(),store=null,mode=CLOUD?'cloud':'local',readOnly=false,busy=false,loadErr=false;
 var sb=null,me={role:'gerant',prop:null,email:'',uid:null},authState=CLOUD?'loading':'ok',authMsg='',authView='login';
 function isG(){return me.role==='gerant'}
+function isParent(){return me.role==='parent'}
+/* Cavalier mineur sans autonomie : c'est le compte parent qui réserve, annule, demande les carnets et modifie les coordonnées. */
+function restreint(){if(isG()||isParent())return false;var o=owner(me.prop);return !!o&&estMineur(o)&&!o.autonome}
 function clean(o){return JSON.parse(JSON.stringify(o))}
 function allLoaded(){return authState==='ok'}
 function saveLocal(){if(mode!=='local')return;try{localStorage.setItem(KEY,JSON.stringify(db));canSave=true}catch(e){canSave=false}}
@@ -449,8 +453,9 @@ function startLocal(){
   render();
 }
 function setDemoRole(r,silent){
-  if(r!=='gerant'&&!owner(r))r='gerant';
-  me=r==='gerant'?{role:'gerant',prop:null,email:'',uid:null}:{role:'client',prop:r,email:'',uid:null};
+  var par=String(r).indexOf('P:')===0,pid=par?r.slice(2):r;
+  if(r!=='gerant'&&!owner(pid))r='gerant';
+  me=r==='gerant'?{role:'gerant',prop:null,email:'',uid:null}:{role:par?'parent':'client',prop:pid,email:'',uid:null};
   try{localStorage.setItem(KEY+'-demorole',r)}catch(e){}
   if(!silent)S.tab=(isG()?TABS_G:TABS_C)[0];fixTab();renderNav();if(!silent)render();
 }
@@ -499,7 +504,7 @@ async function loadAll(){
     if(k==='config'){var row=(r.data||[]).find(function(x){return x.id==='main'}),c=row&&row.data||{};
       CONF_KEYS.forEach(function(x){if(c[x]!==undefined)nd[x]=c[x]});return}
     nd[k]=(r.data||[]).map(function(row){var o=Object.assign({},row.data||{});o.id=row.id;
-      if(k==='proprietaires'){o._code=row.invite_code||'';o._lie=!!row.user_id}
+      if(k==='proprietaires'){o._code=row.invite_code||'';o._lie=!!row.user_id;o._codeP=row.invite_code_parent||'';o._lieP=!!row.parent_user_id}
       if(k==='messages'||k==='annonces')o.date=row.created_at;
       if(k==='messages')o.proprietaireId=row.proprietaire_id;
       if(k==='chevaux')o.proprietaireId=o.proprietaireId||row.proprietaire_id;
@@ -690,7 +695,7 @@ function vProprios(){
   if((S.cView||'clients')==='cartes')return clientsToggle()+vCartes();
   var h=clientsToggle()+'<div class="actions"><span class="grow sub" style="align-self:center">'+db.proprietaires.length+' cavalier'+(db.proprietaires.length>1?'s':'')+'</span></div>';
   if(!db.proprietaires.length)return h+'<div class="panel empty">Aucun cavalier. Ajoutez le premier avec « + Cavalier » (propriétaire, demi-pensionnaire ou cavalier).</div>';
-  return h+'<div class="panel items">'+db.proprietaires.slice().sort(function(a,b){return a.nom.localeCompare(b.nom)}).map(function(p){
+  return h+'<div class="panel items">'+db.proprietaires.slice().sort(function(a,b){return nomTri(a).localeCompare(nomTri(b))}).map(function(p){
     var hs=actifs().filter(function(c){return c.proprietaireId===p.id}).map(function(c){return c.nom}).concat(confiesA(p.id).map(function(c){return c.nom+' ('+(CONF_TYPES[confDe(c,p.id).type]||'').toLowerCase()+')'})),n=p.rcFin?diff(p.rcFin,today()):999,ks=carnetSolde(p.id),ff=forfait(p.id);
     return '<button class="item" data-act="owner" data-id="'+p.id+'"><span class="avatar '+avc(p.nom)+'">'+esc(initials(p.nom))+'</span><span class="x"><b>'+esc(p.nom)+'</b><span>'+esc(hs.join(', ')||'Aucun cheval')+(ff?' · '+ff+' cours/sem.':'')+(ks.actif?' · carnet : '+Math.max(0,ks.restant)+' cours':'')+'</span>'+((p.roles||[]).length||estMineur(p)?'<span class="chips">'+(p.roles||[]).map(function(r){return '<span class="chip">'+esc(ROLES[r]||r)+'</span>'}).join('')+(estMineur(p)?'<span class="chip">Mineur</span>':'')+'</span>':'')+'</span><span class="end">'+(ks.actif&&ks.restant<=1?'<span class="pill '+(ks.restant<=0?'late':'warn')+'">Carnet '+(ks.restant<=0?'épuisé':'presque fini')+'</span>':n<0?'<span class="pill late">RC expirée</span>':n<=30?'<span class="pill warn">RC bientôt</span>':esc(p.tel||''))+'</span></button>'}).join('')+'</div>';
 }
@@ -699,6 +704,8 @@ function myHorses(){return actifs().filter(function(c){return c.proprietaireId==
 function unreadFor(pid){return db.messages.filter(function(m){return m.proprietaireId===pid&&!m.lu&&m.de===(isG()?'client':'gerant')}).length}
 function unreadTotal(){return isG()?db.messages.filter(function(m){return !m.lu&&m.de==='client'}).length:unreadFor(me.prop)}
 function coursStart(c){return new Date(c.date+'T'+(c.heure||'00:00')+':00')}
+function prenomDe(o){o=o||{};return o.prenom||firstName(o.nom)}
+function nomTri(p){return ((p.nomFamille||p.nom||'')+' '+(p.prenom||'')).toLowerCase()}
 function firstName(n){return String(n||'').split(' ')[0]}
 function installBanners(){
   if(installEvt)return '<div class="banner"><div class="x">Installez l\'appli sur cet appareil pour l\'ouvrir comme une application.</div><button class="btn sm primary" data-act="install">Installer</button></div>';
@@ -707,12 +714,12 @@ function installBanners(){
 }
 function demoBanner(){
   if(mode!=='local'||isG())return '';
-  var o=owner(me.prop);return '<div class="banner"><div class="x">Mode démo : vous voyez l\'appli comme <b>'+esc(o?o.nom:'un cavalier')+'</b>.</div><button class="btn sm" data-act="demo-role" data-id="gerant">Revenir au gérant</button></div>';
+  var o=owner(me.prop);return '<div class="banner"><div class="x">Mode démo : vous voyez l\'appli comme <b>'+(isParent()?'le parent de ':'')+esc(o?o.nom:'un cavalier')+'</b>.</div><button class="btn sm" data-act="demo-role" data-id="gerant">Revenir au gérant</button></div>';
 }
 function cAccueil(){
   var o=owner(me.prop)||{nom:''},t=today(),h=demoBanner()+installBanners()+pushBanner();
   if(loadErr)h+='<div class="alert"><div class="x">Hors connexion : affichage des dernières données reçues.</div></div>';
-  h+='<h2 style="font-size:24px">Bonjour '+esc(firstName(o.nom))+'</h2>';
+  h+=isParent()?'<h2 style="font-size:24px">Bonjour'+(o.respPrenom?' '+esc(o.respPrenom):'')+'</h2><div class="banner"><div class="x">Espace parent de <b>'+esc(o.nom)+'</b> : vous réservez et annulez ses cours, demandez ses carnets et échangez avec l\'écurie.</div></div>':'<h2 style="font-size:24px">Bonjour '+esc(prenomDe(o))+'</h2>'+(restreint()?'<div class="banner"><div class="x">Tes parents réservent et annulent tes cours depuis leur compte. Toi, tu confirmes ta présence et tu peux signaler un problème.</div></div>':'');
   var un=unreadFor(me.prop);
   if(un)h+='<div class="banner"><div class="x"><b>'+un+' nouveau'+(un>1?'x':'')+' message'+(un>1?'s':'')+'</b> de l\'écurie.</div><button class="btn sm primary" data-act="tab" data-id="messages">Lire</button></div>';
   h+=weatherSection();
@@ -780,8 +787,8 @@ function cCheval(){
 }
 function thread(pid){
   var l=db.messages.filter(function(m){return m.proprietaireId===pid}).sort(function(a,b){return String(a.date).localeCompare(String(b.date))}),meSide=isG()?'gerant':'client';
-  var h='<div class="msgs">'+(l.length?l.map(function(m){var mine=m.de===meSide,hz=m.chevalId?horse(m.chevalId):null;
-    return '<div class="bub'+(mine?' me':'')+'">'+(hz?'<span class="sub" style="display:block;color:inherit;opacity:.8">À propos de '+esc(hz.nom)+'</span>':'')+esc(m.texte)+'<small>'+(mine?'Vous':(isG()?firstName((owner(pid)||{}).nom):'Écurie'))+' · '+esc(fdateTime(m.date))+'</small></div>'}).join('')
+  var h='<div class="msgs">'+(l.length?l.map(function(m){var mine=m.de===meSide&&(isG()||(m.auteur==='parent')===isParent()),hz=m.chevalId?horse(m.chevalId):null;
+    return '<div class="bub'+(mine?' me':'')+'">'+(hz?'<span class="sub" style="display:block;color:inherit;opacity:.8">À propos de '+esc(hz.nom)+'</span>':'')+esc(m.texte)+'<small>'+(mine?'Vous':(m.de==='gerant'?'Écurie':m.auteur==='parent'?'Parent'+((owner(pid)||{}).respPrenom?' ('+owner(pid).respPrenom+')':''):prenomDe(owner(pid))))+' · '+esc(fdateTime(m.date))+'</small></div>'}).join('')
     :'<div class="panel empty">Aucun message. Écrivez le premier ci-dessous.</div>')+'</div>';
   var hc=S.msgCheval?horse(S.msgCheval):null;
   h+='<form class="form" id="fmsg">'+(hc?'<div class="chips" style="margin:0"><span class="chip">À propos de '+esc(hc.nom)+'</span><button type="button" class="btn sm" data-act="msg-cheval-x">Retirer</button></div>':'')+'<div class="field"><label for="msg-texte">Votre message</label><textarea id="msg-texte" style="min-height:90px">'+esc(S.msgDraft||'')+'</textarea></div><button class="btn primary" type="submit">Envoyer</button></form>';
@@ -809,9 +816,9 @@ function markRead(pid){
 function sendMsg(){
   var tx=v('msg-texte');if(!tx){toast('Écrivez votre message.');return}
   var pid=isG()?S.thread:me.prop;if(!pid)return;
-  var m={id:uid(),proprietaireId:pid,de:isG()?'gerant':'client',texte:tx,lu:false,date:new Date().toISOString()};if(S.msgCheval){m.chevalId=S.msgCheval}
+  var m={id:uid(),proprietaireId:pid,de:isG()?'gerant':'client',texte:tx,lu:false,date:new Date().toISOString()};if(S.msgCheval){m.chevalId=S.msgCheval}if(isParent())m.auteur='parent';
   db.messages.push(m);S.msgDraft='';S.msgCheval=null;put('messages',m);
-  notifier(isG()?{type:'proprios',ids:[pid]}:{type:'gerant'},isG()?'Message de l\'écurie':'Message de '+((owner(me.prop)||{}).nom||'un cavalier'),tx.slice(0,140),'messages');render();window.scrollTo(0,document.body.scrollHeight);toast('Message envoyé');
+  notifier(isG()?{type:'proprios',ids:[pid]}:{type:'gerant'},isG()?'Message de l\'écurie':(isParent()?'Message du parent de ':'Message de ')+((owner(me.prop)||{}).nom||'un cavalier'),tx.slice(0,140),'messages');render();window.scrollTo(0,document.body.scrollHeight);toast('Message envoyé');
 }
 function annoncesSection(){
   var an=db.annonces.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))});
@@ -821,6 +828,7 @@ function annoncesSection(){
 }
 function reserver(id){
   var c=db.cours.find(function(x){return x.id===id});if(!c)return;
+  if(restreint()){toast('Demande à tes parents de réserver ce cours depuis leur compte.');return}
   var ff=forfait(me.prop);if(ff!==null&&(c.type==='collectif'||c.type==='particulier')&&coursSemaine(me.prop,c.date)>=ff&&carnetSolde(me.prop).restant<=0){toast(ff?'Votre pension comprend '+coursSem(ff)+', déjà réservés cette semaine. Demandez un carnet pour un cours de plus.':'Votre pension ne comprend pas de cours : demandez un carnet de cours.');return}
   if(mode==='cloud'){sb.rpc('reserver_cours',{p_id:id}).then(function(r){if(r.error){toast(r.error.message);return}Object.assign(c,r.data,{id:id});render();toast('Cours réservé');notifier({type:'gerant'},'Nouvelle réservation',(owner(me.prop)||{}).nom+' · '+coursLabel(c),'cours')},function(){toast('Pas de connexion : réessayez.')});return}
   if(c.annule){toast('Ce cours est annulé.');return}
@@ -830,13 +838,14 @@ function reserver(id){
 }
 function annuler(id){
   var c=db.cours.find(function(x){return x.id===id});S.confirmAnnul=null;if(!c)return;
+  if(restreint()){toast('Demande à tes parents d\'annuler ce cours depuis leur compte.');return}
   if(mode==='cloud'){sb.rpc('annuler_cours',{p_id:id}).then(function(r){if(r.error){toast(r.error.message);render();return}Object.assign(c,r.data,{id:id});render();toast('Réservation annulée');notifier({type:'gerant'},'Réservation annulée',(owner(me.prop)||{}).nom+' · '+coursLabel(c),'cours')},function(){toast('Pas de connexion : réessayez.')});return}
   if((coursStart(c)-new Date())/36e5<(+db.annulHeures||0)){toast('Annulation impossible moins de '+db.annulHeures+' h avant le cours : contactez le gérant.');render();return}
   c.inscrits=c.inscrits.filter(function(x){return x!==me.prop});saveLocal();render();toast('Réservation annulée');notifier({type:'gerant'},'Réservation annulée',(owner(me.prop)||{}).nom+' · '+coursLabel(c),'cours');
 }
 function genCode(){var a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';var r=new Uint32Array(8);(window.crypto||{}).getRandomValues?crypto.getRandomValues(r):r.forEach(function(_,i){r[i]=Math.random()*1e9});for(var i=0;i<8;i++)s+=a[r[i]%a.length];return s.slice(0,4)+'-'+s.slice(4)}
 function appUrl(){return location.origin+location.pathname}
-function inviteText(p){return 'Bonjour '+firstName(p.nom)+',\n\nVoici votre accès à l\'espace cavalier de '+(db.ecurie.nom||'l\'écurie')+' : réservation des cours, chevaux de l\'écurie, suivi de votre cheval et messages.\n\n1. Ouvrez '+appUrl()+'\n2. Touchez « Première connexion : créer mon compte »\n3. Saisissez votre e-mail, un mot de passe et ce code d\'activation : '+p._code+'\n\nÀ bientôt !'}
+function inviteText(p){return 'Bonjour '+prenomDe(p)+',\n\nVoici votre accès à l\'espace cavalier de '+(db.ecurie.nom||'l\'écurie')+' : réservation des cours, chevaux de l\'écurie, suivi de votre cheval et messages.\n\n1. Ouvrez '+appUrl()+'\n2. Touchez « Première connexion : créer mon compte »\n3. Saisissez votre e-mail, un mot de passe et ce code d\'activation : '+p._code+'\n\nÀ bientôt !'}
 function copyText(t,okMsg){var p=navigator.clipboard&&navigator.clipboard.writeText(t);if(p)p.then(function(){toast(okMsg)},function(){toast('Copie impossible : sélectionnez le texte affiché')});else toast('Copie impossible : sélectionnez le texte affiché')}
 
 var VIEWS_G={meteo:vMeteo,jour:vJour,chevaux:vChevaux,cours:vCours,proprios:vProprios,silo:vSilo,stats:vStats,registre:vRegistre,messages:vMessagesG};
@@ -875,6 +884,7 @@ function render(){
   var vw=document.getElementById('view');
   if(authState!=='ok')vw.innerHTML=vAuth();
   else{vw.innerHTML=(busy?'<div class="banner"><div class="x">Enregistrement en cours dans la base…</div></div>':'')+((isG()?VIEWS_G:VIEWS_C)[S.tab]||(isG()?vJour:cAccueil))();layoutCols(vw)}
+  document.body.classList.toggle('enfant',authState==='ok'&&restreint());
   document.getElementById('htitle').textContent=titleFor();
   var ad=authState==='ok'?(isG()?{chevaux:['horse','Cheval'],cours:['cours','Cours'],proprios:['owner','Cavalier'],silo:['grain-focus','Grain']}:{})[S.tab]:null,hb=document.getElementById('hadd');
   hb.hidden=!ad;if(ad){hb.dataset.act=ad[0];document.getElementById('hadd-l').textContent=ad[1];hb.setAttribute('aria-label','Ajouter : '+ad[1])}
@@ -965,12 +975,12 @@ function ownerModal(id){
   var p=id?JSON.parse(JSON.stringify(owner(id))):{id:null,nom:'',tel:'',email:'',licence:'',rcFin:''};
   M={kind:'proprietaires',draft:p,read:readOwner,render:function(){
     var d=M.draft,hs=d.id?actifs().filter(function(c){return c.proprietaireId===d.id}):[];
-    var h=head(d.id?d.nom:'Nouveau cavalier')+'<form class="form" id="fowner">'+fld('o-nom','Nom et prénom',d.nom,'text',' required')+
+    var h=head(d.id?d.nom:'Nouveau cavalier')+'<form class="form" id="fowner">'+'<div class="grid2">'+fld('o-prenom','Prénom',d.prenom||'','text',' autocomplete="off"')+fld('o-nomf','Nom',d.nomFamille!=null?d.nomFamille:(d.prenom?'':d.nom),'text',' required autocomplete="off"')+'</div>'+(d.id&&d.prenom==null&&d.nom?'<p class="sub" style="margin:-6px 0 0">Fiche créée avant la séparation du nom et du prénom : répartissez « '+esc(d.nom)+' » dans les deux champs.</p>':'')+
       '<div class="grid2">'+fld('o-tel','Téléphone',d.tel,'tel')+fld('o-email','E-mail',d.email,'email')+fld('o-lic','N° licence FFE',d.licence)+fld('o-rc','Fin d\'assurance RC',d.rcFin,'date')+'</div>'+
       '<div class="field"><label for="o-adr">Adresse</label><textarea id="o-adr">'+esc(d.adresse||'')+'</textarea></div>'+
       '<div class="field"><span class="lbl">Rôle à l\'écurie</span><div class="daypick">'+Object.keys(ROLES).map(function(k){return '<label><input type="checkbox" name="o-role" value="'+k+'"'+((d.roles||[]).indexOf(k)>-1?' checked':'')+'>'+ROLES[k]+'</label>'}).join('')+'</div></div>'+
       '<div class="grid2">'+fld('o-naiss','Date de naissance',d.naissance||'','date')+'<label class="checks" style="border:0;align-self:end"><span style="display:flex;gap:10px;align-items:center;font-weight:500;color:var(--fg)"><input type="checkbox" id="o-mineur"'+(estMineur(d)?' checked':'')+'>Cavalier mineur</span></label></div>'+
-      (estMineur(d)?'<div class="panel form" style="padding:12px"><span class="lbl">Responsable légal (contact)</span><div class="grid2">'+fld('o-rnom','Nom et prénom',d.respNom||'')+fld('o-rlien','Lien (mère, père…)',d.respLien||'')+fld('o-rtel','Téléphone',d.respTel||'','tel')+fld('o-remail','E-mail',d.respEmail||'','email')+'</div></div>':'');
+      (estMineur(d)?'<div class="panel form" style="padding:12px"><span class="lbl">Responsable légal (contact)</span><div class="grid2">'+fld('o-rprenom','Prénom',d.respPrenom||'')+fld('o-rnom','Nom',d.respNomF!=null?d.respNomF:(d.respPrenom?'':d.respNom||''))+fld('o-rlien','Lien (mère, père…)',d.respLien||'')+fld('o-rtel','Téléphone',d.respTel||'','tel')+fld('o-remail','E-mail',d.respEmail||'','email')+'</div><label class="checks" style="border:0"><span style="display:flex;gap:10px;align-items:center;font-weight:500;color:var(--fg)"><input type="checkbox" id="o-auto"'+(d.autonome?' checked':'')+'>Le cavalier peut réserver et annuler ses cours seul</span></label><p class="sub" style="margin:0">Sinon, c\'est le compte parent qui réserve, annule, demande les carnets et modifie les coordonnées. L\'enfant voit ses cours, ses chevaux, confirme sa présence et peut signaler un problème.</p></div>':'');
     if(d.id&&forfaitTxt(d.id))h+='<div class="banner"><div class="x">'+esc(forfaitTxt(d.id))+'</div></div>';
     if(d.id){var cf=confiesA(d.id);h+='<div class="field"><span class="lbl">Chevaux</span><div class="chips" style="margin:0">'+(hs.length||cf.length?hs.map(function(c){return '<span class="chip">'+esc(c.nom)+' (propriétaire)</span>'}).join('')+cf.map(function(c){return '<button type="button" class="chip" style="border:0;cursor:pointer" data-act="horse" data-id="'+c.id+'">'+esc(c.nom)+' · '+esc(confLabel(confDe(c,d.id)))+'</button>'}).join(''):'<span class="sub">Aucun cheval. Pour lui confier un cheval (demi-pension, location…), ouvrez la fiche du cheval.</span>')+'</div></div>';
       h+='<div class="field"><span class="lbl">Carnets de cours</span>'+carnetBox(d.id,true)+'<div class="panel items">'+carnetForm()+'</div></div>'}
@@ -983,15 +993,24 @@ function ownerModal(id){
 function accessSection(d){
   var t='<div class="field"><span class="lbl">Espace cavalier</span>';
   if(!d.id)return t+'<p class="sub" style="margin:0">Enregistrez d\'abord la fiche pour pouvoir inviter ce cavalier.</p></div>';
-  if(mode!=='cloud')return t+'<p class="sub" style="margin:0">En mode démo, il n\'y a pas de comptes : visualisez son espace directement.</p><button type="button" class="btn" data-act="demo-role" data-id="'+d.id+'">Voir l\'appli comme '+esc(firstName(d.nom))+'</button></div>';
-  if(d._lie)return t+'<div><span class="pill">Compte activé</span></div></div>';
-  if(!d._code)return t+'<p class="sub" style="margin:0">Créez son invitation, puis envoyez-la par SMS, WhatsApp ou e-mail.</p><button type="button" class="btn primary" data-act="owner-code">Créer l\'invitation</button></div>';
+  if(mode!=='cloud')return t+'<p class="sub" style="margin:0">En mode démo, il n\'y a pas de comptes : visualisez son espace directement.</p><button type="button" class="btn" data-act="demo-role" data-id="'+d.id+'">Voir l\'appli comme '+esc(prenomDe(d))+'</button>'+(estMineur(d)?'<button type="button" class="btn" data-act="demo-role" data-id="P:'+d.id+'">Voir l\'appli comme son parent</button>':'')+'</div>';
+  var par=estMineur(d)?parentAccess(d):'';
+  if(d._lie)return t+'<div><span class="pill">Compte du cavalier activé</span></div>'+par+'</div>';
+  if(!d._code)return t+'<p class="sub" style="margin:0">Créez son invitation, puis envoyez-la par SMS, WhatsApp ou e-mail.</p><button type="button" class="btn primary" data-act="owner-code">Créer l\'invitation</button>'+par+'</div>';
   return t+'<div style="font-family:ui-monospace,monospace;font-size:22px;font-weight:700;letter-spacing:2px">'+esc(d._code)+'</div>'+
     '<p class="sub" style="margin:0">À envoyer par SMS, WhatsApp ou e-mail : le cavalier y trouve le lien et son code.</p>'+'<textarea readonly class="search" id="inv-text" aria-label="Texte de l\'invitation" style="min-height:150px;font-size:13px">'+esc(inviteText(d))+'</textarea>'+
     '<div class="actions"><button type="button" class="btn primary grow" data-act="owner-share">Envoyer l\'invitation</button><button type="button" class="btn grow" data-act="owner-copy">Copier</button></div>'+
-    '<button type="button" class="btn sm" data-act="owner-code">Changer le code</button></div>';
+    '<button type="button" class="btn sm" data-act="owner-code">Changer le code</button>'+par+'</div>';
 }
-function readOwner(){var d=M.draft;d.nom=v('o-nom');d.tel=v('o-tel');d.email=v('o-email');d.licence=v('o-lic');d.rcFin=v('o-rc');d.adresse=v('o-adr');d.naissance=v('o-naiss');var mi=document.getElementById('o-mineur');if(mi)d.mineur=mi.checked;d.roles=[].slice.call(document.querySelectorAll('input[name="o-role"]:checked')).map(function(i){return i.value});if(document.getElementById('o-rnom')){d.respNom=v('o-rnom');d.respLien=v('o-rlien');d.respTel=v('o-rtel');d.respEmail=v('o-remail')}}
+function inviteParentText(p){return 'Bonjour'+(p.respPrenom?' '+p.respPrenom:'')+',\n\nVoici votre accès parent à l\'espace de '+prenomDe(p)+' chez '+(db.ecurie.nom||'l\'écurie')+' : réserver et annuler ses cours, demander ses carnets, suivre son cheval et échanger avec l\'écurie.\n\n1. Ouvrez '+appUrl()+'\n2. Touchez « Première connexion : créer mon compte »\n3. Saisissez votre e-mail, un mot de passe et ce code d\'activation : '+p._codeP+'\n\nÀ bientôt !'}
+function parentAccess(d){
+  var t='<div class="panel form" style="padding:12px;margin-top:8px"><span class="lbl">Compte parent'+(d.respNom?' · '+esc(d.respNom):'')+'</span>';
+  if(d._lieP)return t+'<div><span class="pill">Compte parent activé</span></div></div>';
+  if(!d._codeP)return t+'<p class="sub" style="margin:0">Un compte à part pour le responsable légal, avec plus de droits que l\'enfant : réserver, annuler, carnets, coordonnées.</p><button type="button" class="btn primary" data-act="owner-code-p">Créer l\'invitation du parent</button></div>';
+  return t+'<div style="font-family:ui-monospace,monospace;font-size:22px;font-weight:700;letter-spacing:2px">'+esc(d._codeP)+'</div><textarea readonly class="search" aria-label="Invitation du parent" style="min-height:140px;font-size:13px">'+esc(inviteParentText(d))+'</textarea>'+
+    '<div class="actions"><button type="button" class="btn primary grow" data-act="owner-share-p">Envoyer au parent</button><button type="button" class="btn grow" data-act="owner-copy-p">Copier</button></div><button type="button" class="btn sm" data-act="owner-code-p">Changer le code</button></div>';
+}
+function readOwner(){var d=M.draft;if(document.getElementById('o-nomf')){d.prenom=v('o-prenom');d.nomFamille=v('o-nomf');d.nom=[d.prenom,d.nomFamille].filter(Boolean).join(' ')}d.tel=v('o-tel');d.email=v('o-email');d.licence=v('o-lic');d.rcFin=v('o-rc');d.adresse=v('o-adr');d.naissance=v('o-naiss');var mi=document.getElementById('o-mineur');if(mi)d.mineur=mi.checked;d.roles=[].slice.call(document.querySelectorAll('input[name="o-role"]:checked')).map(function(i){return i.value});var au=document.getElementById('o-auto');if(au)d.autonome=au.checked;if(document.getElementById('o-rnom')){d.respPrenom=v('o-rprenom');d.respNomF=v('o-rnom');d.respNom=[d.respPrenom,d.respNomF].filter(Boolean).join(' ');d.respLien=v('o-rlien');d.respTel=v('o-rtel');d.respEmail=v('o-remail')}}
 
 function coursModal(id){
   var c=id?JSON.parse(JSON.stringify(db.cours.find(function(x){return x.id===id}))):{id:null,date:S.coursDate,heure:'17:00',duree:60,titre:'',type:'collectif',lieu:'Carrière',places:5,inscrits:[]};
@@ -1016,11 +1035,11 @@ function readCours(){var d=M.draft;d.titre=v('c-titre');d.date=v('c-date')||d.da
   var mt={};[].slice.call(document.querySelectorAll('#fcours select[name="mt"]')).forEach(function(s){if(s.value&&d.inscrits.indexOf(s.dataset.pid)>-1)mt[s.dataset.pid]=s.value});d.inscrits.forEach(function(p){if(!document.querySelector('#fcours select[data-pid="'+p+'"]')&&(d.montures||{})[p])mt[p]=d.montures[p]});d.montures=mt;
   var rp=document.getElementById('c-rep');if(rp){d._rep=rp.checked;d._repFin=v('c-repfin')||d._repFin}}
 
-function demoSwitch(){return '<div class="field panel" style="padding:14px"><label for="demo-role">Voir l\'appli comme (démo)</label><select id="demo-role"><option value="gerant"'+(isG()?' selected':'')+'>Gérant</option>'+db.proprietaires.map(function(p){return '<option value="'+p.id+'"'+(me.prop===p.id?' selected':'')+'>Cavalier : '+esc(p.nom)+'</option>'}).join('')+'</select><span class="sub">Une fois en ligne, chaque cavalier se connecte avec son propre compte.</span></div>'}
+function demoSwitch(){return '<div class="field panel" style="padding:14px"><label for="demo-role">Voir l\'appli comme (démo)</label><select id="demo-role"><option value="gerant"'+(isG()?' selected':'')+'>Gérant</option>'+db.proprietaires.map(function(p){return '<option value="'+p.id+'"'+(me.prop===p.id&&!isParent()?' selected':'')+'>Cavalier : '+esc(p.nom)+'</option>'+(estMineur(p)?'<option value="P:'+p.id+'"'+(me.prop===p.id&&isParent()?' selected':'')+'>Parent de '+esc(p.nom)+'</option>':'')}).join('')+'</select><span class="sub">Une fois en ligne, chaque cavalier se connecte avec son propre compte.</span></div>'}
 function accountBox(){return '<div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:8px"><span class="lbl">Compte</span><div>'+esc(me.email||'')+(isG()?' · gérant':'')+'</div><button class="btn" data-act="logout">Se déconnecter</button></div>'}
 function settingsModal(){
   if(!isG()){M={kind:'settings',draft:{},read:function(){},focus:false,render:function(){var o=owner(me.prop)||{};
-    var h=head('Mon compte')+(mode==='local'?demoSwitch():'')+'<div class="panel" style="padding:14px"><b style="font-size:17px">'+esc(o.nom||'')+'</b></div>'+coordsForm(o)+appearanceBox()+pushBox()+(mode==='cloud'?accountBox():'');mb(h)}};openModal();return}
+    var h=head('Mon compte')+(mode==='local'?demoSwitch():'')+'<div class="panel" style="padding:14px"><b style="font-size:17px">'+esc(o.nom||'')+'</b></div>'+(restreint()?'<div class="panel" style="padding:14px"><span class="lbl">Mes coordonnées</span><p class="sub" style="margin:6px 0 0">Ce sont tes parents qui les modifient depuis leur compte.</p></div>':coordsForm(o))+appearanceBox()+pushBox()+(mode==='cloud'?accountBox():'');mb(h)}};openModal();return}
   M={kind:'settings',draft:{},read:function(){},focus:false,render:function(){
     var e=db.ecurie;
     var h=head('Réglages')+(mode==='local'?demoSwitch():'')+(mode==='cloud'?accountBox():'')+appearanceBox()+pushBox()+
@@ -1277,7 +1296,7 @@ function carnetDemandeModal(){
   openModal();
 }
 function envoyerMessageClient(texte,titreNotif){
-  var m={id:uid(),proprietaireId:me.prop,de:'client',texte:texte,lu:false,date:new Date().toISOString()};
+  var m={id:uid(),proprietaireId:me.prop,de:'client',texte:texte,lu:false,date:new Date().toISOString()};if(isParent())m.auteur='parent';
   db.messages.push(m);put('messages',m);
   notifier({type:'gerant'},titreNotif,((owner(me.prop)||{}).nom||'Un cavalier')+' · '+texte.slice(0,120),'messages');
 }
@@ -1729,7 +1748,7 @@ function signalModal(cid){
 }
 function envoyerSignal(){
   var c=horse(M.draft.cid),ty=v('sg-type'),tx=v('sg-texte');if(!c)return;if(!tx){toast('Décrivez le problème.');return}
-  var m={id:uid(),proprietaireId:me.prop,de:'client',texte:'Signalement · '+ty+' : '+tx,lu:false,date:new Date().toISOString(),chevalId:c.id,signal:true,typeSignal:ty};
+  var m={id:uid(),proprietaireId:me.prop,de:'client',auteur:isParent()?'parent':undefined,texte:'Signalement · '+ty+' : '+tx,lu:false,date:new Date().toISOString(),chevalId:c.id,signal:true,typeSignal:ty};
   db.messages.push(m);put('messages',m);
   notifier({type:'gerant'},'Problème signalé : '+c.nom,((owner(me.prop)||{}).nom||'Un cavalier')+' · '+ty+' · '+tx.slice(0,100),'jour');
   closeModal();render();toast('Signalement envoyé au gérant');
@@ -1895,6 +1914,9 @@ var ACT={
   thread:function(id){S.thread=id||null;S.msgDraft='';S.msgCheval=null;render();window.scrollTo(0,id?document.body.scrollHeight:0)},
   'an-del':function(id){db.annonces=db.annonces.filter(function(a){return a.id!==id});drop('annonces',id);render()},
   'owner-code':function(){M.read();var d=M.draft,code=genCode();sb.from('proprietaires').update({invite_code:code}).eq('id',d.id).then(function(r){if(r.error){cloudErr(r.error);return}d._code=code;var o=owner(d.id);if(o)o._code=code;if(M&&M.draft===d)M.render()},cloudErr)},
+  'owner-code-p':function(){M.read();var d=M.draft,code=genCode();sb.from('proprietaires').update({invite_code_parent:code}).eq('id',d.id).then(function(r){if(r.error){cloudErr(r.error);return}d._codeP=code;var o=owner(d.id);if(o)o._codeP=code;if(M&&M.draft===d)M.render()},cloudErr)},
+  'owner-copy-p':function(){M.read();copyText(inviteParentText(M.draft),'Invitation du parent copiée')},
+  'owner-share-p':function(){M.read();var t=inviteParentText(M.draft);if(navigator.share)navigator.share({text:t}).catch(function(){});else copyText(t,'Invitation du parent copiée')},
   'owner-copy':function(){M.read();copyText(inviteText(M.draft),'Invitation copiée')},
   'owner-share':function(){M.read();var t=inviteText(M.draft);if(navigator.share)navigator.share({text:t}).catch(function(){});else copyText(t,'Invitation copiée')},
   

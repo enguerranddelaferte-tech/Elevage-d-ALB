@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
     if (!prof) return json({ error: "Compte non activé" }, 403);
     const gerant = prof.role === "gerant";
 
-    if (b.action === "test") return json(await envoyer([uid], { titre: "Notifications activées", texte: "Vous recevrez ici les annulations de cours, messages et factures de l'écurie.", lien: "" }));
+    if (b.action === "test") return json(await envoyer([uid], { titre: "Notifications activées", texte: "Vous recevrez ici les annulations de cours, messages et annonces de l'écurie.", lien: "" }));
 
     if (b.action === "notify") {
       const titre = String(b.titre ?? "").slice(0, 120), texte = String(b.texte ?? "").slice(0, 400), lien = String(b.lien ?? "").slice(0, 40);
@@ -172,8 +172,8 @@ Deno.serve(async (req) => {
       let q = admin.from("profils").select("user_id");
       if (c.type === "gerant") q = q.eq("role", "gerant");
       else if (!gerant) return json({ error: "Non autorisé" }, 403);
-      else if (c.type === "tous") q = q.eq("role", "client");
-      else if (c.type === "proprios" && Array.isArray(c.ids) && c.ids.length) q = q.eq("role", "client").in("proprietaire_id", c.ids.slice(0, 500).map(String));
+      else if (c.type === "tous") q = q.in("role", ["client", "parent"]);
+      else if (c.type === "proprios" && Array.isArray(c.ids) && c.ids.length) q = q.in("role", ["client", "parent"]).in("proprietaire_id", c.ids.slice(0, 500).map(String));
       else return json({ destinataires: 0, telephones: 0 });
       const { data: rows } = await q;
       const ids = [...new Set((rows ?? []).map((r) => r.user_id).filter((x) => x !== uid))];

@@ -95,7 +95,8 @@ Onglet **Registre** : tous les équidés passés par l'écurie (identification, 
 - **Tous les chevaux** : onglet Chevaux de l'espace cavalier, avec la fiche de chaque cheval (box, consignes, ration) et le bouton **Signaler un problème** (blessure, ne mange pas, comportement, matériel, box ou clôture…).
 - **Signalements** : vous êtes prévenu tout de suite ; ils s'affichent en haut de l'accueil et dans les alertes. « Marquer réglé » prévient le cavalier, « Répondre » ouvre la conversation.
 - **Tâches du jour** : chaque tâche est **visible** (les cavaliers et propriétaires la voient dans « À l'écurie aujourd'hui », avec son état fait / à faire) ou **privée** (vous seul). Touchez « Visible » ou « Privée » pour changer.
-- Rôles (propriétaire, cavalier, demi-pensionnaire), date de naissance, cavalier mineur avec responsable légal, chevaux confiés (demi-pension, location, prêt).
+- Fiche : **prénom et nom** séparés, rôles (propriétaire, cavalier, demi-pensionnaire), date de naissance, chevaux confiés (demi-pension, location, prêt).
+- **Cavalier mineur et compte parent** : cocher « Cavalier mineur » et remplir le responsable légal (prénom, nom, lien, téléphone, e-mail). Dans « Espace cavalier », **Créer l'invitation du parent** donne un second code : le parent crée son propre compte, relié à la même fiche. Le parent réserve et annule les cours, demande les carnets, modifie les coordonnées et écrit à l'écurie (ses messages sont marqués « Parent »). L'enfant voit ses cours et les chevaux, confirme sa présence, écrit et signale un problème, mais ne réserve pas seul, sauf si la case « Le cavalier peut réserver et annuler ses cours seul » est cochée. Les deux reçoivent les notifications.
 
 ## Statistiques
 

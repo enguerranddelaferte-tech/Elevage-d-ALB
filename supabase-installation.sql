@@ -27,7 +27,7 @@ create table if not exists public.depenses (
   id text primary key, data jsonb not null default '{}'::jsonb, updated_at timestamptz not null default now());
 create table if not exists public.profils (
   user_id uuid primary key references auth.users(id) on delete cascade,
-  role text not null check (role in ('gerant','client')), proprietaire_id text);
+  role text not null check (role in ('gerant','client','parent')), proprietaire_id text);
 create table if not exists public.secrets (k text primary key, v text not null);
 
 insert into public.secrets(k, v)
@@ -316,3 +316,39 @@ select v as "CODE D'ACTIVATION GÉRANT (à noter)" from public.secrets where k =
 --     headers := jsonb_build_object('Content-Type','application/json','Authorization','Bearer VOTRE-CLE-ANON',
 --       'x-cron-key', (select v from public.secrets where k = 'cron_key')), timeout_milliseconds := 30000);
 -- $job$);
+
+
+-- ============ Compte parent pour les cavaliers mineurs ============
+alter table public.profils drop constraint if exists profils_role_check;
+alter table public.profils add constraint profils_role_check check (role = any (array['gerant'::text, 'client'::text, 'parent'::text]));
+alter table public.proprietaires add column if not exists invite_code_parent text;
+alter table public.proprietaires add column if not exists parent_user_id uuid;
+create or replace function public.mon_proprio() returns text language sql stable security definer set search_path to 'public' as $$
+  select proprietaire_id from profils where user_id = auth.uid() and role in ('client','parent') $$;
+create or replace function public.enfant_restreint() returns boolean language sql stable security definer set search_path to 'public' as $$
+  select exists(select 1 from profils pr join proprietaires p on p.id = pr.proprietaire_id
+    where pr.user_id = auth.uid() and pr.role = 'client'
+      and coalesce((p.data->>'autonome')::boolean, false) = false
+      and (coalesce((p.data->>'mineur')::boolean, false)
+           or (coalesce(p.data->>'naissance','') ~ '^\d{4}-\d{2}-\d{2}$' and (p.data->>'naissance')::date > (now() at time zone 'Europe/Paris')::date - interval '18 years'))) $$;
+revoke execute on function public.enfant_restreint() from anon;
+create or replace function public.lier_compte(p_code text) returns json language plpgsql security definer set search_path to 'public' as $function$
+declare v_code text := upper(trim(coalesce(p_code, ''))); v_prop text;
+begin
+  if auth.uid() is null then raise exception 'Connectez-vous d''abord.'; end if;
+  if exists(select 1 from profils where user_id = auth.uid()) then return mon_profil(); end if;
+  if v_code = (select v from secrets where k = 'code_gerant') then insert into profils(user_id, role) values (auth.uid(), 'gerant'); return mon_profil(); end if;
+  select id into v_prop from proprietaires where upper(invite_code) = v_code and user_id is null limit 1;
+  if v_prop is not null then
+    update proprietaires set user_id = auth.uid(), invite_code = null where id = v_prop;
+    insert into profils(user_id, role, proprietaire_id) values (auth.uid(), 'client', v_prop); return mon_profil();
+  end if;
+  select id into v_prop from proprietaires where upper(invite_code_parent) = v_code and parent_user_id is null limit 1;
+  if v_prop is not null then
+    update proprietaires set parent_user_id = auth.uid(), invite_code_parent = null where id = v_prop;
+    insert into profils(user_id, role, proprietaire_id) values (auth.uid(), 'parent', v_prop); return mon_profil();
+  end if;
+  raise exception 'Code d''activation inconnu ou déjà utilisé.';
+end $function$;
+-- reserver_cours, annuler_cours, modifier_coordonnees et declarer_monte refusent l'action quand enfant_restreint() est vrai
+-- (voir la migration « compte_parent » appliquée sur la base en ligne).
