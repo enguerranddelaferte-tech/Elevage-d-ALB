@@ -352,3 +352,27 @@ begin
 end $function$;
 -- reserver_cours, annuler_cours, modifier_coordonnees et declarer_monte refusent l'action quand enfant_restreint() est vrai
 -- (voir la migration « compte_parent » appliquée sur la base en ligne).
+
+
+-- ============ Inscrits visibles par tous et tâches cochées par les cavaliers ============
+create or replace function public.annuaire_cavaliers() returns json language sql stable security definer set search_path to 'public' as $$
+  select coalesce(json_agg(json_build_object('id', id, 'nom',
+    trim(coalesce(nullif(data->>'prenom',''), split_part(coalesce(data->>'nom',''),' ',1)) || ' ' ||
+         coalesce(nullif(left(coalesce(nullif(data->>'nomFamille',''), nullif(split_part(coalesce(data->>'nom',''),' ',2),''), ''),1),'') || '.', '')))), '[]'::json)
+  from proprietaires where (select est_membre()) $$;
+revoke execute on function public.annuaire_cavaliers() from anon;
+create or replace function public.cocher_tache(p_id text, p_fait boolean) returns jsonb language plpgsql security definer set search_path to 'public' as $function$
+declare v_prop text := mon_proprio(); d jsonb; v_nom text; v_jour text := to_char(now() at time zone 'Europe/Paris','YYYY-MM-DD');
+begin
+  if v_prop is null then raise exception 'Compte non activé.'; end if;
+  select data into d from taches where id = p_id for update;
+  if d is null or not coalesce((d->>'visible')::boolean,false) then raise exception 'Tâche introuvable.'; end if;
+  select trim(coalesce(nullif(data->>'prenom',''), split_part(coalesce(data->>'nom',''),' ',1)) || ' ' ||
+         coalesce(nullif(left(coalesce(nullif(data->>'nomFamille',''), nullif(split_part(coalesce(data->>'nom',''),' ',2),''), ''),1),'') || '.', ''))
+    into v_nom from proprietaires where id = v_prop;
+  if p_fait then d := d || jsonb_build_object('doneOn', v_jour, 'doneBy', coalesce(v_nom,'Cavalier'), 'doneById', v_prop);
+  else d := (d - 'doneBy' - 'doneById') || jsonb_build_object('doneOn', null); end if;
+  update taches set data = d, updated_at = now() where id = p_id;
+  return d;
+end $function$;
+revoke execute on function public.cocher_tache(text, boolean) from anon;

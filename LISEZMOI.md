@@ -87,6 +87,7 @@ Onglet **Registre** : tous les équidés passés par l'écurie (identification, 
 - **Pensions personnalisées** (Réglages › Pensions) : créez vos formules (« Pension complète + 2 cours »…) avec le nombre de cours autorisés par semaine : non limité, aucun, ou de 1 à 7.
 - Le nombre de cours s'applique au propriétaire du cheval (chevaux en pension seulement). Une **demi-pension** (fiche du cheval › Cavaliers › Confier) peut aussi compter des cours par semaine : ils s'ajoutent à ceux du cavalier. Le cavalier voit « Pension : 2 cours par semaine · 1 réservé ». Au-delà, il lui faut un carnet de cours pour réserver.
 - **Carnets de cours** (sans prix) : fiche du cavalier › Carnets de cours › 5, 10 ou 20 cours. Les cours sont décomptés automatiquement, après ceux compris dans la pension. Vue Cavaliers › « Carnets de cours » : où en est chaque cavalier, correction +1 / −1.
+- **Inscrits visibles** : chaque cavalier voit qui est inscrit à chaque cours (prénom et initiale du nom, avec ✓ présent ou ✗ absent) ; seuls les cours particuliers des autres restent masqués.
 - **Planning** : semaine ou mois, cours répétés chaque semaine, concours, monte libre réservée par le cavalier, choix du cheval de chaque cavalier.
 - **Présence** : le cavalier indique « présent » ou « absent ». Avant le délai d'annulation, « absent » propose de libérer la place.
 
@@ -94,7 +95,7 @@ Onglet **Registre** : tous les équidés passés par l'écurie (identification, 
 
 - **Tous les chevaux** : onglet Chevaux de l'espace cavalier, avec la fiche de chaque cheval (box, consignes, ration) et le bouton **Signaler un problème** (blessure, ne mange pas, comportement, matériel, box ou clôture…).
 - **Signalements** : vous êtes prévenu tout de suite ; ils s'affichent en haut de l'accueil et dans les alertes. « Marquer réglé » prévient le cavalier, « Répondre » ouvre la conversation.
-- **Tâches du jour** : chaque tâche est **visible** (les cavaliers et propriétaires la voient dans « À l'écurie aujourd'hui », avec son état fait / à faire) ou **privée** (vous seul). Touchez « Visible » ou « Privée » pour changer.
+- **Tâches du jour** : chaque tâche est **visible** ou **privée** (vous seul). Les tâches visibles apparaissent chez tous les cavaliers et parents, qui peuvent **les cocher** quand ils les ont faites ; tout le monde voit « Fait par Inès R. ». Touchez « Visible » ou « Privée » pour changer.
 - Fiche : **prénom et nom** séparés, rôles (propriétaire, cavalier, demi-pensionnaire), date de naissance, chevaux confiés (demi-pension, location, prêt).
 - **Cavalier mineur et compte parent** : cocher « Cavalier mineur » et remplir le responsable légal (prénom, nom, lien, téléphone, e-mail). Dans « Espace cavalier », **Créer l'invitation du parent** donne un second code : le parent crée son propre compte, relié à la même fiche. Le parent réserve et annule les cours, demande les carnets, modifie les coordonnées et écrit à l'écurie (ses messages sont marqués « Parent »). L'enfant voit ses cours et les chevaux, confirme sa présence, écrit et signale un problème, mais ne réserve pas seul, sauf si la case « Le cavalier peut réserver et annuler ses cours seul » est cochée. Les deux reçoivent les notifications.
 

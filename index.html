@@ -509,6 +509,7 @@ async function loadAll(){
       if(k==='messages')o.proprietaireId=row.proprietaire_id;
       if(k==='chevaux')o.proprietaireId=o.proprietaireId||row.proprietaire_id;
       return o})});
+  if(!isG()){try{var an=await sb.rpc('annuaire_cavaliers');if(!an.error&&Array.isArray(an.data)){nd.annuaire={};an.data.forEach(function(x){nd.annuaire[x.id]=x.nom})}else nd.annuaire=db.annuaire||{}}catch(e){nd.annuaire=db.annuaire||{}}}
   loadErr=err;db=nd;normalize();loading=false;if(!err)cloudLoaded=true;
   try{localStorage.setItem(cacheKey(),JSON.stringify({me:me,db:db}))}catch(e){}
   refresh();
@@ -652,7 +653,7 @@ function vJour(){
 }
 function tachesSection(){
   var t=today(),done=db.taches.filter(function(k){return k.doneOn===t}).length;
-  function row(k){var d=k.doneOn===t;return '<div class="item task'+(d?' done':'')+'"><input type="checkbox" id="tk-'+k.id+'" data-act="task" data-id="'+k.id+'"'+(d?' checked':'')+'><label class="x" for="tk-'+k.id+'"><b>'+esc(k.label)+'</b></label><button class="vis-btn'+(k.visible?' on':'')+'" data-act="task-vis" data-id="'+k.id+'" aria-pressed="'+!!k.visible+'" title="'+(k.visible?'Visible par les cavaliers et propriétaires':'Privée : vous seul la voyez')+'">'+(k.visible?'Visible':'Privée')+'</button><button class="del-x" data-act="task-del" data-id="'+k.id+'" aria-label="Supprimer la tâche '+esc(k.label)+'">✕</button></div>'}
+  function row(k){var d=k.doneOn===t;return '<div class="item task'+(d?' done':'')+'"><input type="checkbox" id="tk-'+k.id+'" data-act="task" data-id="'+k.id+'"'+(d?' checked':'')+'><label class="x" for="tk-'+k.id+'"><b>'+esc(k.label)+'</b>'+(d&&k.doneBy?'<span>par '+esc(k.doneBy)+'</span>':'')+'</label><button class="vis-btn'+(k.visible?' on':'')+'" data-act="task-vis" data-id="'+k.id+'" aria-pressed="'+!!k.visible+'" title="'+(k.visible?'Visible par les cavaliers et propriétaires':'Privée : vous seul la voyez')+'">'+(k.visible?'Visible':'Privée')+'</button><button class="del-x" data-act="task-del" data-id="'+k.id+'" aria-label="Supprimer la tâche '+esc(k.label)+'">✕</button></div>'}
   var vis=db.taches.filter(function(k){return k.visible}),pri=db.taches.filter(function(k){return !k.visible});
   var h='<section id="taches"><div class="sh"><h2>Tâches du jour</h2><span class="sub">'+done+' / '+db.taches.length+' faites</span></div><div class="panel items">';
   if(vis.length)h+='<div class="tgroup">Visibles par les cavaliers</div>'+vis.map(row).join('');
@@ -704,6 +705,11 @@ function myHorses(){return actifs().filter(function(c){return c.proprietaireId==
 function unreadFor(pid){return db.messages.filter(function(m){return m.proprietaireId===pid&&!m.lu&&m.de===(isG()?'client':'gerant')}).length}
 function unreadTotal(){return isG()?db.messages.filter(function(m){return !m.lu&&m.de==='client'}).length:unreadFor(me.prop)}
 function coursStart(c){return new Date(c.date+'T'+(c.heure||'00:00')+':00')}
+function nomCourtDe(o){var nf=o.nomFamille||String(o.nom||'').split(/\s+/)[1]||'';return (prenomDe(o)+(nf?' '+nf.charAt(0).toUpperCase()+'.':'')).trim()}
+/* nom affiché d'un cavalier inscrit : sa fiche si on la voit (gérant, démo, soi-même), sinon l'annuaire (prénom + initiale) */
+function nomCourt(pid){var o=owner(pid);if(o)return nomCourtDe(o);return (db.annuaire||{})[pid]||'Cavalier'}
+function inscritsChips(c,saufMoi){var l=c.inscrits.filter(function(p){return !(saufMoi&&p===me.prop)});if(!l.length)return '';
+  return '<span class="chips">'+l.map(function(pid){var pr=(c.presences||{})[pid];return '<span class="chip'+(pr==='oui'?' ok':pr==='non'?' no':'')+'">'+(pr==='oui'?'✓ ':pr==='non'?'✗ ':'')+esc(pid===me.prop?'Moi':nomCourt(pid))+'</span>'}).join('')+'</span>'}
 function prenomDe(o){o=o||{};return o.prenom||firstName(o.nom)}
 function nomTri(p){return ((p.nomFamille||p.nom||'')+' '+(p.prenom||'')).toLowerCase()}
 function firstName(n){return String(n||'').split(' ')[0]}
@@ -727,7 +733,7 @@ function cAccueil(){
   db.cours.filter(function(c){return c.annule&&c.inscrits.indexOf(me.prop)>-1&&coursStart(c)>=new Date()}).sort(byTime).forEach(function(c){
     h+='<div class="alert late"><div class="x"><b>Cours annulé</b> : '+esc(coursLabel(c))+(c.motif?' — '+esc(c.motif):'')+'</div></div>'});
   h+='<section><div class="sh"><h2>Mon prochain cours</h2><button class="btn sm" data-act="tab" data-id="cours">Planning</button></div>';
-  h+=nx?'<div class="hero" style="gap:4px"><div class="big" style="font-size:22px">'+fdate(nx.date,{weekday:'long',day:'numeric',month:'long'})+' · '+esc(nx.heure.replace(':','h'))+'</div><div style="opacity:.85">'+esc(nx.titre)+' · '+esc(nx.lieu)+' · '+nx.duree+' min</div>'+presenceBtns(nx)+'</div>'
+  h+=nx?'<div class="hero" style="gap:4px"><div class="big" style="font-size:22px">'+fdate(nx.date,{weekday:'long',day:'numeric',month:'long'})+' · '+esc(nx.heure.replace(':','h'))+'</div><div style="opacity:.85">'+esc(nx.titre)+' · '+esc(nx.lieu)+' · '+nx.duree+' min</div>'+(inscritsChips(nx,true)?'<div style="font-size:13px;opacity:.9">Avec : '+nx.inscrits.filter(function(p){return p!==me.prop}).map(function(p){return esc(nomCourt(p))}).join(', ')+'</div>':'')+presenceBtns(nx)+'</div>'
     :'<div class="panel empty">Aucun cours réservé. Ouvrez le planning pour réserver.</div>';
   h+='</section>';
   var hs=myHorses();
@@ -762,13 +768,13 @@ function cCours(){
   else h+='<div class="panel items">'+l.map(function(c){
     var mine=c.inscrits.indexOf(me.prop)>-1,n=c.inscrits.length,free=c.places-n,past=coursStart(c)<now,priv=c.type==='particulier'&&!mine&&n>0,act='';
     var tard=(coursStart(c)-now)/36e5<(+db.annulHeures||0);
-    if(c.type==='monte'){var monM=c.par===me.prop||mine;return '<div class="item" style="cursor:default"><span class="time">'+esc(c.heure.replace(':','h'))+'</span><span class="x"><b>'+(monM?'Ma monte libre':'Monte libre')+'</b><span>'+esc(c.lieu)+' · '+c.duree+' min'+(monM&&montureDe(c,me.prop)?' · '+esc(montureDe(c,me.prop)):'')+(monM?'':' · piste occupée')+'</span></span><span class="end">'+(monM&&!past?'<button class="btn sm" data-act="monte-del" data-id="'+c.id+'">Supprimer</button>':'<span class="pill monte">Monte libre</span>')+'</span></div>'}
+    if(c.type==='monte'){var monM=c.par===me.prop||mine;return '<div class="item" style="cursor:default"><span class="time">'+esc(c.heure.replace(':','h'))+'</span><span class="x"><b>'+(monM?'Ma monte libre':'Monte libre')+'</b><span>'+esc(c.lieu)+' · '+c.duree+' min'+(monM&&montureDe(c,me.prop)?' · '+esc(montureDe(c,me.prop)):'')+(monM?'':' · '+esc(nomCourt(c.par||c.inscrits[0])))+'</span></span><span class="end">'+(monM&&!past?'<button class="btn sm" data-act="monte-del" data-id="'+c.id+'">Supprimer</button>':'<span class="pill monte">Monte libre</span>')+'</span></div>'}
     if(c.annule)act='<span class="pill late">Annulé</span>';
     else if(mine)act=(past||tard)?'<span class="pill">Inscrit</span>':(S.confirmAnnul===c.id?'<button class="btn sm danger" data-act="c-annuler" data-id="'+c.id+'">Confirmer</button>':'<button class="btn sm" data-act="c-annuler-ask" data-id="'+c.id+'">Annuler</button>');
     else if(past)act='<span class="pill muted">Passé</span>';
     else if(free>0)act='<button class="btn sm primary" data-act="c-reserver" data-id="'+c.id+'">Réserver</button>';
     else act='<span class="pill muted">'+(priv?'Réservé':'Complet')+'</span>';
-    return '<div class="item'+(c.annule?' annule':'')+'" style="cursor:default"><span class="time">'+esc(c.heure.replace(':','h'))+'</span><span class="x"><b>'+esc(priv?'Cours particulier':c.titre)+'</b><span>'+(c.annule?'Annulé'+(c.motif?' : '+esc(c.motif):'')+' · ':'')+esc(c.lieu)+' · '+c.duree+' min · '+(c.type==='particulier'?'particulier':(free>0?free+' place'+(free>1?'s':'')+' libre'+(free>1?'s':''):'complet'))+(c.type==='concours'?' · concours':'')+(mine?' · <b style="color:var(--accent)">vous êtes inscrit</b>'+(montureDe(c,me.prop)?' · '+esc(montureDe(c,me.prop)):''):'')+'</span>'+(mine&&!past&&!c.annule?presenceBtns(c):'')+'</span><span class="end">'+act+'</span></div>'}).join('')+'</div>';
+    return '<div class="item'+(c.annule?' annule':'')+'" style="cursor:default"><span class="time">'+esc(c.heure.replace(':','h'))+'</span><span class="x"><b>'+esc(priv?'Cours particulier':c.titre)+'</b><span>'+(c.annule?'Annulé'+(c.motif?' : '+esc(c.motif):'')+' · ':'')+esc(c.lieu)+' · '+c.duree+' min · '+(c.type==='particulier'?'particulier':(free>0?free+' place'+(free>1?'s':'')+' libre'+(free>1?'s':''):'complet'))+(c.type==='concours'?' · concours':'')+(mine?' · <b style="color:var(--accent)">vous êtes inscrit</b>'+(montureDe(c,me.prop)?' · '+esc(montureDe(c,me.prop)):''):'')+'</span>'+(priv?'':inscritsChips(c))+(mine&&!past&&!c.annule?presenceBtns(c):'')+'</span><span class="end">'+act+'</span></div>'}).join('')+'</div>';
   h+='<p class="sub" style="margin:0">Annulation possible jusqu\'à '+(+db.annulHeures||0)+' h avant le cours. Après, contactez le gérant par message.</p>';
   return h+'</section>';
 }
@@ -1777,9 +1783,8 @@ function chevalVue(id){
 }
 function tachesVisibles(){return db.taches.filter(function(k){return k.visible})}
 function tachesClientHtml(){var l=tachesVisibles(),t=today();if(!l.length)return '';var d=l.filter(function(k){return k.doneOn===t}).length;
-  return '<section><div class="sh"><h2>À l\'écurie aujourd\'hui</h2><span class="sub">'+d+' / '+l.length+' fait'+(d>1?'es':'e')+'</span></div><div class="panel items">'+l.map(function(k){var f=k.doneOn===t;
-    return '<div class="item task'+(f?' done':'')+'"><span class="tick'+(f?' on':'')+'" aria-hidden="true">'+(f?'✓':'')+'</span><span class="x"><b>'+esc(k.label)+'</b></span><span class="end">'+(f?'<span class="pill">Fait</span>':'<span class="pill muted">À faire</span>')+'</span></div>'}).join('')+'</div></section>'}
-
+  return '<section><div class="sh"><h2>Tâches du jour</h2><span class="sub">'+d+' / '+l.length+' fait'+(d>1?'es':'e')+'</span></div><div class="panel items">'+l.map(function(k){var f=k.doneOn===t;
+    return '<div class="item task'+(f?' done':'')+'"><input type="checkbox" id="tkc-'+k.id+'" data-act="task-c" data-id="'+k.id+'"'+(f?' checked':'')+'><label class="x" for="tkc-'+k.id+'"><b>'+esc(k.label)+'</b>'+(f?'<span>Fait'+(k.doneBy?' par '+esc(k.doneById===me.prop?'moi':k.doneBy):' par l\'écurie')+'</span>':'')+'</label></div>'}).join('')+'</div><p class="sub" style="margin:0">Cochez une tâche quand vous l\'avez faite : tout le monde le voit.</p></section>'}
 /* ---------- statistiques ---------- */
 var JOURS_L=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
 function statPer(){var k=S.stK||'mois',ref=S.stRef||today().slice(0,7),y=+ref.slice(0,4),m=+ref.slice(5,7),d0,d1,lab;
@@ -1846,7 +1851,11 @@ var ACT={
   tab:function(id){if(M)closeModal();var te=document.getElementById('toast');if(te)te.hidden=true;S.tab=id;S.confirmClear=false;S.confirmAnnul=null;if(id!=='messages')S.thread=null;try{localStorage.setItem(KEY+'-tab',id)}catch(e){}render();window.scrollTo(0,0)},
   horse:function(id){horseModal(id)},owner:function(id){ownerModal(id)},cours:function(id){coursModal(id)},settings:function(){settingsModal()},
   close:function(){closeModal()},
-  task:function(id,el){var k=db.taches.find(function(x){return x.id===id});if(!k)return;k.doneOn=el.checked?today():null;put('taches',k);render()},
+  task:function(id,el){var k=db.taches.find(function(x){return x.id===id});if(!k)return;k.doneOn=el.checked?today():null;delete k.doneBy;delete k.doneById;put('taches',k);render()},
+  'task-c':function(id,el){var k=db.taches.find(function(x){return x.id===id});if(!k)return;var fait=el.checked;
+    function ok(d){if(d)Object.assign(k,d,{id:id});else{k.doneOn=fait?today():null;if(fait){k.doneBy=nomCourt(me.prop);k.doneById=me.prop}else{delete k.doneBy;delete k.doneById}}render();toast(fait?'« '+k.label+' » : fait, merci !':'Tâche décochée')}
+    if(mode==='cloud'){sb.rpc('cocher_tache',{p_id:id,p_fait:fait}).then(function(r){if(r.error){el.checked=!fait;toast(r.error.message);return}ok(r.data)},function(){el.checked=!fait;toast('Pas de connexion : réessayez.')});return}
+    ok(null);saveLocal()},
   'task-del':function(id){db.taches=db.taches.filter(function(x){return x.id!==id});drop('taches',id);render()},
   
   
